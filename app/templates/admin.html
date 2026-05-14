@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataBroker 229 — Admin</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f4f8; color:#1a202c; }
+
+    .header {
+      background:linear-gradient(135deg,#1a3a6b,#2d5f9e);
+      color:white; padding:16px 20px;
+      display:flex; justify-content:space-between; align-items:center;
+      box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    }
+    .logo { font-size:1.2rem; font-weight:800; }
+    .logo span { color:#ffd700; }
+
+    .main { padding:20px 16px 90px; max-width:480px; margin:0 auto; }
+
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; right:0;
+      background:white; display:flex; justify-content:space-around;
+      padding:10px 0; box-shadow:0 -2px 10px rgba(0,0,0,0.1); z-index:100;
+    }
+    .bottom-nav a {
+      display:flex; flex-direction:column; align-items:center;
+      gap:3px; text-decoration:none; color:#718096; font-size:0.65rem;
+    }
+    .bottom-nav a.active { color:#1a3a6b; }
+    .bottom-nav a .icon { font-size:1.3rem; }
+
+    .card {
+      background:white; border-radius:12px;
+      padding:16px; margin-bottom:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .form-group { margin-bottom:14px; }
+    .form-group label {
+      display:block; font-size:0.82rem;
+      font-weight:600; margin-bottom:5px; color:#4a5568;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width:100%; padding:11px;
+      border:1.5px solid #e2e8f0;
+      border-radius:8px; font-size:0.95rem;
+      background:#f7fafc; outline:none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color:#1a3a6b; background:white;
+    }
+
+    .btn {
+      display:block; width:100%; padding:13px;
+      border:none; border-radius:10px;
+      font-size:0.95rem; font-weight:700;
+      cursor:pointer; text-align:center;
+      transition:opacity 0.2s; text-decoration:none;
+    }
+    .btn:active { opacity:0.8; }
+    .btn-primary   { background:#1a3a6b; color:white; }
+    .btn-green     { background:#1a6b3c; color:white; }
+    .btn-gold      { background:#ffd700; color:#1a202c; }
+    .btn-red       { background:#c53030; color:white; }
+    .btn-secondary { background:#e2e8f0; color:#2d3748; }
+    .btn-sm {
+      padding:7px 12px; width:auto;
+      display:inline-block; font-size:0.78rem;
+    }
+
+    .badge {
+      display:inline-block; padding:3px 9px;
+      border-radius:20px; font-size:0.7rem; font-weight:700;
+    }
+    .badge-green  { background:#c6f6d5; color:#276749; }
+    .badge-yellow { background:#fefcbf; color:#975a16; }
+    .badge-blue   { background:#bee3f8; color:#2a69ac; }
+    .badge-red    { background:#fed7d7; color:#9b2c2c; }
+    .badge-grey   { background:#e2e8f0; color:#4a5568; }
+
+    .alert {
+      padding:12px; border-radius:8px;
+      margin-bottom:12px; font-size:0.88rem;
+    }
+    .alert-success { background:#c6f6d5; color:#276749; }
+    .alert-error   { background:#fed7d7; color:#9b2c2c; }
+    .alert-info    { background:#bee3f8; color:#2a69ac; }
+
+    /* LOGIN */
+    .login-wrap {
+      min-height:100vh; display:flex;
+      flex-direction:column; justify-content:center;
+      padding:30px 24px;
+      background:linear-gradient(160deg,#1a3a6b 0%,#0d1f3d 60%,#1a202c 100%);
+    }
+    .login-logo { text-align:center; margin-bottom:32px; }
+    .login-logo h1 { color:white; font-size:1.8rem; font-weight:900; }
+    .login-logo h1 span { color:#ffd700; }
+    .login-logo p { color:rgba(255,255,255,0.6); margin-top:6px; }
+    .login-card { background:white; border-radius:20px; padding:28px 22px; }
+
+    /* KPI GRID */
+    .kpi-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:10px; margin-bottom:16px;
+    }
+    .kpi-card {
+      background:white; border-radius:12px; padding:14px;
+      text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+    .kpi-card .num {
+      font-size:1.6rem; font-weight:800; color:#1a3a6b;
+    }
+    .kpi-card .lab {
+      font-size:0.7rem; color:#718096; margin-top:3px;
+    }
+
+    /* REVENUS */
+    .revenu-card {
+      background:linear-gradient(135deg,#1a6b3c,#2d9e5f);
+      color:white; border-radius:12px; padding:18px;
+      margin-bottom:12px;
+    }
+    .revenu-card .val {
+      font-size:2rem; font-weight:900; color:#ffd700;
+    }
+
+    /* MISSION CARD */
+    .mission-card {
+      border-left:4px solid #1a3a6b;
+      margin-bottom:10px;
+    }
+
+    /* VALIDATION CARD */
+    .val-card { border-left:4px solid #975a16; margin-bottom:12px; }
+
+    /* PROGRESS */
+    .progress-wrap {
+      background:#e2e8f0; border-radius:10px;
+      height:6px; overflow:hidden; margin:6px 0;
+    }
+    .progress-bar {
+      height:100%; border-radius:10px;
+      background:linear-gradient(90deg,#1a6b3c,#2d9e5f);
+    }
+
+    .text-muted  { color:#718096; font-size:0.82rem; }
+    .text-center { text-align:center; }
+    .mt-10 { margin-top:10px; }
+    .mt-14 { margin-top:14px; }
+    .mb-10 { margin-bottom:10px; }
+    .fw-700 { font-weight:700; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="page-login">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <p style="font-size:2.5rem">🔐</p>
+      <h1>Admin <span>DataBroker</span></h1>
+      <p>Accès réservé au fondateur</p>
+    </div>
+    <div class="login-card">
+      <div id="msg-login"></div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="inp-pwd" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') adminLogin()">
+      </div>
+      <button class="btn btn-primary" onclick="adminLogin()">
+        Accéder →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="page-dashboard" class="hidden">
+<a href="/analytique"
+  style="background:rgba(255,255,255,0.15);color:white;
+         padding:6px 10px;border-radius:8px;
+         text-decoration:none;font-size:0.78rem;margin-right:6px">
+  📈 Stats
+</a>
+  <div class="header">
+    <div class="logo">DB229 <span style="font-size:0.85rem">ADMIN</span></div>
+    <button onclick="adminLogout()"
+      style="background:rgba(255,255,255,0.15);border:none;color:white;
+             padding:6px 12px;border-radius:8px;cursor:pointer;font-size:0.82rem">
+      Quitter
+    </button>
+  </div>
+
+  <div class="main">
+
+    <!-- ══ VUE : ACCUEIL ══ -->
+    <div id="vue-accueil">
+
+      <!-- KPIs revenus -->
+      <div class="revenu-card">
+        <p style="opacity:0.8;font-size:0.82rem">💰 Revenus totaux (marge 40%)</p>
+        <div class="val" id="kpi-revenus">0 FCFA</div>
+        <p style="opacity:0.6;font-size:0.72rem;margin-top:4px">
+          Missions finalisées uniquement
+        </p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="num" id="kpi-missions">0</div>
+          <div class="lab">Missions total</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-agents">0</div>
+          <div class="lab">Agents inscrits</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-collectes">0</div>
+          <div class="lab">Collectes reçues</div>
+        </div>
+        <div class="kpi-card">
+          <div class="num" id="kpi-contacts">0</div>
+          <div class="lab">Demandes contact</div>
+        </div>
+      </div>
+       
+      <!-- Test SMS -->
+<div class="card" style="border-left:4px solid #2d9e5f;margin-bottom:16px">
+  <p style="font-weight:700;margin-bottom:10px;color:#1a6b3c">
+    📱 Test SMS
+  </p>
+  <div id="msg-test-sms"></div>
+  <div class="form-group">
+    <label>Numéro de test</label>
+    <input type="tel" id="sms-test-tel" placeholder="ex: 0197000001">
+  </div>
+  <button class="btn btn-green btn-sm" onclick="testerSMS()">
+    Envoyer SMS test
+  </button>
+</div>
+
+
+      <!-- Missions récentes -->
+      <h3 style="margin-bottom:10px;font-size:0.9rem;color:#4a5568">
+        MISSIONS RÉCENTES
+      </h3>
+      <div id="missions-recentes"></div>
+
+    </div>
+
+    <!-- ══ VUE : MISSIONS ══ -->
+    <div id="vue-missions" class="hidden">
+      <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px">
+        <button class="btn btn-primary btn-sm" id="f-toutes"
+          onclick="filtrerMissions('toutes')">Toutes</button>
+        <button class="btn btn-secondary btn-sm" id="f-ouverte"
+          onclick="filtrerMissions('ouverte')">En cours</button>
+        <button class="btn btn-secondary btn-sm" id="f-finalisee"
+          onclick="filtrerMissions('finalisee')">Finalisées</button>
+        <button class="btn btn-secondary btn-sm" id="f-echouee"
+          onclick="filtrerMissions('echouee')">Échouées</button>
+      </div>
+      <div id="liste-toutes-missions"></div>
+    </div>
+
+    <!-- ══ VUE : CRÉER MISSION ══ -->
+    <div id="vue-creer" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom:4px;color:#1a3a6b">➕ Nouvelle mission</h3>
+        <p class="text-muted mb-10">Créée directement par l'admin</p>
+        <div id="msg-creer"></div>
+
+        <div class="form-group">
+          <label>Titre *</label>
+          <input type="text" id="m-titre"
+            placeholder="ex: Prix sac riz 50kg à Dantokpa">
+        </div>
+        <div class="form-group">
+          <label>Instructions agents *</label>
+          <textarea id="m-desc" rows="3"
+            placeholder="Instructions détaillées pour les agents..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Marché cible *</label>
+          <select id="m-marche" onchange="mettreAJourCoordsAdmin()">
+            <option value="">-- Choisir --</option>
+            <option value="Dantokpa"    data-lat="6.3698" data-lng="2.4382">Dantokpa (Cotonou)</option>
+            <option value="Ouando"      data-lat="6.4969" data-lng="2.6289">Ouando (Porto-Novo)</option>
+            <option value="Akpakpa"     data-lat="6.3654" data-lng="2.4419">Akpakpa (Cotonou)</option>
+            <option value="Missèbo"     data-lat="6.3744" data-lng="2.4197">Missèbo (Cotonou)</option>
+            <option value="Sainte Rita" data-lat="6.3601" data-lng="2.3987">Sainte Rita</option>
+            <option value="Bohicon"     data-lat="7.1793" data-lng="2.0669">Bohicon</option>
+            <option value="Parakou"     data-lat="9.3370" data-lng="2.6280">Parakou</option>
+            <option value="Natitingou"  data-lat="10.3079" data-lng="1.3762">Natitingou</option>
+          </select>
+          <input type="hidden" id="m-lat">
+          <input type="hidden" id="m-lng">
+        </div>
+        <div class="form-group">
+          <label>Produit *</label>
+          <input type="text" id="m-produit"
+            placeholder="ex: Sac riz importé 50kg">
+        </div>
+        <div class="form-group">
+          <label>Nombre de collectes requis</label>
+          <select id="m-nb">
+            <option value="3">3 collectes</option>
+            <option value="5" selected>5 collectes</option>
+            <option value="10">10 collectes</option>
+            <option value="20">20 collectes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Délai</label>
+          <select id="m-delai">
+            <option value="24">24h — Urgent</option>
+            <option value="48" selected>48h — Standard</option>
+            <option value="72">72h — Étendu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Client commanditaire (nom)</label>
+          <input type="text" id="m-client-nom"
+            placeholder="ex: Bénin Distribution SARL">
+        </div>
+        <div class="form-group">
+          <label>Email client (pour rapport auto)</label>
+          <input type="email" id="m-client-email"
+            placeholder="ex: contact@entreprise.bj">
+        </div>
+        <div class="form-group">
+          <label>Téléphone client</label>
+          <input type="tel" id="m-client-tel"
+            placeholder="ex: 0197000001">
+        </div>
+
+        <div id="tarif-admin-box"
+          style="background:#f0f4f8;border-radius:10px;padding:14px;margin-bottom:14px">
+          <p style="font-size:0.82rem;color:#4a5568;font-weight:700;margin-bottom:8px">
+            💰 Tarification automatique
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.82rem">
+            <div>Total client : <strong id="ta-total">—</strong></div>
+            <div>Ta marge 40% : <strong id="ta-marge" style="color:#1a6b3c">—</strong></div>
+            <div>Budget agents : <strong id="ta-agents">—</strong></div>
+            <div>Par agent : <strong id="ta-par-agent">—</strong></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="calculerTarifAdmin(); return false"
+          style="margin-bottom:10px;background:#4a5568">
+          🔄 Calculer le tarif
+        </button>
+        <button class="btn btn-gold" onclick="creerMissionAdmin()">
+          🚀 Publier la mission
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ VUE : VALIDATION ══ -->
+    <div id="vue-validation" class="hidden">
+      <div id="msg-validation"></div>
+      <div id="badge-nb-attente"
+        style="margin-bottom:12px;font-size:0.85rem;color:#975a16;font-weight:600">
+      </div>
+      <div id="liste-validation"></div>
+    </div>
+
+    <!-- ══ VUE : AGENTS ══ -->
+    <div id="vue-agents" class="hidden">
+      <div id="liste-agents"></div>
+    </div>
+
+    <!-- ══ VUE : CONTACTS ══ -->
+    <div id="vue-contacts" class="hidden">
+      <div id="liste-contacts"></div>
+    </div>
+
+  </div>
+
+  <!-- NAV BAS -->
+  <nav class="bottom-nav">
+    <a href="#" onclick="showVue('accueil')"    id="nav-accueil"    class="active">
+      <span class="icon">🏠</span>Accueil
+    </a>
+    <a href="#" onclick="showVue('missions')"   id="nav-missions">
+      <span class="icon">📋</span>Missions
+    </a>
+    <a href="#" onclick="showVue('creer')"      id="nav-creer">
+      <span class="icon">➕</span>Créer
+    </a>
+    <a href="#" onclick="showVue('validation')" id="nav-validation">
+      <span class="icon">✅</span>
+      <span id="nav-badge-val" style="position:relative">
+        Valider
+        <span id="badge-val-nb"
+          style="position:absolute;top:-8px;right:-10px;
+                 background:#e53e3e;color:white;border-radius:10px;
+                 padding:1px 5px;font-size:0.6rem;display:none">0</span>
+      </span>
+    </a>
+    <a href="#" onclick="showVue('agents')"     id="nav-agents">
+      <span class="icon">👥</span>Agents
+    </a>
+  </nav>
+
+</div>
+
+<script>
+const ADMIN_PASSWORD = "databroker229";
+let toutesLesMissions = [];
+let tousLesAgents     = [];
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+function adminLogin() {
+  const pwd = document.getElementById("inp-pwd").value;
+  if (pwd === ADMIN_PASSWORD) {
+    sessionStorage.setItem("admin_ok","1");
+    document.getElementById("page-login").classList.add("hidden");
+    document.getElementById("page-dashboard").classList.remove("hidden");
+    chargerDashboard();
+  } else {
+    showMsg("msg-login","Mot de passe incorrect","error");
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem("admin_ok");
+  location.reload();
+}
+
+window.onload = () => {
+  if (sessionStorage.getItem("admin_ok") === "1") {
+    document.getElementById("page-login").classList.add("hidden");
+    document.getElementById("page-dashboard").classList.remove("hidden");
+    chargerDashboard();
+  }
+};
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+function showVue(vue) {
+  ["accueil","missions","creer","validation","agents","contacts"].forEach(v => {
+    document.getElementById("vue-"+v).classList.toggle("hidden", v !== vue);
+  });
+  ["accueil","missions","creer","validation","agents"].forEach(v => {
+    const nav = document.getElementById("nav-"+v);
+    if (nav) nav.className = v === vue ? "active" : "";
+  });
+  if (vue === "accueil")    chargerDashboard();
+  if (vue === "missions")   chargerMissions();
+  if (vue === "validation") chargerValidations();
+  if (vue === "agents")     chargerAgents();
+  if (vue === "contacts")   chargerContacts();
+}
+
+// ════════════════════════════════════════
+// DASHBOARD ACCUEIL
+// ════════════════════════════════════════
+async function chargerDashboard() {
+  const [rMissions, rAgents, rRevenus, rContacts] = await Promise.all([
+    fetch("/api/admin/missions"),
+    fetch("/api/agents"),
+    fetch("/api/admin/revenus"),
+    fetch("/api/admin/contacts")
+  ]);
+  toutesLesMissions = await rMissions.json();
+  tousLesAgents     = await rAgents.json();
+  const revenus     = await rRevenus.json();
+  const contacts    = await rContacts.json();
+
+  // Compter collectes
+  let totalCollectes = 0;
+  for (let m of toutesLesMissions.slice(0,10)) {
+    const r = await fetch(`/api/collectes/mission/${m.id}`);
+    const c = await r.json();
+    totalCollectes += c.length;
+  }
+
+  // KPIs
+  document.getElementById("kpi-revenus").textContent =
+    revenus.total_revenus_fcfa.toLocaleString() + " FCFA";
+  document.getElementById("kpi-missions").textContent  = toutesLesMissions.length;
+  document.getElementById("kpi-agents").textContent    = tousLesAgents.length;
+  document.getElementById("kpi-collectes").textContent = totalCollectes;
+  document.getElementById("kpi-contacts").textContent  =
+    contacts.filter(c => !c.traite).length;
+
+  // Badge validation
+  const enAttente = await fetch("/api/admin/collectes/en_attente");
+  const att       = await enAttente.json();
+  const badge     = document.getElementById("badge-val-nb");
+  if (att.length > 0) {
+    badge.textContent = att.length;
+    badge.style.display = "inline";
+  } else {
+    badge.style.display = "none";
+  }
+
+  // Missions récentes (5)
+  document.getElementById("missions-recentes").innerHTML =
+    toutesLesMissions.slice(0,5).map(m => carteMission(m, true)).join("") ||
+    `<p class="text-muted text-center">Aucune mission</p>`;
+}
+
+// ════════════════════════════════════════
+// MISSIONS
+// ════════════════════════════════════════
+let filtreActif = "toutes";
+
+async function chargerMissions() {
+  const res = await fetch("/api/admin/missions");
+  toutesLesMissions = await res.json();
+  filtrerMissions(filtreActif);
+}
+
+function filtrerMissions(filtre) {
+  filtreActif = filtre;
+  ["toutes","ouverte","finalisee","echouee"].forEach(f => {
+    const btn = document.getElementById("f-"+f);
+    if (btn) btn.className = f === filtre
+      ? "btn btn-primary btn-sm"
+      : "btn btn-secondary btn-sm";
+  });
+
+  let liste = toutesLesMissions;
+  if (filtre !== "toutes")
+    liste = toutesLesMissions.filter(m => m.statut === filtre);
+
+  document.getElementById("liste-toutes-missions").innerHTML =
+    liste.map(m => carteMission(m, false)).join("") ||
+    `<p class="text-muted text-center" style="padding:20px">Aucune mission</p>`;
+}
+
+function carteMission(m, compact) {
+  const badges = {
+    "en_attente_paiement": ["badge-yellow","⏳ Attente paiement"],
+    "ouverte":             ["badge-green", "🟢 En cours"],
+    "prete":               ["badge-blue",  "🔵 Prête"],
+    "finalisee":           ["badge-grey",  "✅ Finalisée"],
+    "echouee":             ["badge-red",   "❌ Échouée"]
+  };
+  const [cls, label] = badges[m.statut] || ["badge-grey","—"];
+
+  return `
+    <div class="card mission-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <h3 style="font-size:0.88rem;flex:1">${m.titre}</h3>
+        <span class="badge ${cls}" style="margin-left:8px;white-space:nowrap">
+          ${label}
+        </span>
+      </div>
+      <p class="text-muted" style="margin:4px 0">
+        📍 ${m.marche_cible||"—"} &nbsp;|&nbsp; 🛒 ${m.produit_cible||"—"}
+      </p>
+      ${m.client_nom ? `<p class="text-muted">🏢 ${m.client_nom}</p>` : ""}
+      <div style="display:flex;justify-content:space-between;
+                  align-items:center;margin-top:8px">
+        <span style="font-size:0.78rem;color:#1a6b3c;font-weight:700">
+          💰 ${m.prix_client_fcfa ? m.prix_client_fcfa.toLocaleString()+" FCFA" : "—"}
+          <span style="color:#a0aec0;font-weight:400"> / marge : </span>
+          ${m.marge_fcfa ? m.marge_fcfa.toLocaleString()+" FCFA" : "—"}
+        </span>
+      </div>
+      ${!compact ? `
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <a class="btn btn-primary btn-sm"
+           href="/api/export/pdf/${m.id}" target="_blank">📄 PDF</a>
+        <a class="btn btn-green btn-sm"
+           href="/api/export/excel/${m.id}" target="_blank">📊 Excel</a>
+        ${m.statut === "ouverte" ? `
+        <button class="btn btn-gold btn-sm"
+          onclick="forcerFinalisation(${m.id})">
+          ⚡ Forcer finalisation
+        </button>` : ""}
+      </div>` : ""}
+    </div>`;
+}
+
+async function forcerFinalisation(id) {
+  const res  = await fetch(`/api/admin/mission/${id}/forcer_finalisation`,
+    {method:"POST"});
+  const data = await res.json();
+  alert(data.message);
+  chargerMissions();
+  chargerDashboard();
+}
+
+// ════════════════════════════════════════
+// CRÉER MISSION (ADMIN)
+// ════════════════════════════════════════
+function mettreAJourCoordsAdmin() {
+  const sel = document.getElementById("m-marche");
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById("m-lat").value = opt.dataset.lat || "";
+  document.getElementById("m-lng").value = opt.dataset.lng || "";
+  calculerTarifAdmin();
+}
+
+function calculerTarifAdmin() {
+  const nb    = parseInt(document.getElementById("m-nb").value    || 5);
+  const delai = parseInt(document.getElementById("m-delai").value || 48);
+
+  let prix = nb * 500;
+  if (delai <= 24) prix = Math.round(prix * 1.30);
+  if (delai >= 72) prix = Math.round(prix * 0.90);
+
+  const marge      = Math.round(prix * 0.40);
+  const budget     = prix - marge;
+  const parAgent   = Math.round(budget / nb);
+
+  document.getElementById("ta-total").textContent    = prix.toLocaleString()     + " FCFA";
+  document.getElementById("ta-marge").textContent    = marge.toLocaleString()    + " FCFA";
+  document.getElementById("ta-agents").textContent   = budget.toLocaleString()   + " FCFA";
+  document.getElementById("ta-par-agent").textContent= parAgent.toLocaleString() + " FCFA";
+}
+async function creerMissionAdmin() {
+  const titre  = document.getElementById("m-titre").value.trim();
+  const desc   = document.getElementById("m-desc").value.trim();
+  const marche = document.getElementById("m-marche").value;
+  const produit= document.getElementById("m-produit").value.trim();
+  const nb     = parseInt(document.getElementById("m-nb").value);
+  const delai  = parseInt(document.getElementById("m-delai").value);
+  const lat    = document.getElementById("m-lat").value;
+  const lng    = document.getElementById("m-lng").value;
+  const cNom   = document.getElementById("m-client-nom").value.trim();
+  const cEmail = document.getElementById("m-client-email").value.trim();
+  const cTel   = document.getElementById("m-client-tel").value.trim();
+
+  if (!titre || !desc || !marche || !produit)
+    return showMsg("msg-creer","Remplis les champs obligatoires (*)","error");
+
+  const res  = await fetch("/api/missions/creer", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      titre, description:desc,
+      marche_cible:marche,
+      marche_latitude:  lat ? parseFloat(lat) : null,
+      marche_longitude: lng ? parseFloat(lng) : null,
+      produit_cible:produit,
+      nb_collectes_requis:nb,
+      delai_heures:delai,
+      client_nom:cNom, client_email:cEmail, client_telephone:cTel
+    })
+  });
+  const data = await res.json();
+
+  if (!res.ok)
+    return showMsg("msg-creer","Erreur lors de la création","error");
+
+  // Publier directement (simuler paiement admin)
+  const res2 = await fetch(`/api/missions/${data.mission.id}/payer`,
+    {method:"POST", headers:{"Content-Type":"application/json"},
+     body: JSON.stringify({telephone:"admin", operateur:"admin"})});
+
+  if (res2.ok) {
+    showMsg("msg-creer","✅ Mission publiée !","success");
+    ["m-titre","m-desc","m-produit","m-client-nom","m-client-email","m-client-tel"]
+      .forEach(id => document.getElementById(id).value = "");
+    setTimeout(() => showVue("missions"), 1500);
+  } else {
+    showMsg("msg-creer","Mission créée mais non publiée","error");
+  }
+}
+// ════════════════════════════════════════
+// VALIDATION
+// ════════════════════════════════════════
+async function chargerValidations() {
+  const res      = await fetch("/api/admin/collectes/en_attente");
+  const collectes = await res.json();
+
+  const badge = document.getElementById("badge-val-nb");
+  if (collectes.length > 0) {
+    badge.textContent   = collectes.length;
+    badge.style.display = "inline";
+  } else {
+    badge.style.display = "none";
+  }
+
+  document.getElementById("badge-nb-attente").textContent =
+    collectes.length > 0
+      ? `${collectes.length} collecte(s) en attente de validation`
+      : "";
+
+  if (!collectes.length) {
+    document.getElementById("liste-validation").innerHTML = `
+      <div class="card" style="text-align:center;padding:24px">
+        <p style="font-size:2rem">🎉</p>
+        <p class="text-muted">Toutes les collectes sont traitées</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById("liste-validation").innerHTML =
+    collectes.map(c => `
+      <div class="card val-card" id="vcard-${c.id}">
+
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <p style="font-weight:700;font-size:0.88rem">${c.mission_titre}</p>
+            <p class="text-muted">👤 ${c.agent_nom} — 📱 ${c.agent_tel}</p>
+          </div>
+          <span class="badge badge-yellow">En attente</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;
+                    gap:8px;font-size:0.82rem;margin-bottom:8px">
+          <div>Prix : <strong>${c.prix_observe ? c.prix_observe+" FCFA" : "—"}</strong></div>
+          <div>Dispo : <strong style="color:${c.disponibilite?"#1a6b3c":"#c53030"}">
+            ${c.disponibilite ? "✅ Oui" : "❌ Non"}
+          </strong></div>
+          ${c.distance_marche ? `
+          <div style="grid-column:span 2">
+            GPS : <strong>${c.distance_marche} km du marché</strong>
+            ${c.distance_marche > 5
+              ? '<span style="color:#c53030"> ⚠️ Trop loin</span>'
+              : '<span style="color:#1a6b3c"> ✅ OK</span>'}
+          </div>` : ""}
+          ${c.commentaire ? `
+          <div style="grid-column:span 2;font-style:italic;color:#4a5568">
+            "${c.commentaire}"
+          </div>` : ""}
+        </div>
+   ${c.photo_url
+          ? `<img src="${c.photo_url}"
+               style="width:100%;border-radius:8px;margin-bottom:8px;
+                      max-height:180px;object-fit:cover">`
+          : `<div style="background:#f7fafc;border-radius:8px;padding:10px;
+                         text-align:center;color:#a0aec0;font-size:0.82rem;
+                         margin-bottom:8px">📷 Pas de photo</div>`}
+
+        ${c.latitude ? `
+        <p class="text-muted" style="margin-bottom:8px">
+          📍 <a href="https://maps.google.com/?q=${c.latitude},${c.longitude}"
+               target="_blank" style="color:#1a3a6b">Voir sur Google Maps</a>
+        </p>` : ""}
+
+        <p class="text-muted" style="margin-bottom:10px">${c.date_soumission}</p>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-green btn-sm" onclick="validerCollecte(${c.id})">
+            ✅ Valider
+          </button>
+          <button class="btn btn-red btn-sm" onclick="afficherRejet(${c.id})">
+            ❌ Rejeter
+          </button>
+        </div>
+
+        <div id="form-rejet-${c.id}" style="display:none;margin-top:10px">
+          <div class="form-group">
+            <label>Raison du rejet</label>
+            <select id="raison-${c.id}">
+              <option value="Photo non conforme">Photo non conforme</option>
+              <option value="Prix incorrect">Prix incorrect ou aberrant</option>
+              <option value="GPS trop loin">GPS trop loin du marché</option>
+              <option value="Doublon">Doublon déjà soumis</option>
+              <option value="Données incomplètes">Données incomplètes</option>
+            </select>
+          </div>
+          <button class="btn btn-red btn-sm" onclick="confirmerRejet(${c.id})">
+            Confirmer le rejet
+          </button>
+        </div>
+      </div>`).join("");
+}
+async function validerCollecte(id) {
+  const res  = await fetch(`/api/admin/collecte/${id}/valider`,{method:"POST"});
+  const data = await res.json();
+  if (res.ok) {
+    showMsg("msg-validation","✅ "+data.message,"success");
+    document.getElementById(`vcard-${id}`).remove();
+    chargerDashboard();
+  } else {
+    showMsg("msg-validation", data.erreur,"error");
+  }
+}
+
+function afficherRejet(id) {
+  document.getElementById(`form-rejet-${id}`).style.display = "block";
+}
+
+async function confirmerRejet(id) {
+  const raison = document.getElementById(`raison-${id}`).value;
+  const res    = await fetch(`/api/admin/collecte/${id}/rejeter`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({raison})
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg("msg-validation","❌ "+data.message,"info");
+    document.getElementById(`vcard-${id}`).remove();
+    chargerDashboard();
+  }
+}
+
+// ════════════════════════════════════════
+// AGENTS
+// ════════════════════════════════════════
+async function chargerAgents() {
+  const res    = await fetch("/api/agents");
+  const agents = await res.json();
+
+  if (!agents.length) {
+    document.getElementById("liste-agents").innerHTML =
+      `<p class="text-muted text-center" style="padding:20px">
+        Aucun agent inscrit
+       </p>`;
+    return;
+  }
+document.getElementById("liste-agents").innerHTML =
+    `<p class="text-muted mb-10">${agents.length} agent(s) inscrit(s)</p>` +
+    agents.map(a => `
+      <div class="card" style="display:flex;justify-content:space-between;
+                               align-items:center;margin-bottom:10px">
+        <div>
+          <p style="font-weight:700">${a.nom}</p>
+          <p class="text-muted">📱 ${a.telephone}</p>
+        </div>
+        <div style="text-align:right">
+          <p style="font-weight:800;color:#1a6b3c;font-size:1.1rem">
+            ${a.solde_points} pts
+          </p>
+          <p class="text-muted">
+            ≈ ${Math.floor(a.solde_points*1.5).toLocaleString()} FCFA
+          </p>
+        </div>
+      </div>`).join("");
+}
+
+// ════════════════════════════════════════
+// CONTACTS
+// ════════════════════════════════════════
+async function chargerContacts() {
+  const res      = await fetch("/api/admin/contacts");
+  const contacts = await res.json();
+
+  if (!contacts.length) {
+    document.getElementById("liste-contacts").innerHTML =
+      `<p class="text-muted text-center" style="padding:20px">
+        Aucune demande de contact
+       </p>`;
+    return;
+  }
+
+  document.getElementById("liste-contacts").innerHTML =
+    contacts.map(c => `
+      <div class="card" style="border-left:4px solid ${c.traite?"#a0aec0":"#1a3a6b"};
+                               margin-bottom:10px;opacity:${c.traite?0.7:1}">
+        <div style="display:flex;justify-content:space-between">
+          <p style="font-weight:700">${c.nom}</p>
+          <span class="badge ${c.traite?"badge-grey":"badge-blue"}">
+            ${c.traite ? "Traité" : "Nouveau"}
+          </span>
+        </div>
+        <p class="text-muted">📱 ${c.telephone}</p>
+        ${c.email ? `<p class="text-muted">✉️ ${c.email}</p>` : ""}
+        <p class="text-muted">🎯 ${c.type_besoin||"—"} — 📍 ${c.marche||"—"}</p>
+        ${c.message ? `
+        <p style="font-size:0.82rem;color:#4a5568;margin-top:6px;
+                   font-style:italic">"${c.message}"</p>` : ""}
+        <p class="text-muted" style="margin-top:6px">${c.date}</p>
+        ${!c.traite ? `
+        <button class="btn btn-secondary btn-sm mt-10"
+          onclick="marquerTraite(${c.id})">
+          ✅ Marquer comme traité
+        </button>` : ""}
+      </div>`).join("");
+}
+
+async function marquerTraite(id) {
+  await fetch(`/api/admin/contact/${id}/traiter`, {method:"POST"});
+  chargerContacts();
+}
+
+// ════════════════════════════════════════
+// UTILITAIRES
+// ════════════════════════════════════════
+function showMsg(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="alert alert-${type==="error"?"error":type==="success"?"success":"info"}">
+      ${msg}
+    </div>`;
+  setTimeout(() => el.innerHTML = "", 4000);
+}
+
+async function testerSMS() {
+  const tel = document.getElementById("sms-test-tel").value.trim();
+  if (!tel) return showMsg("msg-test-sms","Entre un numéro","error");
+  const res  = await fetch("/api/admin/test-sms", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({telephone:tel})
+  });
+  const data = await res.json();
+  showMsg("msg-test-sms",
+    res.ok ? "✅ SMS envoyé !" : "❌ Erreur : "+JSON.stringify(data),
+    res.ok ? "success" : "error");
+}
+
+</script>
+</body>
+</html>

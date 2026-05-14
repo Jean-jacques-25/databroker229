@@ -1,0 +1,12 @@
+flask==3.0.3
+flask-sqlalchemy==3.1.1
+flask-jwt-extended==4.6.0
+werkzeug==3.0.3
+apscheduler==3.10.4
+reportlab==4.2.2
+openpyxl==3.1.5
+pillow==11.1.0
+africastalking==1.2.7
+gunicorn==22.0.0
+python-dotenv==1.0.1
+requests==2.32.3

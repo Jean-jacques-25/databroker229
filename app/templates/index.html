@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ===== PAGE CONNEXION ===== -->
+<div id="page-login" class="login-container">
+  <div class="login-logo">
+    <h1>Data<span>Broker</span> 229</h1>
+    <p>Les yeux des entreprises sur le terrain</p>
+  </div>
+  <div class="login-card">
+    <h2 style="margin-bottom:20px; font-size:1.2rem;">Connexion / Inscription</h2>
+    <div id="msg-login"></div>
+    <div class="form-group">
+      <label>Numéro de téléphone</label>
+      <input type="tel" id="inp-telephone" placeholder="ex: 97000001" maxlength="15">
+    </div>
+    <div class="form-group" id="grp-nom" style="display:none">
+      <label>Ton nom complet</label>
+      <input type="text" id="inp-nom" placeholder="ex: Koffi Mensah">
+    </div>
+    <div class="form-group" id="grp-role" style="display:none">
+      <label>Tu es :</label>
+      <select id="inp-role">
+        <option value="agent">Agent collecteur (gagner des points)</option>
+        <option value="client">Entreprise / Client</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="handleConnexion()">Continuer →</button>
+    <p class="text-center mt-16 text-muted" id="toggle-mode">
+      Pas encore inscrit ? <a href="#" onclick="toggleInscription()" style="color:#1a6b3c">Créer un compte</a>
+    </p>
+  </div>
+</div>
+
+<!-- ===== APPLICATION PRINCIPALE ===== -->
+<div id="page-app" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">Data<span>Broker</span> 229</div>
+    <div class="user-info" id="header-user"></div>
+  </div>
+
+  <!-- PAGES INTERNES -->
+  <div class="main-content">
+
+    <!-- Accueil / Dashboard -->
+    <div id="view-accueil">
+      <div id="stats-grid" class="stats-grid"></div>
+      <div class="card" style="background:linear-gradient(135deg,#1a6b3c,#2d9e5f);color:white">
+        <p style="font-size:0.85rem;opacity:0.85">Solde de points</p>
+        <p id="solde-points" style="font-size:2rem;font-weight:800;color:#ffd700">0 pts</p>
+        <p style="font-size:0.75rem;opacity:0.7;margin-top:4px">≈ 0 FCFA</p>
+      </div>
+      <h3 class="mb-8" style="font-size:1rem;color:#4a5568">MISSIONS DISPONIBLES</h3>
+      <div id="liste-missions-accueil"></div>
+    </div>
+
+    <!-- Liste des missions -->
+    <div id="view-missions" style="display:none">
+      <h2 style="margin-bottom:16px">Toutes les missions</h2>
+      <div id="liste-missions-full"></div>
+    </div>
+
+    <!-- Soumettre une collecte -->
+    <div id="view-soumettre" style="display:none">
+      <h2 style="margin-bottom:16px">Soumettre une collecte</h2>
+      <div id="msg-collecte"></div>
+      <div class="card" id="mission-selectionnee-info" style="display:none;border-left:4px solid #ffd700">
+        <p style="font-size:0.8rem;color:#718096">Mission sélectionnée</p>
+        <p id="mission-sel-titre" style="font-weight:700"></p>
+      </div>
+      <div class="form-group">
+        <label>Mission concernée</label>
+        <select id="sel-mission"></select>
+      </div>
+      <div class="form-group">
+        <label>Prix observé (FCFA)</label>
+        <input type="number" id="inp-prix" placeholder="ex: 25000">
+      </div>
+      <div class="form-group">
+        <label>Produit disponible ?</label>
+        <select id="inp-dispo">
+          <option value="true">✅ Oui, disponible</option>
+          <option value="false">❌ Non, rupture de stock</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Commentaire (optionnel)</label>
+        <textarea id="inp-commentaire" rows="3" placeholder="Ex: Prix affiché mais négociable..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Photo preuve 📷</label>
+        <input type="file" id="inp-photo" accept="image/*" capture="environment">
+      </div>
+      <div class="form-group">
+        <label>Localisation GPS</label>
+        <button class="btn btn-secondary" onclick="getLocation()" id="btn-gps">📍 Obtenir ma position</button>
+        <p id="gps-status" class="text-muted mt-16"></p>
+        <input type="hidden" id="inp-lat">
+        <input type="hidden" id="inp-lng">
+      </div>
+      <button class="btn btn-primary" onclick="soumettreCollecte()">✅ Soumettre la collecte</button>
+    </div>
+
+    <!-- Mon profil -->
+    <div id="view-profil" style="display:none">
+      <h2 style="margin-bottom:16px">Mon Profil</h2>
+      <div class="card">
+        <p class="text-muted">Nom</p>
+        <p id="profil-nom" style="font-weight:700;font-size:1.1rem"></p>
+        <p class="text-muted mt-16">Téléphone</p>
+        <p id="profil-tel" style="font-weight:600"></p>
+        <p class="text-muted mt-16">Rôle</p>
+        <p id="profil-role" style="font-weight:600"></p>
+      </div>
+     <div class="card" style="background:#1a6b3c;color:white;text-align:center">
+  <p style="font-size:0.85rem;opacity:0.8">Mes points</p>
+  <p id="profil-points" style="font-size:2.5rem;font-weight:800;color:#ffd700"></p>
+  <p id="profil-fcfa" style="font-size:0.9rem;opacity:0.8;margin-top:4px"></p>
+<!-- NIVEAU AGENT -->
+<div class="card" id="niveau-card" style="margin-bottom:14px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div>
+      <p style="font-size:0.78rem;color:#718096">Mon niveau</p>
+      <p id="niveau-nom" style="font-size:1.3rem;font-weight:800"></p>
+    </div>
+    <div id="niveau-emoji" style="font-size:2.5rem"></div>
+  </div>
+  <p id="niveau-avantages"
+    style="font-size:0.78rem;color:#4a5568;margin-bottom:10px"></p>
+
+  <!-- BARRE PROGRESSION -->
+  <div id="niveau-progression-wrap">
+    <div style="display:flex;justify-content:space-between;
+                font-size:0.72rem;color:#718096;margin-bottom:4px">
+      <span id="niveau-prog-label"></span>
+      <span id="niveau-prog-pct"></span>
+    </div>
+    <div style="background:#e2e8f0;border-radius:10px;height:8px;overflow:hidden">
+      <div id="niveau-prog-bar"
+        style="height:100%;border-radius:10px;
+               background:linear-gradient(90deg,#1a3a6b,#ffd700);
+               transition:width 1s ease;width:0%">
+      </div>
+    </div>
+    <p id="niveau-restant"
+      style="font-size:0.72rem;color:#718096;margin-top:4px"></p>
+  </div>
+</div>
+ 
+
+  <!-- Détection opérateur -->
+  <div id="operateur-badge" style="margin:12px 0;padding:8px;border-radius:8px;background:rgba(255,255,255,0.15)">
+    <p id="operateur-nom" style="font-size:0.85rem"></p>
+  </div>
+
+  <!-- Retrait -->
+  <div style="margin-top:8px">
+    <input type="number" id="inp-points-retrait"
+      placeholder="Points à retirer (min 100)"
+      style="width:100%;padding:10px;border-radius:8px;border:none;
+             text-align:center;font-size:1rem;margin-bottom:10px">
+    <button class="btn btn-gold" onclick="demanderRetrait()"
+      style="font-size:0.9rem">
+      💸 Retirer via Mobile Money
+    </button>
+  </div>
+  <p style="font-size:0.72rem;opacity:0.6;margin-top:8px">100 pts = 150 FCFA</p>
+</div>
+<div id="msg-retrait"></div>>
+      <div id="profil-collectes"></div>
+      <button class="btn btn-secondary mt-16" onclick="deconnexion()">🚪 Se déconnecter</button>
+    </div>
+
+  </div><!-- fin main-content -->
+
+  <!-- NAVIGATION BAS -->
+  <nav class="bottom-nav">
+    <a href="#" onclick="showView('accueil')" id="nav-accueil" class="active">
+      <span class="icon">🏠</span>Accueil
+    </a>
+    <a href="#" onclick="showView('missions')" id="nav-missions">
+      <span class="icon">📋</span>Missions
+    </a>
+    <a href="#" onclick="showView('soumettre')" id="nav-soumettre">
+      <span class="icon">➕</span>Soumettre
+    </a>
+    <a href="#" onclick="showView('profil')" id="nav-profil">
+      <span class="icon">👤</span>Profil
+    </a>
+  </nav>
+
+</div><!-- fin page-app -->
+
+<script>
+// ============================================================
+// ÉTAT GLOBAL
+// ============================================================
+let currentUser = null;
+let modeInscription = false;
+let gpsLat = null, gpsLng = null;
+
+// Charger session au démarrage
+window.onload = () => {
+  const saved = localStorage.getItem("db229_user");
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    ouvrirApp();
+  }
+};
+
+// ============================================================
+// CONNEXION / INSCRIPTION
+// ============================================================
+function toggleInscription() {
+  modeInscription = !modeInscription;
+  document.getElementById("grp-nom").style.display = modeInscription ? "block" : "none";
+  document.getElementById("grp-role").style.display = modeInscription ? "block" : "none";
+  document.getElementById("toggle-mode").innerHTML = modeInscription
+    ? `Déjà un compte ? <a href="#" onclick="toggleInscription()" style="color:#1a6b3c">Se connecter</a>`
+    : `Pas encore inscrit ? <a href="#" onclick="toggleInscription()" style="color:#1a6b3c">Créer un compte</a>`;
+}
+
+async function handleConnexion() {
+  const tel = document.getElementById("inp-telephone").value.trim();
+  if (!tel) return showMsg("msg-login", "Entre ton numéro de téléphone", "error");
+
+  if (modeInscription) {
+    const nom = document.getElementById("inp-nom").value.trim();
+    const role = document.getElementById("inp-role").value;
+    if (!nom) return showMsg("msg-login", "Entre ton nom", "error");
+
+    const res = await fetch("/api/inscription", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({telephone: tel, nom, role})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      currentUser = data.user;
+      localStorage.setItem("db229_user", JSON.stringify(currentUser));
+      ouvrirApp();
+    } else {
+      showMsg("msg-login", data.erreur, "error");
+    }
+  } else {
+    const res = await fetch("/api/connexion", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({telephone: tel})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      currentUser = data.user;
+      localStorage.setItem("db229_user", JSON.stringify(currentUser));
+      ouvrirApp();
+    } else {
+      showMsg("msg-login", data.erreur + " — Crée un compte d'abord", "error");
+    }
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function ouvrirApp() {
+  document.getElementById("page-login").style.display = "none";
+  document.getElementById("page-app").style.display = "block";
+  document.getElementById("header-user").textContent = currentUser.nom;
+  showView("accueil");
+}
+
+function showView(view) {
+  ["accueil","missions","soumettre","profil"].forEach(v => {
+    document.getElementById("view-" + v).style.display = v === view ? "block" : "none";
+    const nav = document.getElementById("nav-" + v);
+    if (nav) nav.className = v === view ? "active" : "";
+  });
+  if (view === "accueil") chargerAccueil();
+  if (view === "missions") chargerMissions();
+  if (view === "soumettre") chargerSelectMissions();
+  if (view === "profil") chargerProfil();
+}
+
+function deconnexion() {
+  localStorage.removeItem("db229_user");
+  currentUser = null;
+  document.getElementById("page-app").style.display = "none";
+  document.getElementById("page-login").style.display = "flex";
+}
+
+// ============================================================
+// ACCUEIL
+// ============================================================
+async function chargerAccueil() {
+  document.getElementById("solde-points").textContent = currentUser.solde_points + " pts";
+
+  const res = await fetch("/api/missions");
+  const missions = await res.json();
+
+  // Stats
+  document.getElementById("stats-grid").innerHTML = `
+    <div class="stat-card">
+      <div class="number">${missions.length}</div>
+      <div class="label">Missions ouvertes</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">${currentUser.solde_points}</div>
+      <div class="label">Mes points</div>
+    </div>
+  `;
+
+  // 3 dernières missions
+  const html = missions.slice(0, 3).map(m => carteMission(m, true)).join("") ||
+    '<p class="text-muted text-center">Aucune mission disponible</p>';
+  document.getElementById("liste-missions-accueil").innerHTML = html;
+}
+
+// ============================================================
+// MISSIONS
+// ============================================================
+async function chargerMissions() {
+  const res = await fetch("/api/missions");
+  const missions = await res.json();
+  document.getElementById("liste-missions-full").innerHTML =
+    missions.map(m => carteMission(m, true)).join("") ||
+    '<p class="text-muted text-center">Aucune mission disponible</p>';
+}
+
+function carteMission(m, avecBouton = false) {
+  return `
+    <div class="card mission-card">
+      <h3>${m.titre}</h3>
+      <p class="meta">📍 ${m.marche_cible || "—"} &nbsp;|&nbsp; 🛒 ${m.produit_cible || "—"}</p>
+      <p style="font-size:0.85rem;color:#4a5568;margin-bottom:10px">${m.description}</p>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="points">🏆 ${m.points_recompense} points</span>
+        <span class="badge badge-green">Ouverte</span>
+      </div>
+      ${avecBouton ? `<button class="btn btn-primary mt-16" onclick="allerSoumettre(${m.id},'${m.titre}')">Accepter cette mission →</button>` : ""}
+    </div>`;
+}
+
+// ============================================================
+// SOUMETTRE UNE COLLECTE
+// ============================================================
+async function chargerSelectMissions() {
+  const res = await fetch("/api/missions");
+  const missions = await res.json();
+  const sel = document.getElementById("sel-mission");
+  sel.innerHTML = '<option value="">-- Choisir une mission --</option>' +
+    missions.map(m => `<option value="${m.id}">${m.titre}</option>`).join("");
+}
+
+function allerSoumettre(missionId, titreMission) {
+  showView("soumettre");
+  setTimeout(() => {
+    document.getElementById("sel-mission").value = missionId;
+    document.getElementById("mission-selectionnee-info").style.display = "block";
+    document.getElementById("mission-sel-titre").textContent = titreMission;
+  }, 200);
+}
+
+function getLocation() {
+  document.getElementById("btn-gps").textContent = "⏳ Localisation...";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+      document.getElementById("inp-lat").value = gpsLat;
+      document.getElementById("inp-lng").value = gpsLng;
+      document.getElementById("gps-status").textContent = `✅ Position: ${gpsLat.toFixed(5)}, ${gpsLng.toFixed(5)}`;
+      document.getElementById("btn-gps").textContent = "📍 Position obtenue";
+    },
+    err => {
+      document.getElementById("gps-status").textContent = "❌ GPS non disponible";
+      document.getElementById("btn-gps").textContent = "📍 Obtenir ma position";
+    }
+  );
+}
+
+async function soumettreCollecte() {
+  const missionId = document.getElementById("sel-mission").value;
+  if (!missionId) return showMsg("msg-collecte", "Sélectionne une mission", "error");
+
+  const formData = new FormData();
+  formData.append("mission_id", missionId);
+  formData.append("agent_id", currentUser.id);
+  formData.append("prix_observe", document.getElementById("inp-prix").value);
+  formData.append("disponibilite", document.getElementById("inp-dispo").value);
+  formData.append("commentaire", document.getElementById("inp-commentaire").value);
+  if (gpsLat) formData.append("latitude", gpsLat);
+  if (gpsLng) formData.append("longitude", gpsLng);
+
+  const photo = document.getElementById("inp-photo").files[0];
+  if (photo) formData.append("photo", photo);
+
+  const res = await fetch("/api/collectes", { method: "POST", body: formData });
+  const data = await res.json();
+
+  if (res.ok) {
+    showMsg("msg-collecte", "✅ Collecte soumise ! Points crédités.", "success");
+    currentUser.solde_points += data.collecte ? 200 : 0;
+    localStorage.setItem("db229_user", JSON.stringify(currentUser));
+    document.getElementById("inp-prix").value = "";
+    document.getElementById("inp-commentaire").value = "";
+  } else {
+    showMsg("msg-collecte", "Erreur : " + JSON.stringify(data), "error");
+  }
+}
+
+// ============================================================
+// PROFIL
+// ============================================================
+async function chargerProfil() {
+  document.getElementById("profil-nom").textContent = currentUser.nom;
+  document.getElementById("profil-tel").textContent = currentUser.telephone;
+  document.getElementById("profil-role").textContent =
+    currentUser.role === "agent" ? "🧑‍💼 Agent collecteur" : "🏢 Client / Entreprise";
+  document.getElementById("profil-points").textContent = currentUser.solde_points + " pts";
+
+  const res = await fetch(`/api/agent/${currentUser.id}/collectes`);
+  const collectes = await res.json();
+  document.getElementById("profil-collectes").innerHTML = collectes.length
+    ? `<h3 style="margin-bottom:12px;margin-top:8px">Mes dernières collectes</h3>` +
+      collectes.slice(-5).reverse().map(c => `
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:0.85rem">Mission #${c.mission_id}</span>
+            <span class="badge ${c.statut==='validee'?'badge-green':c.statut==='rejetee'?'badge-red':'badge-yellow'}">${c.statut}</span>
+          </div>
+          <p style="font-size:0.9rem;margin-top:6px">Prix: ${c.prix_observe ? c.prix_observe + " FCFA" : "—"}</p>
+          <p style="font-size:0.75rem;color:#718096">${c.date_soumission}</p>
+        </div>`).join("")
+    : '<p class="text-muted text-center">Aucune collecte encore</p>';
+    // Charger niveau
+  const resNiv = await fetch(`/api/agent/${currentUser.id}/niveau`);
+  const dataNiv = await resNiv.json();
+  if (dataNiv.niveau_info) {
+    const info = dataNiv.niveau_info;
+    const prog = dataNiv.progression;
+    document.getElementById("niveau-nom").textContent       = info.nom;
+    document.getElementById("niveau-nom").style.color       = info.couleur;
+    document.getElementById("niveau-emoji").textContent     = info.emoji;
+    document.getElementById("niveau-avantages").textContent = info.avantages;
+
+    if (prog && prog.niveau_suivant) {
+      document.getElementById("niveau-prog-label").textContent =
+        `Vers ${NIVEAUX_INFO[prog.niveau_suivant]?.emoji || ""} ${prog.niveau_suivant}`;
+      document.getElementById("niveau-prog-pct").textContent  = prog.pct + "%";
+      document.getElementById("niveau-prog-bar").style.width  = prog.pct + "%";
+      document.getElementById("niveau-restant").textContent   =
+        `${prog.restant} collectes validées pour monter de niveau`;
+    } else {
+      document.getElementById("niveau-prog-label").textContent = "Niveau maximum atteint !";
+      document.getElementById("niveau-prog-bar").style.width  = "100%";
+      document.getElementById("niveau-restant").textContent   = "💎 Tu es au sommet !";
+    }
+  }
+}
+
+// ============================================================
+// UTILITAIRES
+// ============================================================
+function showMsg(id, msg, type) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="alert alert-${type === "error" ? "error" : type === "success" ? "success" : "info"}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = "", 4000);
+}
+
+async function demanderRetrait() {
+  const points = parseInt(document.getElementById("inp-points-retrait").value);
+  if (!points || points < 100)
+    return showMsg("msg-retrait", "Minimum 100 points pour retirer", "error");
+  if (points > currentUser.solde_points)
+    return showMsg("msg-retrait", "Tu n'as pas assez de points", "error");
+
+  const montant = Math.floor(points * 1.5);
+  const res = await fetch("/api/paiement/retrait", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({agent_id: currentUser.id, points})
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    showMsg("msg-retrait",
+      `✅ ${montant} FCFA envoyés sur ton ${data.operateur?.toUpperCase()} !`, "success");
+    currentUser.solde_points -= points;
+    localStorage.setItem("db229_user", JSON.stringify(currentUser));
+    chargerProfil();
+  } else {
+    showMsg("msg-retrait", data.erreur, "error");
+  }
+}
+
+const NIVEAUX_INFO = {
+  bronze:  { emoji:"🥉", nom:"Bronze"  },
+  argent:  { emoji:"🥈", nom:"Argent"  },
+  or:      { emoji:"🥇", nom:"Or"      },
+  platine: { emoji:"💎", nom:"Platine" }
+};
+
+</script>
+
+{% endblock %}

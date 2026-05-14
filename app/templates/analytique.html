@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataBroker 229 — Analytique</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f4f8; color:#1a202c; }
+
+    .header {
+      background:linear-gradient(135deg,#1a3a6b,#2d5f9e);
+      color:white; padding:16px 20px;
+      display:flex; justify-content:space-between; align-items:center;
+      box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    }
+    .logo { font-size:1.2rem; font-weight:800; }
+    .logo span { color:#ffd700; }
+
+    .main { padding:20px 16px 40px; max-width:480px; margin:0 auto; }
+
+    .card {
+      background:white; border-radius:12px;
+      padding:16px; margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      font-size:0.78rem; font-weight:700;
+      color:#718096; text-transform:uppercase;
+      letter-spacing:0.5px; margin-bottom:12px;
+    }
+
+    /* KPI GRID */
+    .kpi-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:10px; margin-bottom:14px;
+    }
+    .kpi-card {
+      background:white; border-radius:12px; padding:14px;
+      text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+    .kpi-card .num {
+      font-size:1.5rem; font-weight:800;
+    }
+    .kpi-card .lab {
+      font-size:0.7rem; color:#718096; margin-top:3px;
+    }
+    .kpi-card .evol {
+      font-size:0.7rem; margin-top:4px; font-weight:600;
+    }
+    .evol-up   { color:#1a6b3c; }
+    .evol-down { color:#c53030; }
+
+    /* REVENUS */
+    .revenu-banner {
+      background:linear-gradient(135deg,#1a6b3c,#2d9e5f);
+      color:white; border-radius:12px; padding:18px;
+      margin-bottom:14px;
+    }
+    .revenu-banner .val {
+      font-size:2rem; font-weight:900; color:#ffd700;
+    }
+
+    /* BARRES */
+    .bar-item { margin-bottom:12px; }
+    .bar-label {
+      display:flex; justify-content:space-between;
+      font-size:0.8rem; margin-bottom:4px;
+    }
+    .bar-wrap {
+      background:#e2e8f0; border-radius:10px;
+      height:10px; overflow:hidden;
+    }
+    .bar-fill {
+      height:100%; border-radius:10px;
+      transition:width 1s ease;
+    }
+
+    /* TABLEAU */
+    .table-wrap { overflow-x:auto; }
+    table {
+      width:100%; border-collapse:collapse;
+      font-size:0.8rem;
+    }
+    th {
+      background:#f0f4f8; padding:8px;
+      text-align:left; font-weight:700;
+      color:#4a5568; font-size:0.72rem;
+    }
+    td { padding:8px; border-bottom:1px solid #f0f4f8; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#f7fafc; }
+
+    /* DONUT */
+    .donut-wrap {
+      display:flex; align-items:center;
+      gap:16px; padding:8px 0;
+    }
+    .donut-svg { flex-shrink:0; }
+    .donut-legende { flex:1; }
+    .legende-item {
+      display:flex; align-items:center;
+      gap:8px; margin-bottom:6px; font-size:0.8rem;
+    }
+    .legende-dot {
+      width:10px; height:10px; border-radius:50%;
+      flex-shrink:0;
+    }
+
+    /* FILTRE PÉRIODE */
+    .periode-btns {
+      display:flex; gap:6px; margin-bottom:14px;
+    }
+    .periode-btn {
+      padding:6px 14px; border:1.5px solid #e2e8f0;
+      border-radius:20px; font-size:0.78rem;
+      font-weight:600; cursor:pointer;
+      background:white; color:#718096;
+      transition:all 0.2s;
+    }
+    .periode-btn.active {
+      background:#1a3a6b; color:white; border-color:#1a3a6b;
+    }
+
+    .text-muted { color:#718096; font-size:0.82rem; }
+    .badge {
+      display:inline-block; padding:3px 8px;
+      border-radius:20px; font-size:0.7rem; font-weight:700;
+    }
+    .badge-green  { background:#c6f6d5; color:#276749; }
+    .badge-yellow { background:#fefcbf; color:#975a16; }
+    .badge-red    { background:#fed7d7; color:#9b2c2c; }
+    .badge-blue   { background:#bee3f8; color:#2a69ac; }
+    .badge-grey   { background:#e2e8f0; color:#4a5568; }
+
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">DB229 <span style="font-size:0.85rem">ANALYTIQUE</span></div>
+  <a href="/admin"
+    style="background:rgba(255,255,255,0.15);color:white;
+           padding:6px 12px;border-radius:8px;
+           text-decoration:none;font-size:0.82rem">
+    ← Admin
+  </a>
+</div>
+
+<div class="main">
+
+  <!-- FILTRE PÉRIODE -->
+  <div class="periode-btns">
+    <button class="periode-btn active" onclick="setPeriode(7,this)">7j</button>
+    <button class="periode-btn" onclick="setPeriode(30,this)">30j</button>
+    <button class="periode-btn" onclick="setPeriode(90,this)">90j</button>
+    <button class="periode-btn" onclick="setPeriode(0,this)">Tout</button>
+  </div>
+
+  <!-- REVENUS TOTAUX -->
+  <div class="revenu-banner">
+    <p style="opacity:0.8;font-size:0.82rem">💰 Revenus nets (marge 40%)</p>
+    <div class="val" id="an-revenus">—</div>
+    <div style="display:flex;gap:16px;margin-top:10px">
+      <div>
+        <p style="font-size:0.72rem;opacity:0.7">Payé aux agents</p>
+        <p id="an-agents-total" style="font-weight:700;color:#ffd700">—</p>
+      </div>
+      <div>
+        <p style="font-size:0.72rem;opacity:0.7">Volume total</p>
+        <p id="an-volume" style="font-weight:700;color:#ffd700">—</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="num" id="an-nb-missions" style="color:#1a3a6b">—</div>
+      <div class="lab">Missions</div>
+      <div class="evol evol-up" id="an-missions-evol"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="num" id="an-nb-collectes" style="color:#1a6b3c">—</div>
+      <div class="lab">Collectes</div>
+      <div class="evol evol-up" id="an-collectes-evol"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="num" id="an-nb-agents" style="color:#975a16">—</div>
+      <div class="lab">Agents actifs</div>
+    </div>
+    <div class="kpi-card">
+      <div class="num" id="an-taux-valid" style="color:#553c9a">—</div>
+      <div class="lab">Taux validation</div>
+    </div>
+  </div>
+
+  <!-- RÉPARTITION MARCHÉS -->
+  <div class="card">
+    <div class="section-title">📍 Activité par marché</div>
+    <div id="chart-marches"></div>
+  </div>
+
+  <!-- RÉPARTITION STATUTS MISSIONS -->
+  <div class="card">
+    <div class="section-title">📊 Répartition des missions</div>
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="35"
+          fill="none" stroke="#e2e8f0" stroke-width="18"/>
+        <circle id="donut-finalisee" cx="50" cy="50" r="35"
+          fill="none" stroke="#1a6b3c" stroke-width="18"
+          stroke-dasharray="0 220" stroke-dashoffset="55"
+          transform="rotate(-90 50 50)"
+          style="transition:stroke-dasharray 1s ease"/>
+        <circle id="donut-ouverte" cx="50" cy="50" r="35"
+          fill="none" stroke="#2a69ac" stroke-width="18"
+          stroke-dasharray="0 220" stroke-dashoffset="55"
+          transform="rotate(-90 50 50)"
+          style="transition:stroke-dasharray 1s ease"/>
+        <circle id="donut-echouee" cx="50" cy="50" r="35"
+          fill="none" stroke="#c53030" stroke-width="18"
+          stroke-dasharray="0 220" stroke-dashoffset="55"
+          transform="rotate(-90 50 50)"
+          style="transition:stroke-dasharray 1s ease"/>
+        <text x="50" y="54" text-anchor="middle"
+          font-size="14" font-weight="800" fill="#1a3a6b"
+          id="donut-centre">—</text>
+      </svg>
+      <div class="donut-legende" id="donut-legende"></div>
+    </div>
+  </div>
+
+  <!-- TOP AGENTS -->
+  <div class="card">
+    <div class="section-title">🏆 Top agents</div>
+    <div id="top-agents"></div>
+  </div>
+
+  <!-- OPÉRATEURS MOBILE MONEY -->
+  <div class="card">
+    <div class="section-title">📱 Paiements par opérateur</div>
+    <div id="chart-operateurs"></div>
+  </div>
+
+  <!-- MISSIONS RÉCENTES DÉTAILLÉES -->
+  <div class="card">
+    <div class="section-title">📋 Détail missions</div>
+    <div class="table-wrap">
+      <table id="table-missions">
+        <thead>
+          <tr>
+            <th>Mission</th>
+            <th>Marché</th>
+            <th>Statut</th>
+            <th>Marge</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-missions"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ÉVOLUTION JOURNALIÈRE -->
+  <div class="card">
+    <div class="section-title">📈 Collectes par jour (7 derniers jours)</div>
+    <div id="chart-evolution"
+      style="display:flex;align-items:flex-end;gap:6px;
+             height:80px;padding-top:8px">
+    </div>
+    <div id="chart-labels"
+      style="display:flex;gap:6px;margin-top:4px">
+    </div>
+  </div>
+
+</div>
+
+<script>
+let periodeCourante = 7;
+let donnees = {};
+
+// ════════════════════════════════════════
+// CHARGEMENT PRINCIPAL
+// ════════════════════════════════════════
+async function chargerAnalytique() {
+  const [rMissions, rAgents, rRevenus] = await Promise.all([
+    fetch("/api/admin/missions"),
+    fetch("/api/agents"),
+    fetch("/api/admin/revenus")
+  ]);
+
+  const missions = await rMissions.json();
+  const agents   = await rAgents.json();
+  const revenus  = await rRevenus.json();
+
+  // Charger toutes les collectes
+  let toutesCollectes = [];
+  for (let m of missions) {
+    const r = await fetch(`/api/collectes/mission/${m.id}`);
+    const c = await r.json();
+    c.forEach(col => { col._mission = m; });
+    toutesCollectes = toutesCollectes.concat(c);
+  }
+
+  donnees = { missions, agents, revenus, toutesCollectes };
+  afficherDonnees();
+}
+
+function setPeriode(jours, btn) {
+  periodeCourante = jours;
+  document.querySelectorAll(".periode-btn").forEach(b =>
+    b.classList.remove("active"));
+  btn.classList.add("active");
+  afficherDonnees();
+}
+
+function filtrerParPeriode(liste, champDate) {
+  if (!periodeCourante) return liste;
+  const limite = new Date();
+  limite.setDate(limite.getDate() - periodeCourante);
+  return liste.filter(item => {
+    const d = new Date(item[champDate]);
+    return d >= limite;
+  });
+}
+
+// ════════════════════════════════════════
+// AFFICHAGE
+// ════════════════════════════════════════
+function afficherDonnees() {
+  const { missions, agents, revenus, toutesCollectes } = donnees;
+
+  const missionsFiltrees  = filtrerParPeriode(missions, "date_creation");
+  const collectesFiltrees = filtrerParPeriode(toutesCollectes, "date_soumission");
+
+  // ── REVENUS ──
+  const mFin   = missionsFiltrees.filter(m => m.statut === "finalisee");
+  const revNet  = mFin.reduce((s,m) => s+(m.marge_fcfa||0), 0);
+  const revAgt  = mFin.reduce((s,m) => s+(m.budget_agents_fcfa||0), 0);
+  const revVol  = mFin.reduce((s,m) => s+(m.prix_client_fcfa||0), 0);
+
+  document.getElementById("an-revenus").textContent =
+    revNet.toLocaleString() + " FCFA";
+  document.getElementById("an-agents-total").textContent =
+    revAgt.toLocaleString() + " FCFA";
+  document.getElementById("an-volume").textContent =
+    revVol.toLocaleString() + " FCFA";
+
+  // ── KPIs ──
+  const nbValid   = collectesFiltrees.filter(c => c.statut === "validee").length;
+  const tauxValid = collectesFiltrees.length
+    ? Math.round(nbValid / collectesFiltrees.length * 100) : 0;
+
+  document.getElementById("an-nb-missions").textContent  = missionsFiltrees.length;
+  document.getElementById("an-nb-collectes").textContent = collectesFiltrees.length;
+  document.getElementById("an-nb-agents").textContent    = agents.length;
+  document.getElementById("an-taux-valid").textContent   = tauxValid + "%";
+
+  // ── MARCHÉS ──
+  const parMarche = {};
+  missionsFiltrees.forEach(m => {
+    const k = m.marche_cible || "Autre";
+    parMarche[k] = (parMarche[k] || 0) + 1;
+  });
+  afficherBarres("chart-marches", parMarche,
+    ["#1a3a6b","#1a6b3c","#975a16","#553c9a","#c53030","#2a69ac","#dd6b20","#2d9e5f"]);
+
+  // ── DONUT MISSIONS ──
+  const statuts = {
+    "finalisee": { label:"Finalisées", color:"#1a6b3c" },
+    "ouverte":   { label:"En cours",   color:"#2a69ac" },
+    "echouee":   { label:"Échouées",   color:"#c53030" },
+    "en_attente_paiement": { label:"En attente", color:"#975a16" }
+  };
+  afficherDonut(missionsFiltrees, statuts);
+
+  // ── TOP AGENTS ──
+  afficherTopAgents(agents, collectesFiltrees);
+
+  // ── OPÉRATEURS ──
+  afficherOperateurs(collectesFiltrees);
+
+  // ── ÉVOLUTION 7J ──
+  afficherEvolution7j(toutesCollectes);
+
+  // ── TABLE MISSIONS ──
+  afficherTableMissions(missionsFiltrees.slice(0, 20));
+}
+
+// ════════════════════════════════════════
+// GRAPHIQUES
+// ════════════════════════════════════════
+function afficherBarres(containerId, data, couleurs) {
+  const container = document.getElementById(containerId);
+  const total     = Object.values(data).reduce((a,b)=>a+b, 0) || 1;
+  const sorted    = Object.entries(data).sort((a,b)=>b[1]-a[1]);
+
+  container.innerHTML = sorted.map(([label, val], i) => `
+    <div class="bar-item">
+      <div class="bar-label">
+        <span>${label}</span>
+        <span style="font-weight:700">${val}</span>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-fill"
+          style="width:${Math.round(val/total*100)}%;
+                 background:${couleurs[i % couleurs.length]}">
+        </div>
+      </div>
+    </div>`).join("") || '<p class="text-muted">Aucune donnée</p>';
+}
+
+function afficherDonut(missions, statuts) {
+  const total = missions.length || 1;
+  const comptage = {};
+  missions.forEach(m => {
+    comptage[m.statut] = (comptage[m.statut] || 0) + 1;
+  });
+
+  const circonference = 2 * Math.PI * 35;
+  let offset = 0;
+
+  // Reset
+  ["finalisee","ouverte","echouee"].forEach(s => {
+    const el = document.getElementById("donut-"+s);
+    if (el) el.setAttribute("stroke-dasharray","0 220");
+  });
+
+  let legendeHTML = "";
+  let offsetCumul = 0;
+
+  Object.entries(statuts).forEach(([key, info]) => {
+    const nb  = comptage[key] || 0;
+    const pct = Math.round(nb / total * 100);
+    const arc = (nb / total) * circonference;
+
+    const el = document.getElementById("donut-"+key);
+    if (el) {
+      el.setAttribute("stroke-dasharray", `${arc} ${circonference - arc}`);
+      el.setAttribute("stroke-dashoffset",
+        circonference * 0.25 - offsetCumul);
+      offsetCumul += arc;
+    }
+
+    if (nb > 0) {
+      legendeHTML += `
+        <div class="legende-item">
+          <div class="legende-dot" style="background:${info.color}"></div>
+          <span>${info.label}</span>
+          <span style="margin-left:auto;font-weight:700">${nb} (${pct}%)</span>
+        </div>`;
+    }
+  });
+
+  document.getElementById("donut-centre").textContent = total;
+  document.getElementById("donut-legende").innerHTML  = legendeHTML ||
+    '<p class="text-muted">Aucune mission</p>';
+}
+
+function afficherTopAgents(agents, collectes) {
+  const parAgent = {};
+  collectes.filter(c => c.statut === "validee").forEach(c => {
+    parAgent[c.agent_id] = (parAgent[c.agent_id] || 0) + 1;
+  });
+
+  const top = agents
+    .map(a => ({ ...a, nb: parAgent[a.id] || 0 }))
+    .filter(a => a.nb > 0)
+    .sort((a,b) => b.nb - a.nb)
+    .slice(0, 5);
+
+  if (!top.length) {
+    document.getElementById("top-agents").innerHTML =
+      '<p class="text-muted">Aucune collecte validée encore</p>';
+    return;
+  }
+
+  const max = top[0].nb || 1;
+  document.getElementById("top-agents").innerHTML =
+    top.map((a, i) => `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:24px;height:24px;border-radius:50%;
+                    background:${i===0?"#ffd700":i===1?"#a0aec0":i===2?"#cd7f32":"#e2e8f0"};
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:0.75rem;font-weight:800;flex-shrink:0;color:#1a202c">
+          ${i+1}
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;
+                      font-size:0.82rem;margin-bottom:3px">
+            <span style="font-weight:600">${a.nom}</span>
+            <span style="color:#1a6b3c;font-weight:700">${a.nb} collectes</span>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-fill"
+              style="width:${Math.round(a.nb/max*100)}%;
+                     background:${i===0?"#ffd700":"#1a3a6b"}">
+            </div>
+          </div>
+        </div>
+      </div>`).join("");
+}
+
+function afficherOperateurs(collectes) {
+  // Simuler répartition opérateurs depuis les téléphones
+  const ops = { "MTN MoMo":0, "Flooz":0, "Celtiis Cash":0, "Inconnu":0 };
+
+  collectes.forEach(c => {
+    if (!c._mission) return;
+    const tel = c._mission.client_telephone || "";
+    const t   = tel.replace("+229","").replace(" ","");
+    const p   = t.startsWith("01") ? "01" : t.substring(0,2);
+
+    if (["96","97","66","67"].includes(p))      ops["MTN MoMo"]++;
+    else if (["94","95","64","65"].includes(p)) ops["Flooz"]++;
+    else if (["98","99","68","69"].includes(p)
+          || p === "01")                        ops["Celtiis Cash"]++;
+    else ops["Inconnu"]++;
+  });
+
+  const couleurs = {
+    "MTN MoMo":    "#FFCC00",
+    "Flooz":       "#0066CC",
+    "Celtiis Cash":"#E30613",
+    "Inconnu":     "#a0aec0"
+  };
+
+  const container = document.getElementById("chart-operateurs");
+  const total     = Object.values(ops).reduce((a,b)=>a+b,0) || 1;
+
+  container.innerHTML = Object.entries(ops)
+    .filter(([,v]) => v > 0)
+    .map(([label, val]) => `
+      <div class="bar-item">
+        <div class="bar-label">
+          <span style="font-weight:600">${label}</span>
+          <span>${val} (${Math.round(val/total*100)}%)</span>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-fill"
+            style="width:${Math.round(val/total*100)}%;
+                   background:${couleurs[label]}">
+          </div>
+        </div>
+      </div>`).join("") ||
+    '<p class="text-muted">Aucune donnée opérateur</p>';
+}
+
+function afficherEvolution7j(collectes) {
+  const jours = [];
+  const labels = [];
+  const maintenant = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(maintenant);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split("T")[0];
+    jours.push({ key, count: 0 });
+    labels.push(d.toLocaleDateString("fr-FR",{weekday:"short"}));
+  }
+
+  collectes.forEach(c => {
+    if (!c.date_soumission) return;
+    // Parser la date format "dd/mm/yyyy HH:MM"
+    const parts = c.date_soumission.split(" ")[0].split("/");
+    if (parts.length === 3) {
+      const key = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      const jour = jours.find(j => j.key === key);
+      if (jour) jour.count++;
+    }
+  });
+
+  const maxVal = Math.max(...jours.map(j=>j.count), 1);
+  const couleurs = ["#1a3a6b","#1a6b3c","#975a16",
+                    "#553c9a","#2a69ac","#1a6b3c","#ffd700"];
+
+  document.getElementById("chart-evolution").innerHTML =
+    jours.map((j,i) => `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+        <div style="font-size:0.68rem;color:#718096;margin-bottom:3px">
+          ${j.count || ""}
+        </div>
+        <div style="width:100%;border-radius:4px 4px 0 0;
+                    background:${couleurs[i]};
+                    height:${Math.max(j.count/maxVal*60,2)}px;
+                    transition:height 0.8s ease;min-height:2px">
+        </div>
+      </div>`).join("");
+
+  document.getElementById("chart-labels").innerHTML =
+    labels.map(l => `
+      <div style="flex:1;text-align:center;
+                  font-size:0.65rem;color:#a0aec0">
+        ${l}
+      </div>`).join("");
+}
+
+function afficherTableMissions(missions) {
+  const badges = {
+    "en_attente_paiement": ["badge-yellow","Attente"],
+    "ouverte":             ["badge-blue",  "En cours"],
+    "prete":               ["badge-blue",  "Prête"],
+    "finalisee":           ["badge-green", "Finalisée"],
+    "echouee":             ["badge-red",   "Échouée"]
+  };
+
+  document.getElementById("tbody-missions").innerHTML =
+    missions.map(m => {
+       const [cls, label] = badges[m.statut] || ["badge-grey","—"];
+      return `
+        <tr>
+          <td style="max-width:120px;overflow:hidden;
+                     text-overflow:ellipsis;white-space:nowrap;
+                     font-size:0.78rem">
+            ${m.titre}
+          </td>
+          <td style="font-size:0.78rem">${m.marche_cible||"—"}</td>
+          <td><span class="badge ${cls}">${label}</span></td>
+          <td style="font-weight:700;color:#1a6b3c;font-size:0.78rem">
+            ${m.marge_fcfa ? m.marge_fcfa.toLocaleString()+" F" : "—"}
+          </td>
+        </tr>`;
+    }).join("") ||
+    '<tr><td colspan="4" style="text-align:center;color:#718096;padding:20px">Aucune mission</td></tr>';
+}
+
+window.onload = chargerAnalytique;
+</script>
+</body>
+</html>

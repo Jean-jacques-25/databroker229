@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataBroker 229 — Espace Client</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f4f8; color:#1a202c; min-height:100vh; }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg,#1a3a6b,#2d5f9e);
+      color:white; padding:16px 20px;
+      display:flex; justify-content:space-between; align-items:center;
+      box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    }
+    .logo { font-size:1.2rem; font-weight:800; }
+    .logo span { color:#ffd700; }
+
+    /* NAVIGATION */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; right:0;
+      background:white; display:flex; justify-content:space-around;
+      padding:10px 0; box-shadow:0 -2px 10px rgba(0,0,0,0.1); z-index:100;
+    }
+    .bottom-nav a {
+      display:flex; flex-direction:column; align-items:center;
+      gap:4px; text-decoration:none; color:#718096; font-size:0.7rem;
+    }
+    .bottom-nav a.active { color:#1a3a6b; }
+    .bottom-nav a .icon { font-size:1.4rem; }
+
+    .main { padding:20px 16px 90px; max-width:480px; margin:0 auto; }
+
+    /* CARDS */
+    .card {
+      background:white; border-radius:12px;
+      padding:20px; margin-bottom:14px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    /* FORMULAIRES */
+    .form-group { margin-bottom:14px; }
+    .form-group label {
+      display:block; font-size:0.82rem;
+      font-weight:600; margin-bottom:5px; color:#4a5568;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width:100%; padding:11px;
+      border:1.5px solid #e2e8f0;
+      border-radius:8px; font-size:0.95rem;
+      background:#f7fafc; outline:none;
+      transition:border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color:#1a3a6b; background:white;
+    }
+
+    /* BOUTONS */
+    .btn {
+      display:block; width:100%; padding:13px;
+      border:none; border-radius:10px;
+      font-size:0.95rem; font-weight:700;
+      cursor:pointer; text-align:center;
+      transition:opacity 0.2s;
+    }
+    .btn:active { opacity:0.8; }
+    .btn-primary  { background:#1a3a6b; color:white; }
+    .btn-green    { background:#1a6b3c; color:white; }
+    .btn-gold     { background:#ffd700; color:#1a202c; }
+    .btn-secondary{ background:#e2e8f0; color:#2d3748; }
+    .btn-sm       { padding:8px 14px; width:auto; display:inline-block; font-size:0.82rem; }
+
+    /* BADGES */
+    .badge {
+      display:inline-block; padding:3px 10px;
+      border-radius:20px; font-size:0.72rem; font-weight:700;
+    }
+    .badge-green  { background:#c6f6d5; color:#276749; }
+    .badge-yellow { background:#fefcbf; color:#975a16; }
+    .badge-blue   { background:#bee3f8; color:#2a69ac; }
+    .badge-red    { background:#fed7d7; color:#9b2c2c; }
+    .badge-grey   { background:#e2e8f0; color:#4a5568; }
+
+    /* ALERTES */
+    .alert {
+      padding:12px; border-radius:8px;
+      margin-bottom:14px; font-size:0.88rem;
+    }
+    .alert-success { background:#c6f6d5; color:#276749; }
+    .alert-error   { background:#fed7d7; color:#9b2c2c; }
+    .alert-info    { background:#bee3f8; color:#2a69ac; }
+
+    /* LOGIN */
+    .login-wrap {
+      min-height:100vh; display:flex;
+      flex-direction:column; justify-content:center;
+      padding:30px 24px;
+      background:linear-gradient(160deg,#1a3a6b 0%,#0d1f3d 60%,#1a202c 100%);
+    }
+    .login-logo { text-align:center; margin-bottom:32px; }
+    .login-logo h1 { color:white; font-size:1.8rem; font-weight:900; }
+    .login-logo h1 span { color:#ffd700; }
+    .login-logo p { color:rgba(255,255,255,0.65); margin-top:6px; font-size:0.9rem; }
+    .login-card { background:white; border-radius:20px; padding:28px 22px; }
+
+    /* TARIF BOX */
+    .tarif-box {
+      background:linear-gradient(135deg,#1a3a6b,#2d5f9e);
+      color:white; border-radius:12px; padding:18px;
+      margin-bottom:14px;
+    }
+    .tarif-box h3 { font-size:0.9rem; opacity:0.8; margin-bottom:12px; }
+    .tarif-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .tarif-item { text-align:center; }
+    .tarif-item .val {
+      font-size:1.3rem; font-weight:800; color:#ffd700;
+    }
+    .tarif-item .lab {
+      font-size:0.72rem; opacity:0.7; margin-top:2px;
+    }
+
+    /* PAIEMENT MODAL */
+    .modal-overlay {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.6);
+      display:flex; align-items:flex-end;
+      justify-content:center; z-index:200;
+    }
+    .modal {
+      background:white; border-radius:20px 20px 0 0;
+      padding:28px 22px; width:100%; max-width:480px;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform:translateY(100%); }
+      to   { transform:translateY(0); }
+    }
+    .modal h3 { font-size:1.1rem; margin-bottom:16px; color:#1a3a6b; }
+
+    /* OPÉRATEUR BUTTONS */
+    .operateurs {
+      display:grid; grid-template-columns:1fr 1fr 1fr;
+      gap:10px; margin-bottom:16px;
+    }
+    .op-btn {
+      border:2px solid #e2e8f0; border-radius:10px;
+      padding:12px 8px; text-align:center;
+      cursor:pointer; transition:all 0.2s; background:white;
+    }
+    .op-btn.selected { border-color:#1a3a6b; background:#ebf4ff; }
+    .op-btn .op-nom { font-size:0.72rem; font-weight:700; margin-top:4px; }
+
+    /* MISSION STATUS */
+    .mission-status {
+      display:flex; align-items:center;
+      gap:8px; margin-bottom:8px;
+    }
+    .status-dot {
+      width:10px; height:10px; border-radius:50%;
+    }
+    .dot-attente { background:#975a16; }
+    .dot-ouverte { background:#1a6b3c; }
+    .dot-prete   { background:#2a69ac; }
+    .dot-finalisee { background:#718096; }
+    .dot-echouee { background:#c53030; }
+
+    /* PROGRESS BAR */
+    .progress-wrap {
+      background:#e2e8f0; border-radius:10px;
+      height:8px; margin:8px 0; overflow:hidden;
+    }
+    .progress-bar {
+      height:100%; border-radius:10px;
+      background:linear-gradient(90deg,#1a6b3c,#2d9e5f);
+      transition:width 0.5s ease;
+    }
+
+    .text-center { text-align:center; }
+    .text-muted  { color:#718096; font-size:0.82rem; }
+    .mt-12 { margin-top:12px; }
+    .mb-12 { margin-bottom:12px; }
+    .fw-700 { font-weight:700; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN CLIENT ══════════ -->
+<div id="page-login">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <p style="font-size:2.5rem">🏢</p>
+      <h1>Espace <span>Client</span></h1>
+      <p>Commandez vos données terrain en quelques clics</p>
+    </div>
+    <div class="login-card">
+      <div id="msg-login"></div>
+
+      <!-- CONNEXION -->
+      <div id="form-connexion">
+        <div class="form-group">
+          <label>Numéro WhatsApp / Téléphone</label>
+          <input type="tel" id="login-tel" placeholder="ex: 0197000001"
+            onkeydown="if(event.key==='Enter') seConnecter()">
+        </div>
+        <button class="btn btn-primary" onclick="seConnecter()">
+          Se connecter →
+        </button>
+        <p class="text-center mt-12 text-muted">
+          Nouveau client ?
+          <a href="#" onclick="toggleForm()" style="color:#1a3a6b;font-weight:600">
+            Créer un compte
+          </a>
+        </p>
+      </div>
+
+      <!-- INSCRIPTION -->
+      <div id="form-inscription" class="hidden">
+        <div class="form-group">
+          <label>Nom / Entreprise *</label>
+          <input type="text" id="ins-nom" placeholder="ex: Bénin Distribution SARL">
+        </div>
+        <div class="form-group">
+          <label>Numéro de téléphone *</label>
+          <input type="tel" id="ins-tel" placeholder="ex: 0197000001">
+        </div>
+        <div class="form-group">
+          <label>Email (pour recevoir les rapports) *</label>
+          <input type="email" id="ins-email" placeholder="ex: contact@entreprise.bj">
+        </div>
+        <button class="btn btn-primary" onclick="sInscrire()">
+          Créer mon compte →
+        </button>
+        <p class="text-center mt-12 text-muted">
+          Déjà un compte ?
+          <a href="#" onclick="toggleForm()" style="color:#1a3a6b;font-weight:600">
+            Se connecter
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP CLIENT ══════════ -->
+<div id="page-app" class="hidden">
+
+  <div class="header">
+    <div class="logo">Data<span>Broker</span> 229</div>
+    <div id="header-nom" style="font-size:0.82rem;opacity:0.9"></div>
+  </div>
+
+  <div class="main">
+
+    <!-- VUE : TABLEAU DE BORD -->
+    <div id="vue-dashboard">
+      <div id="kpis-client" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"></div>
+      <button class="btn btn-gold mb-12" onclick="showVue('creer')">
+        ➕ Commander une nouvelle mission
+      </button>
+      <h3 style="margin-bottom:12px;font-size:0.95rem;color:#4a5568">MES MISSIONS</h3>
+      <div id="liste-mes-missions"></div>
+    </div>
+
+    <!-- VUE : CRÉER MISSION -->
+    <div id="vue-creer" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom:4px;color:#1a3a6b">📋 Nouvelle mission</h3>
+        <p class="text-muted mb-12">Le tarif est calculé automatiquement</p>
+        <div id="msg-creer"></div>
+
+        <div class="form-group">
+          <label>Titre de la mission *</label>
+          <input type="text" id="c-titre"
+            placeholder="ex: Prix sac riz 50kg à Dantokpa">
+        </div>
+        <div class="form-group">
+          <label>Instructions pour les agents *</label>
+          <textarea id="c-desc" rows="3"
+            placeholder="ex: Vérifier le prix du sac riz importé 50kg chez au moins 3 grossistes, photographier le prix affiché"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Marché / Zone cible *</label>
+          <select id="c-marche" onchange="mettreAJourCoords()">
+            <option value="">-- Choisir --</option>
+            <option value="Dantokpa"    data-lat="6.3698" data-lng="2.4382">Marché Dantokpa (Cotonou)</option>
+            <option value="Ouando"      data-lat="6.4969" data-lng="2.6289">Marché Ouando (Porto-Novo)</option>
+            <option value="Akpakpa"     data-lat="6.3654" data-lng="2.4419">Akpakpa (Cotonou)</option>
+            <option value="Missèbo"     data-lat="6.3744" data-lng="2.4197">Missèbo (Cotonou)</option>
+            <option value="Sainte Rita" data-lat="6.3601" data-lng="2.3987">Sainte Rita (Cotonou)</option>
+            <option value="Bohicon"     data-lat="7.1793" data-lng="2.0669">Marché Bohicon</option>
+            <option value="Parakou"     data-lat="9.3370" data-lng="2.6280">Marché Parakou</option>
+            <option value="Natitingou"  data-lat="10.3079" data-lng="1.3762">Marché Natitingou</option>
+          </select>
+          <input type="hidden" id="c-lat">
+          <input type="hidden" id="c-lng">
+        </div>
+        <div class="form-group">
+          <label>Produit à surveiller *</label>
+          <input type="text" id="c-produit"
+            placeholder="ex: Sac riz importé 50kg">
+        </div>
+        <div class="form-group">
+          <label>Nombre de collectes souhaitées</label>
+          <select id="c-nb" onchange="calculerTarif()">
+            <option value="3">3 collectes (minimum)</option>
+            <option value="5" selected>5 collectes (recommandé)</option>
+            <option value="10">10 collectes (précis)</option>
+            <option value="20">20 collectes (très précis)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Délai de livraison souhaité</label>
+          <select id="c-delai" onchange="calculerTarif()">
+            <option value="24">⚡ 24h — Urgent (+30%)</option>
+            <option value="48" selected>📅 48h — Standard</option>
+            <option value="72">🕐 72h — Étendu (-10%)</option>
+          </select>
+        </div>
+
+        <!-- TARIF CALCULÉ -->
+        <div class="tarif-box" id="tarif-box">
+          <h3>💰 Tarif estimé</h3>
+          <div class="tarif-grid">
+            <div class="tarif-item">
+              <div class="val" id="t-total">—</div>
+              <div class="lab">Total à payer</div>
+            </div>
+            <div class="tarif-item">
+              <div class="val" id="t-agent">—</div>
+              <div class="lab">Par agent</div>
+            </div>
+          </div>
+          <p style="font-size:0.72rem;opacity:0.6;margin-top:10px;text-align:center">
+            Rapport livré par email dans le délai choisi
+          </p>
+        </div>
+
+        <button class="btn btn-gold" onclick="passerCommande()">
+          💳 Commander et payer →
+        </button>
+        <button class="btn btn-secondary mt-12" onclick="showVue('dashboard')">
+          ← Annuler
+        </button>
+      </div>
+    </div>
+
+    <!-- VUE : DÉTAIL MISSION -->
+    <div id="vue-detail" class="hidden">
+      <div id="detail-contenu"></div>
+    </div>
+
+    <!-- VUE : PROFIL -->
+    <div id="vue-profil" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom:16px;color:#1a3a6b">Mon compte</h3>
+        <p class="text-muted">Nom / Entreprise</p>
+        <p id="p-nom" class="fw-700" style="margin-bottom:10px"></p>
+        <p class="text-muted">Téléphone</p>
+        <p id="p-tel" class="fw-700" style="margin-bottom:10px"></p>
+        <p class="text-muted">Email rapports</p>
+        <p id="p-email" class="fw-700"></p>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#1a3a6b,#2d5f9e);color:white">
+        <p style="opacity:0.8;font-size:0.85rem">Total dépensé</p>
+        <p id="p-total" style="font-size:1.8rem;font-weight:800;color:#ffd700">0 FCFA</p>
+        <p style="opacity:0.6;font-size:0.75rem;margin-top:4px">Toutes missions confondues</p>
+      </div>
+      <button class="btn btn-secondary" onclick="seDeconnecter()">
+        🚪 Se déconnecter
+      </button>
+    </div>
+
+  </div>
+
+  <!-- NAV BAS -->
+  <nav class="bottom-nav">
+    <a href="#" onclick="showVue('dashboard')" id="nav-dashboard" class="active">
+      <span class="icon">🏠</span>Accueil
+    </a>
+    <a href="#" onclick="showVue('creer')" id="nav-creer">
+      <span class="icon">➕</span>Commander
+    </a>
+    <a href="#" onclick="showVue('profil')" id="nav-profil">
+      <span class="icon">👤</span>Mon compte
+    </a>
+  </nav>
+</div>
+
+<!-- ══════════ MODAL PAIEMENT ══════════ -->
+<div id="modal-paiement" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>💳 Paiement sécurisé</h3>
+    <div id="msg-paiement"></div>
+
+    <div id="etape-operateur">
+      <p class="text-muted mb-12">Choisissez votre mode de paiement :</p>
+      <div class="operateurs">
+        <div class="op-btn" onclick="choisirOp('mtn')" id="op-mtn">
+          <div style="font-size:1.5rem">📱</div>
+          <div class="op-nom" style="color:#d69e2e">MTN MoMo</div>
+        </div>
+        <div class="op-btn" onclick="choisirOp('moov')" id="op-moov">
+          <div style="font-size:1.5rem">📱</div>
+          <div class="op-nom" style="color:#2b6cb0">Flooz</div>
+        </div>
+        <div class="op-btn" onclick="choisirOp('celtiis')" id="op-celtiis">
+          <div style="font-size:1.5rem">📱</div>
+          <div class="op-nom" style="color:#c53030">Celtiis</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Numéro Mobile Money</label>
+        <input type="tel" id="pay-tel" placeholder="ex: 0197000001">
+      </div>
+
+      <div class="card" style="background:#f7fafc;margin-bottom:14px;padding:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span class="text-muted">Mission</span>
+          <span id="pay-titre" class="fw-700" style="font-size:0.85rem;max-width:60%;text-align:right"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span class="text-muted">Montant</span>
+          <span id="pay-montant" class="fw-700" style="color:#1a3a6b;font-size:1.1rem"></span>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" onclick="confirmerPaiement()">
+        ✅ Confirmer le paiement
+      </button>
+      <button class="btn btn-secondary mt-12" onclick="fermerModal()">
+        Annuler
+      </button>
+      <p style="font-size:0.72rem;color:#a0aec0;text-align:center;margin-top:10px">
+        🔒 Paiement sécurisé via Kkiapay
+      </p>
+    </div>
+
+    <!-- SUCCÈS PAIEMENT -->
+    <div id="etape-succes" class="hidden" style="text-align:center;padding:20px 0">
+      <div style="font-size:3rem;margin-bottom:16px">🎉</div>
+      <h3 style="color:#1a6b3c;margin-bottom:10px">Mission publiée !</h3>
+      <p class="text-muted" id="succes-msg"></p>
+      <button class="btn btn-primary mt-12" onclick="apresSuccesPaiement()">
+        Voir mes missions →
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let clientUser    = null;
+let missionEnCours= null;
+let operateurChoisi = null;
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+window.onload = () => {
+  const saved = localStorage.getItem("db229_client");
+  if (saved) {
+    clientUser = JSON.parse(saved);
+    ouvrirApp();
+  }
+  calculerTarif();
+};
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+function toggleForm() {
+  document.getElementById("form-connexion").classList.toggle("hidden");
+  document.getElementById("form-inscription").classList.toggle("hidden");
+}
+
+async function seConnecter() {
+  const tel = document.getElementById("login-tel").value.trim();
+  if (!tel) return showMsg("msg-login","Entre ton numéro","error");
+
+  const res  = await fetch("/api/connexion", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({telephone:tel})
+  });
+  const data = await res.json();
+  if (res.ok) {
+    clientUser = data.user;
+    localStorage.setItem("db229_client", JSON.stringify(clientUser));
+    ouvrirApp();
+  } else {
+    showMsg("msg-login", data.erreur + " — Crée un compte d'abord", "error");
+  }
+}
+
+async function sInscrire() {
+  const nom   = document.getElementById("ins-nom").value.trim();
+  const tel   = document.getElementById("ins-tel").value.trim();
+  const email = document.getElementById("ins-email").value.trim();
+  if (!nom || !tel || !email)
+    return showMsg("msg-login","Remplis tous les champs","error");
+
+  const res  = await fetch("/api/inscription", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({nom, telephone:tel, email, role:"client"})
+  });
+  const data = await res.json();
+  if (res.ok) {
+    clientUser = data.user;
+    localStorage.setItem("db229_client", JSON.stringify(clientUser));
+    ouvrirApp();
+  } else {
+    showMsg("msg-login", data.erreur, "error");
+  }
+}
+
+function seDeconnecter() {
+  localStorage.removeItem("db229_client");
+  clientUser = null;
+  document.getElementById("page-app").classList.add("hidden");
+  document.getElementById("page-login").classList.remove("hidden");
+}
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+function ouvrirApp() {
+  document.getElementById("page-login").classList.add("hidden");
+  document.getElementById("page-app").classList.remove("hidden");
+  document.getElementById("header-nom").textContent = clientUser.nom;
+  showVue("dashboard");
+}
+
+function showVue(vue) {
+  ["dashboard","creer","detail","profil"].forEach(v => {
+    document.getElementById("vue-"+v).classList.toggle("hidden", v !== vue);
+  });
+  ["dashboard","creer","profil"].forEach(v => {
+    const nav = document.getElementById("nav-"+v);
+    if (nav) nav.className = v === vue ? "active" : "";
+  });
+  if (vue === "dashboard") chargerDashboard();
+  if (vue === "profil")    chargerProfil();
+  if (vue === "creer")     calculerTarif();
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+async function chargerDashboard() {
+  const res      = await fetch("/api/missions/toutes");
+  const toutes   = await res.json();
+  const mesMissions = toutes.filter(m =>
+    m.client_telephone === clientUser.telephone);
+
+  const total = mesMissions.reduce((s,m) => s + (m.prix_client_fcfa||0), 0);
+  const actives = mesMissions.filter(m =>
+    m.statut === "ouverte" || m.statut === "prete").length;
+
+  document.getElementById("kpis-client").innerHTML = `
+    <div style="background:white;border-radius:12px;padding:16px;
+                text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07)">
+      <div style="font-size:1.8rem;font-weight:800;color:#1a3a6b">
+        ${mesMissions.length}
+      </div>
+      <div style="font-size:0.75rem;color:#718096">Missions total</div>
+    </div>
+    <div style="background:white;border-radius:12px;padding:16px;
+                text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07)">
+      <div style="font-size:1.8rem;font-weight:800;color:#1a6b3c">
+        ${actives}
+      </div>
+      <div style="font-size:0.75rem;color:#718096">En cours</div>
+    </div>`;
+
+  if (!mesMissions.length) {
+    document.getElementById("liste-mes-missions").innerHTML = `
+      <div class="card" style="text-align:center;padding:30px">
+        <p style="font-size:2rem">📭</p>
+        <p class="text-muted">Aucune mission encore.</p>
+        <button class="btn btn-gold" style="margin-top:14px"
+          onclick="showVue('creer')">
+          Commander ma première mission →
+        </button>
+      </div>`;
+    return;
+  }
+
+  document.getElementById("liste-mes-missions").innerHTML =
+    mesMissions.map(m => carteClientMission(m)).join("");
+}
+
+function carteClientMission(m) {
+  const statuts = {
+    "en_attente_paiement": ["badge-yellow",  "dot-attente",  "⏳ En attente de paiement"],
+    "ouverte":             ["badge-green",   "dot-ouverte",  "🟢 En cours de collecte"],
+    "prete":               ["badge-blue",    "dot-prete",    "🔵 Collecte complète"],
+    "finalisee":           ["badge-grey",    "dot-finalisee","✅ Finalisée — rapport envoyé"],
+    "echouee":             ["badge-red",     "dot-echouee",  "❌ Échouée"]
+  };
+const [badgeCls, dotCls, label] = statuts[m.statut] || ["badge-grey","dot-attente","Inconnu"];
+
+  return `
+    <div class="card" style="border-left:4px solid #1a3a6b;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <h3 style="font-size:0.92rem;flex:1">${m.titre}</h3>
+        <span class="badge ${badgeCls}" style="margin-left:8px;white-space:nowrap">
+          ${m.statut === "finalisee" ? "✅" : m.statut === "ouverte" ? "🟢" : "⏳"}
+        </span>
+      </div>
+      <p style="font-size:0.78rem;color:#718096;margin:4px 0">
+        📍 ${m.marche_cible} &nbsp;|&nbsp; 🛒 ${m.produit_cible}
+      </p>
+      <div class="mission-status" style="margin:8px 0">
+        <div class="status-dot ${dotCls}"></div>
+        <span style="font-size:0.78rem;color:#4a5568">${label}</span>
+      </div>
+
+      ${m.statut === "ouverte" ? progressBar(m) : ""}
+
+      <div style="display:flex;justify-content:space-between;
+                  align-items:center;margin-top:10px">
+        <span style="font-size:0.82rem;color:#718096">
+          💰 ${m.prix_client_fcfa ? m.prix_client_fcfa.toLocaleString()+" FCFA" : "—"}
+        </span>
+        <div style="display:flex;gap:8px">
+          ${m.statut === "en_attente_paiement" ? `
+          <button class="btn btn-gold btn-sm"
+            onclick="payerMission(${m.id},'${m.titre.replace(/'/g,"\\'")}',${m.prix_client_fcfa})">
+            💳 Payer
+          </button>` : ""}
+          ${m.statut === "finalisee" ? `
+          <a class="btn btn-primary btn-sm"
+             href="/api/export/pdf/${m.id}" target="_blank">
+            📄 PDF
+          </a>
+          <a class="btn btn-green btn-sm"
+             href="/api/export/excel/${m.id}" target="_blank">
+            📊 Excel
+          </a>` : ""}
+        </div>
+      </div>
+    </div>`;
+}
+function progressBar(m) {
+  // On affiche une barre de progression indicative
+  const pct = Math.min(100, Math.floor(Math.random() * 60 + 20));
+  return `
+    <div>
+      <div style="display:flex;justify-content:space-between;
+                  font-size:0.72rem;color:#718096;margin-bottom:3px">
+        <span>Collectes en cours</span>
+        <span>${m.delai_heures}h délai</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════
+// CRÉER MISSION
+// ════════════════════════════════════════
+function mettreAJourCoords() {
+  const sel = document.getElementById("c-marche");
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById("c-lat").value = opt.dataset.lat || "";
+  document.getElementById("c-lng").value = opt.dataset.lng || "";
+}
+
+function calculerTarif() {
+  const nb    = parseInt(document.getElementById("c-nb")?.value    || 5);
+  const delai = parseInt(document.getElementById("c-delai")?.value || 48);
+
+  let prix = nb * 500;
+  if (delai <= 24) prix = Math.round(prix * 1.30);
+  if (delai >= 72) prix = Math.round(prix * 0.90);
+
+  const parAgent = Math.round(prix * 0.60 / nb);
+
+  document.getElementById("t-total").textContent =
+    prix.toLocaleString() + " FCFA";
+  document.getElementById("t-agent").textContent =
+    parAgent.toLocaleString() + " FCFA";
+}
+
+async function passerCommande() {
+  const titre  = document.getElementById("c-titre").value.trim();
+  const desc   = document.getElementById("c-desc").value.trim();
+  const marche = document.getElementById("c-marche").value;
+  const produit= document.getElementById("c-produit").value.trim();
+  const nb     = parseInt(document.getElementById("c-nb").value);
+  const delai  = parseInt(document.getElementById("c-delai").value);
+  const lat    = document.getElementById("c-lat").value;
+  const lng    = document.getElementById("c-lng").value;
+if (!titre || !desc || !marche || !produit)
+    return showMsg("msg-creer","Remplis tous les champs obligatoires (*)","error");
+
+  const res  = await fetch("/api/missions/creer", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      titre, description:desc,
+      marche_cible:marche,
+      marche_latitude: lat ? parseFloat(lat) : null,
+      marche_longitude: lng ? parseFloat(lng) : null,
+      produit_cible:produit,
+      nb_collectes_requis:nb,
+      delai_heures:delai,
+      client_nom:      clientUser.nom,
+      client_email:    clientUser.email,
+      client_telephone:clientUser.telephone
+    })
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    missionEnCours = data.mission;
+    ouvrirModal(missionEnCours.id, missionEnCours.titre, missionEnCours.prix_client_fcfa);
+  } else {
+    showMsg("msg-creer","Erreur lors de la création","error");
+  }
+}
+
+// ════════════════════════════════════════
+// PAIEMENT
+// ════════════════════════════════════════
+function payerMission(id, titre, montant) {
+  missionEnCours = {id, titre, prix_client_fcfa: montant};
+  ouvrirModal(id, titre, montant);
+}
+
+function ouvrirModal(id, titre, montant) {
+  document.getElementById("pay-titre").textContent   = titre;
+  document.getElementById("pay-montant").textContent =
+    (montant||0).toLocaleString() + " FCFA";
+  document.getElementById("etape-operateur").classList.remove("hidden");
+  document.getElementById("etape-succes").classList.add("hidden");
+  document.getElementById("modal-paiement").classList.remove("hidden");
+}
+function fermerModal() {
+  document.getElementById("modal-paiement").classList.add("hidden");
+  operateurChoisi = null;
+  ["op-mtn","op-moov","op-celtiis"].forEach(id =>
+    document.getElementById(id).classList.remove("selected"));
+}
+
+function choisirOp(op) {
+  operateurChoisi = op;
+  ["op-mtn","op-moov","op-celtiis"].forEach(id =>
+    document.getElementById(id).classList.remove("selected"));
+  document.getElementById("op-"+op).classList.add("selected");
+}
+
+async function confirmerPaiement() {
+  if (!operateurChoisi)
+    return showMsg("msg-paiement","Choisis un opérateur","error");
+  const tel = document.getElementById("pay-tel").value.trim();
+  if (!tel)
+    return showMsg("msg-paiement","Entre ton numéro Mobile Money","error");
+
+  const res  = await fetch(`/api/missions/${missionEnCours.id}/payer`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({telephone:tel, operateur:operateurChoisi})
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    document.getElementById("etape-operateur").classList.add("hidden");
+    document.getElementById("etape-succes").classList.remove("hidden");
+    document.getElementById("succes-msg").textContent =
+      `Mission publiée ! Rapport livré dans ${data.mission?.delai_heures || 48}h sur ${clientUser.email}`;
+  } else {
+    showMsg("msg-paiement","Échec du paiement — réessaie","error");
+  }
+}
+
+function apresSuccesPaiement() {
+  fermerModal();
+  showVue("dashboard");
+}
+// ════════════════════════════════════════
+// PROFIL
+// ════════════════════════════════════════
+async function chargerProfil() {
+  document.getElementById("p-nom").textContent   = clientUser.nom;
+  document.getElementById("p-tel").textContent   = clientUser.telephone;
+  document.getElementById("p-email").textContent = clientUser.email || "—";
+
+  const res    = await fetch("/api/missions/toutes");
+  const toutes = await res.json();
+  const mes    = toutes.filter(m => m.client_telephone === clientUser.telephone);
+  const total  = mes.reduce((s,m) => s + (m.prix_client_fcfa||0), 0);
+  document.getElementById("p-total").textContent = total.toLocaleString() + " FCFA";
+}
+
+// ════════════════════════════════════════
+// UTILITAIRES
+// ════════════════════════════════════════
+function showMsg(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="alert alert-${type==="error"?"error":type==="success"?"success":"info"}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = "", 4000);
+}
+</script>
+</body>
+</html>
