@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataBroker 229 — Classement</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;color:#1a202c}
+    .header{background:linear-gradient(135deg,#1a3a6b,#2d5f9e);
+      color:white;padding:16px 20px;display:flex;
+      justify-content:space-between;align-items:center}
+    .logo{font-size:1.2rem;font-weight:800}
+    .logo span{color:#ffd700}
+    .main{padding:20px 16px 40px;max-width:480px;margin:0 auto}
+    .card{background:white;border-radius:12px;padding:16px;
+      margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+    .periode-btns{display:flex;gap:6px;margin-bottom:16px}
+    .periode-btn{padding:6px 14px;border:1.5px solid #e2e8f0;
+      border-radius:20px;font-size:0.78rem;font-weight:600;
+      cursor:pointer;background:white;color:#718096}
+    .periode-btn.active{background:#1a3a6b;color:white;border-color:#1a3a6b}
+    .podium{display:flex;justify-content:center;
+      align-items:flex-end;gap:10px;margin-bottom:24px;padding:10px 0}
+    .podium-item{text-align:center}
+    .podium-avatar{width:52px;height:52px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;font-weight:800;color:white;margin:0 auto 6px}
+    .podium-bloc{border-radius:8px 8px 0 0;width:80px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.2rem;font-weight:800;color:white}
+    .podium-nom{font-size:0.72rem;font-weight:700;margin-top:4px;
+      max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .podium-score{font-size:0.68rem;color:#718096}
+    .agent-row{display:flex;align-items:center;gap:12px;
+      padding:12px 0;border-bottom:1px solid #f0f4f8}
+    .agent-row:last-child{border-bottom:none}
+    .rang{width:28px;text-align:center;font-weight:800;
+      font-size:0.9rem;color:#718096;flex-shrink:0}
+    .agent-info{flex:1}
+    .agent-nom{font-weight:700;font-size:0.9rem}
+    .agent-meta{font-size:0.72rem;color:#718096;margin-top:2px}
+    .agent-score{text-align:right}
+    .score-num{font-weight:800;color:#1a3a6b;font-size:1rem}
+    .score-lab{font-size:0.68rem;color:#718096}
+    .badge{display:inline-block;padding:2px 8px;
+      border-radius:20px;font-size:0.68rem;font-weight:700}
+    .text-muted{color:#718096;font-size:0.82rem;text-align:center;padding:20px}
+    .stats-top{display:grid;grid-template-columns:1fr 1fr 1fr;
+      gap:10px;margin-bottom:16px}
+    .stat-mini{background:white;border-radius:10px;padding:12px;
+      text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+    .stat-mini .n{font-size:1.3rem;font-weight:800;color:#1a3a6b}
+    .stat-mini .l{font-size:0.68rem;color:#718096;margin-top:2px}
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">🏆 <span>Classement</span> Agents</div>
+  <a href="/" style="background:rgba(255,255,255,0.15);color:white;
+    padding:6px 10px;border-radius:8px;text-decoration:none;font-size:0.78rem">
+    ← Accueil
+  </a>
+</div>
+
+<div class="main">
+
+  <div class="periode-btns">
+    <button class="periode-btn active" onclick="charger(7,this)">7j</button>
+    <button class="periode-btn" onclick="charger(30,this)">30j</button>
+    <button class="periode-btn" onclick="charger(90,this)">90j</button>
+    <button class="periode-btn" onclick="charger(365,this)">1an</button>
+  </div>
+
+  <!-- STATS GLOBALES -->
+  <div class="stats-top" id="stats-top"></div>
+
+  <!-- PODIUM TOP 3 -->
+  <div class="card">
+    <div class="podium" id="podium"></div>
+  </div>
+
+  <!-- CLASSEMENT COMPLET -->
+  <div class="card">
+    <p style="font-size:0.78rem;font-weight:700;color:#718096;
+              margin-bottom:12px">CLASSEMENT COMPLET</p>
+    <div id="liste-classement"></div>
+  </div>
+
+</div>
+
+<script>
+async function charger(periode, btn) {
+  document.querySelectorAll(".periode-btn").forEach(b =>
+    b.classList.remove("active"));
+  btn.classList.add("active");
+
+  const res  = await fetch(`/api/classement?periode=${periode}`);
+  const data = await res.json();
+  afficher(data);
+}
+
+function afficher(classement) {
+  // Stats globales
+  const total     = classement.length;
+  const actifs    = classement.filter(a => a.nb_valides > 0).length;
+  const meilScore = classement[0]?.score || 0;
+
+  document.getElementById("stats-top").innerHTML = `
+    <div class="stat-mini">
+      <div class="n">${total}</div>
+      <div class="l">Agents total</div>
+    </div>
+    <div class="stat-mini">
+      <div class="n">${actifs}</div>
+      <div class="l">Agents actifs</div>
+    </div>
+    <div class="stat-mini">
+      <div class="n">${meilScore}</div>
+      <div class="l">Meilleur score</div>
+    </div>`;
+
+  // Podium top 3
+  const top3 = classement.slice(0, 3);
+  const ordre = [1, 0, 2]; // Centre = 1er
+  const hauteurs  = [70, 90, 55];
+  const couleurs  = ["#a0aec0","#ffd700","#cd7f32"];
+  const emojis    = ["🥈","🥇","🥉"];
+
+  if (top3.length === 0) {
+    document.getElementById("podium").innerHTML =
+      '<p class="text-muted">Aucun agent classé</p>';
+  } else {
+    document.getElementById("podium").innerHTML =
+      ordre.map((idx, pos) => {
+        const a = top3[idx];
+        if (!a) return "";
+        return `
+          <div class="podium-item">
+            <div class="podium-avatar"
+              style="background:${couleurs[pos]};width:${pos===1?60:48}px;height:${pos===1?60:48}px">
+              ${a.niveau_emoji}
+            </div>
+            <div class="podium-bloc"
+              style="background:${couleurs[pos]};height:${hauteurs[pos]}px">
+              ${emojis[pos]}
+            </div>
+            <div class="podium-nom">${a.nom}</div>
+            <div class="podium-score">${a.nb_valides} collectes</div>
+          </div>`;
+      }).join("");
+  }
+
+  // Liste complète
+  if (!classement.length) {
+    document.getElementById("liste-classement").innerHTML =
+      '<p class="text-muted">Aucun agent classé pour cette période</p>';
+    return;
+  }
+
+  const niveauColors = {
+    bronze:"#cd7f32", argent:"#a0aec0",
+    or:"#ffd700", platine:"#553c9a"
+  };
+
+  document.getElementById("liste-classement").innerHTML =
+    classement.map(a => `
+      <div class="agent-row">
+        <div class="rang"
+          style="color:${a.rang<=3?['#ffd700','#a0aec0','#cd7f32'][a.rang-1]:'#718096'}">
+          ${a.rang <= 3 ? ['🥇','🥈','🥉'][a.rang-1] : "#"+a.rang}
+        </div>
+        <div class="agent-info">
+          <div class="agent-nom">
+            ${a.niveau_emoji} ${a.nom}
+          </div>
+          <div class="agent-meta">
+            ✅ ${a.nb_valides} validées
+            &nbsp;|&nbsp;
+            ❌ ${a.nb_rejets} rejetées
+            &nbsp;|&nbsp;
+            📊 ${a.taux_succes}% succès
+          </div>
+          <span class="badge"
+            style="background:${niveauColors[a.niveau]}22;
+                   color:${niveauColors[a.niveau]};margin-top:4px">
+            ${a.niveau.toUpperCase()}
+          </span>
+        </div>
+        <div class="agent-score">
+          <div class="score-num">${a.score}</div>
+          <div class="score-lab">points</div>
+          <div style="font-size:0.7rem;color:#1a6b3c;margin-top:2px">
+            ${a.gains_fcfa.toLocaleString()} F
+          </div>
+        </div>
+      </div>`).join("");
+}
+
+window.onload = () => charger(30,
+  document.querySelector(".periode-btn.active"));
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataBroker 229 — Historique des prix</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;color:#1a202c}
+    .header{background:linear-gradient(135deg,#1a3a6b,#2d5f9e);
+      color:white;padding:16px 20px;display:flex;
+      justify-content:space-between;align-items:center}
+    .logo{font-size:1.2rem;font-weight:800}
+    .logo span{color:#ffd700}
+    .main{padding:20px 16px 40px;max-width:480px;margin:0 auto}
+    .card{background:white;border-radius:12px;padding:16px;
+      margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+    .form-group{margin-bottom:12px}
+    .form-group label{display:block;font-size:0.8rem;
+      font-weight:600;margin-bottom:5px;color:#4a5568}
+    .form-group input,.form-group select{width:100%;padding:10px;
+      border:1.5px solid #e2e8f0;border-radius:8px;
+      font-size:0.92rem;background:#f7fafc;outline:none}
+    .form-group input:focus,.form-group select:focus{
+      border-color:#1a3a6b;background:white}
+    .btn{width:100%;padding:12px;border:none;border-radius:10px;
+      font-size:0.92rem;font-weight:700;cursor:pointer;
+      background:#1a3a6b;color:white}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;
+      gap:10px;margin-bottom:14px}
+    .stat-card{background:white;border-radius:10px;padding:14px;
+      text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+    .stat-card .n{font-size:1.4rem;font-weight:800}
+    .stat-card .l{font-size:0.7rem;color:#718096;margin-top:3px}
+    .tendance-badge{display:inline-flex;align-items:center;gap:6px;
+      padding:6px 14px;border-radius:20px;font-weight:700;
+      font-size:0.85rem;margin-bottom:14px}
+    .chart-wrap{overflow-x:auto;padding-bottom:8px}
+    .chart-inner{display:flex;align-items:flex-end;
+      gap:4px;height:120px;min-width:300px;padding:8px 0}
+    .bar-col{display:flex;flex-direction:column;
+      align-items:center;flex:1;min-width:32px}
+    .bar-val{font-size:0.6rem;color:#718096;margin-bottom:3px}
+    .bar-rect{width:100%;border-radius:4px 4px 0 0;
+      background:linear-gradient(180deg,#1a3a6b,#2d5f9e);
+      transition:height 0.8s ease}
+    .bar-lab{font-size:0.6rem;color:#a0aec0;
+      margin-top:4px;text-align:center;
+      white-space:nowrap;overflow:hidden;
+      text-overflow:ellipsis;max-width:40px}
+    .text-muted{color:#718096;font-size:0.82rem;
+      text-align:center;padding:20px}
+    .section-title{font-size:0.78rem;font-weight:700;
+      color:#718096;text-transform:uppercase;
+      letter-spacing:0.5px;margin-bottom:12px}
+    .detail-row{display:flex;justify-content:space-between;
+      padding:8px 0;border-bottom:1px solid #f0f4f8;
+      font-size:0.82rem}
+    .detail-row:last-child{border-bottom:none}
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">📈 Historique <span>des Prix</span></div>
+  <a href="/admin" style="background:rgba(255,255,255,0.15);
+    color:white;padding:6px 10px;border-radius:8px;
+    text-decoration:none;font-size:0.78rem">
+    ← Admin
+  </a>
+</div>
+
+<div class="main">
+
+  <!-- FILTRES -->
+  <div class="card">
+    <div class="section-title">🔍 Rechercher un produit</div>
+    <div class="form-group">
+      <label>Produit</label>
+      <input type="text" id="f-produit"
+        placeholder="ex: riz, ciment, savon...">
+    </div>
+    <div class="form-group">
+      <label>Marché</label>
+      <select id="f-marche">
+        <option value="">Tous les marchés</option>
+        <option>Dantokpa</option>
+        <option>Ouando</option>
+        <option>Akpakpa</option>
+        <option>Missèbo</option>
+        <option>Sainte Rita</option>
+        <option>Bohicon</option>
+        <option>Parakou</option>
+        <option>Natitingou</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Période</label>
+      <select id="f-jours">
+        <option value="30">30 derniers jours</option>
+        <option value="90" selected>90 derniers jours</option>
+        <option value="180">6 mois</option>
+        <option value="365">1 an</option>
+      </select>
+    </div>
+    <button class="btn" onclick="chargerHistorique()">
+      📈 Voir l'historique
+    </button>
+  </div>
+
+  <div id="resultats"></div>
+
+</div>
+
+<script>
+async function chargerHistorique() {
+  const produit = document.getElementById("f-produit").value.trim();
+  const marche  = document.getElementById("f-marche").value;
+  const jours   = document.getElementById("f-jours").value;
+
+  let url = `/api/historique/prix?jours=${jours}`;
+  if (produit) url += `&produit=${encodeURIComponent(produit)}`;
+  if (marche)  url += `&marche=${encodeURIComponent(marche)}`;
+
+  const res  = await fetch(url);
+  const data = await res.json();
+  afficherResultats(data, produit, marche);
+}
+
+function afficherResultats(data, produit, marche) {
+  const zone = document.getElementById("resultats");
+
+  if (!data.points || !data.points.length) {
+    zone.innerHTML = `
+      <div class="card" style="text-align:center;padding:24px">
+        <p style="font-size:2rem">📭</p>
+        <p class="text-muted">
+          Aucune donnée pour ce produit/marché.<br>
+          Lance des missions de collecte d'abord !
+        </p>
+      </div>`;
+    return;
+  }
+
+  const s = data.stats;
+  const tendances = {
+    hausse: ["🔴","#c53030","En hausse"],
+    baisse: ["🟢","#1a6b3c","En baisse"],
+    stable: ["🟡","#975a16","Stable"]
+  };
+  const [emoji, couleur, label] = tendances[data.tendance] || tendances.stable;
+
+  // Calcul variation
+  const premier = data.points[0]?.prix_moy || 0;
+  const dernier = data.points[data.points.length-1]?.prix_moy || 0;
+  const variation = premier > 0
+    ? ((dernier-premier)/premier*100).toFixed(1) : 0;
+
+  zone.innerHTML = `
+    <!-- TENDANCE -->
+    <div class="card">
+      <p class="section-title">
+        ${produit || "Tous produits"}
+        ${marche ? "— "+marche : ""}
+      </p>
+      <div class="tendance-badge"
+        style="background:${couleur}22;color:${couleur}">
+        ${emoji} Tendance : ${label}
+        (${variation > 0 ? "+":""  }${variation}%)
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="n" style="color:#1a3a6b">
+            ${s.prix_actuel?.toLocaleString()} F
+          </div>
+          <div class="l">Prix actuel moyen</div>
+        </div>
+        <div class="stat-card">
+          <div class="n" style="color:#718096">
+            ${s.prix_moy?.toLocaleString()} F
+          </div>
+          <div class="l">Moyenne période</div>
+        </div>
+        <div class="stat-card">
+          <div class="n" style="color:#1a6b3c">
+            ${s.prix_min?.toLocaleString()} F
+          </div>
+          <div class="l">Prix minimum</div>
+        </div>
+        <div class="stat-card">
+          <div class="n" style="color:#c53030">
+            ${s.prix_max?.toLocaleString()} F
+          </div>
+          <div class="l">Prix maximum</div>
+        </div>
+      </div>
+
+      <p class="text-muted" style="text-align:left;padding:0">
+        Basé sur ${s.nb_observations} observations
+        sur ${s.periode_jours} jours
+      </p>
+    </div>
+
+    <!-- GRAPHIQUE -->
+    <div class="card">
+      <p class="section-title">📊 Évolution hebdomadaire</p>
+      <div class="chart-wrap">
+        <div class="chart-inner" id="chart-bars"></div>
+      </div>
+    </div>
+
+    <!-- DÉTAIL PAR SEMAINE -->
+    <div class="card">
+      <p class="section-title">📋 Détail par semaine</p>
+      ${data.points.map(p => `
+        <div class="detail-row">
+          <span style="color:#718096">${p.periode}</span>
+          <span>
+            <strong>${p.prix_moy.toLocaleString()} F</strong>
+            <span style="font-size:0.72rem;color:#718096">
+              (${p.prix_min.toLocaleString()}—${p.prix_max.toLocaleString()})
+            </span>
+          </span>
+          <span style="color:#1a3a6b;font-weight:600">
+            ${p.nb_obs} obs.
+          </span>
+        </div>`).join("")}
+    </div>
+  `;
+
+  // Dessiner graphique
+  const maxPrix = Math.max(...data.points.map(p=>p.prix_moy));
+  document.getElementById("chart-bars").innerHTML =
+    data.points.map(p => `
+      <div class="bar-col">
+        <div class="bar-val">
+          ${(p.prix_moy/1000).toFixed(0)}k
+        </div>
+        <div class="bar-rect"
+          style="height:${Math.max(p.prix_moy/maxPrix*100,4)}px">
+        </div>
+        <div class="bar-lab">
+          ${p.periode.replace(/\d{4}-/,"")}
+        </div>
+      </div>`).join("");
+}
+
+// Charger automatiquement si des données existent
+window.onload = () => chargerHistorique();
+</script>
+</body>
+</html>

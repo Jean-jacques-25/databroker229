@@ -4,30 +4,30 @@ from datetime import datetime
 db = SQLAlchemy()
 
 class User(db.Model):
-    id               = db.Column(db.Integer, primary_key=True)
-    telephone        = db.Column(db.String(20), unique=True, nullable=False)
-    nom              = db.Column(db.String(100), nullable=False)
-    email            = db.Column(db.String(150), nullable=True)
-    role             = db.Column(db.String(20), default="agent")
-    solde_points     = db.Column(db.Integer, default=0)
-    date_inscription = db.Column(db.DateTime, default=datetime.utcnow)
-    actif            = db.Column(db.Boolean, default=True)
-    niveau           = db.Column(db.String(20), default="bronze")
-# bronze | argent | or | platine
-nb_collectes_total = db.Column(db.Integer, default=0)
-nb_collectes_valides = db.Column(db.Integer, default=0)
+    id                   = db.Column(db.Integer, primary_key=True)
+    telephone            = db.Column(db.String(20), unique=True, nullable=False)
+    nom                  = db.Column(db.String(100), nullable=False)
+    email                = db.Column(db.String(150), nullable=True)
+    role                 = db.Column(db.String(20), default="agent")
+    solde_points         = db.Column(db.Integer, default=0)
+    date_inscription     = db.Column(db.DateTime, default=datetime.utcnow)
+    actif                = db.Column(db.Boolean, default=True)
+    niveau               = db.Column(db.String(20), default="bronze")
+    # bronze | argent | or | platine
+    nb_collectes_total   = db.Column(db.Integer, default=0)
+    nb_collectes_valides = db.Column(db.Integer, default=0)
 
     def to_dict(self):
         return {
-            "id":           self.id,
-            "telephone":    self.telephone,
-            "nom":          self.nom,
-            "email":        self.email,
-            "role":         self.role,
-            "solde_points": self.solde_points
+            "id":                   self.id,
+            "telephone":            self.telephone,
+            "nom":                  self.nom,
+            "email":                self.email,
+            "role":                 self.role,
+            "solde_points":         self.solde_points,
             "niveau":               self.niveau,
             "nb_collectes_total":   self.nb_collectes_total,
-            "nb_collectes_valides": self.nb_collectes_valides,
+            "nb_collectes_valides": self.nb_collectes_valides
         }
 
 class Mission(db.Model):

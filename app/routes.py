@@ -11,7 +11,9 @@ import os, uuid
 from .sms import (sms_bienvenue_agent, sms_bienvenue_client,
                   sms_collecte_validee, sms_collecte_rejetee,
                   sms_mission_publiee_client, notifier_tous_agents)
-
+from .antifraude import analyser_collecte
+from .classement import calculer_classement
+from .historique import calculer_historique_prix
 main = Blueprint("main", __name__)
 UPLOAD_FOLDER    = "uploads"
 EXTENSIONS_OK    = {"jpg", "jpeg", "png"}
@@ -176,8 +178,8 @@ def soumettre_collecte():
     mission_id  = request.form.get("mission_id")
     agent_id    = request.form.get("agent_id")
     prix        = request.form.get("prix_observe")
-    dispo       = request.form.get("disponibilite", "true").lower() == "true"
-    commentaire = request.form.get("commentaire", "")
+    dispo       = request.form.get("disponibilite","true").lower() == "true"
+    commentaire = request.form.get("commentaire","")
     latitude    = request.form.get("latitude")
     longitude   = request.form.get("longitude")
 
@@ -202,30 +204,39 @@ def soumettre_collecte():
     db.session.add(collecte)
     db.session.flush()
 
-    # Validation automatique
-    mission  = Mission.query.get(int(mission_id))
-    toleranc = current_app.config.get("GPS_TOLERANCE_KM", 5.0)
-    valide, raisons = valider_collecte_auto(collecte, mission, toleranc)
+    # Analyse anti-fraude complète
+    mission = Mission.query.get(int(mission_id))
+    score, statut, raison, problemes, avertissements = \
+        analyser_collecte(collecte, mission, db)
 
+    collecte.statut            = statut
+    collecte.commentaire_admin = raison
     db.session.commit()
 
-    # Vérifier si on peut finaliser la mission
+    # Si fraude détectée — alerter
+    if statut == "fraude":
+        agent = User.query.get(int(agent_id))
+        print(f"[FRAUDE] Agent {agent.nom if agent else agent_id} "
+              f"— {raison}")
+
+    # Vérifier si mission peut être finalisée
     nb_valides = Collecte.query.filter_by(
         mission_id=int(mission_id), statut="validee").count()
-
     if nb_valides >= mission.nb_collectes_requis:
         mission.statut = "prete"
         db.session.commit()
-        # Finaliser immédiatement
-        finaliser_mission(mission.id, current_app._get_current_object())
+        finaliser_mission(
+            mission.id, current_app._get_current_object())
 
     return jsonify({
-        "message":       "Collecte soumise",
-        "statut_auto":   collecte.statut,
-        "raisons_rejet": raisons,
-        "collecte":      collecte.to_dict()
+        "message":          "Collecte soumise",
+        "statut_auto":      statut,
+        "score_confiance":  score,
+        "raison":           raison,
+        "problemes":        problemes,
+        "avertissements":   avertissements,
+        "collecte":         collecte.to_dict()
     }), 201
-
 @main.route("/api/collectes/mission/<int:mission_id>", methods=["GET"])
 def collectes_par_mission(mission_id):
     collectes = Collecte.query.filter_by(mission_id=mission_id).all()
@@ -412,3 +423,68 @@ def test_sms():
     msg  = data.get("message", "Test DataBroker 229 — SMS fonctionnel !")
     r    = envoyer_sms(tel, msg)
     return jsonify(r), 200 if r["succes"] else 500
+# ════════════════════════════════════════
+# CLASSEMENT
+# ════════════════════════════════════════
+@main.route("/api/classement", methods=["GET"])
+def classement_agents():
+    periode = int(request.args.get("periode", 30))
+    agents  = User.query.filter_by(role="agent").all()
+
+    toutes_collectes = []
+    for a in agents:
+        cols = Collecte.query.filter_by(agent_id=a.id).all()
+        toutes_collectes.extend(cols)
+
+    classement = calculer_classement(agents, toutes_collectes, periode)
+    return jsonify(classement), 200
+
+@main.route("/classement")
+def page_classement():
+    return render_template("classement.html")
+
+# ════════════════════════════════════════
+# HISTORIQUE PRIX
+# ════════════════════════════════════════
+@main.route("/api/historique/prix", methods=["GET"])
+def historique_prix():
+    produit = request.args.get("produit")
+    marche  = request.args.get("marche")
+    jours   = int(request.args.get("jours", 90))
+
+    # Récupérer toutes les collectes validées
+    missions = Mission.query.all()
+    toutes   = []
+    for m in missions:
+        if produit and produit.lower() not in (m.produit_cible or "").lower():
+            continue
+        if marche and marche != m.marche_cible:
+            continue
+        cols = Collecte.query.filter_by(
+            mission_id=m.id, statut="validee").all()
+        for c in cols:
+            c._mission = m
+        toutes.extend(cols)
+
+    historique = calculer_historique_prix(toutes, produit, marche, jours)
+    return jsonify(historique), 200
+
+@main.route("/historique")
+def page_historique():
+    return render_template("historique.html")
+
+# ════════════════════════════════════════
+# ANTI-FRAUDE STATS (admin)
+# ════════════════════════════════════════
+@main.route("/api/admin/fraudes", methods=["GET"])
+def stats_fraudes():
+    fraudes = Collecte.query.filter_by(statut="fraude").all()
+    resultat = []
+    for c in fraudes:
+        agent   = User.query.get(c.agent_id)
+        mission = Mission.query.get(c.mission_id)
+        d = c.to_dict()
+        d["agent_nom"]     = agent.nom if agent else "—"
+        d["mission_titre"] = mission.titre if mission else "—"
+        resultat.append(d)
+    return jsonify(resultat), 200
