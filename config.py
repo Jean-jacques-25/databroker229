@@ -5,7 +5,11 @@ load_dotenv()
 
 class Config:
     SECRET_KEY               = os.getenv("SECRET_KEY", "dev_key_change_en_prod")
-    SQLALCHEMY_DATABASE_URI  = os.getenv("DATABASE_URL", "sqlite:///databroker229.db")
+    db_url = os.getenv("DATABASE_URL", "sqlite:///databroker229.db")
+    # Render utilise postgres:// mais SQLAlchemy veut postgresql://
+    if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER            = "uploads"
     MAX_CONTENT_LENGTH       = 5 * 1024 * 1024
