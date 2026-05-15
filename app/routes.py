@@ -488,3 +488,11 @@ def stats_fraudes():
         d["mission_titre"] = mission.titre if mission else "—"
         resultat.append(d)
     return jsonify(resultat), 200
+@main.route("/api/admin/mission/<int:mission_id>/supprimer", methods=["DELETE"])
+def supprimer_mission(mission_id):
+    mission = Mission.query.get_or_404(mission_id)
+    # Supprimer les collectes liées
+    Collecte.query.filter_by(mission_id=mission_id).delete()
+    db.session.delete(mission)
+    db.session.commit()
+    return jsonify({"message": f"Mission #{mission_id} supprimée"}), 200
