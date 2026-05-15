@@ -312,11 +312,22 @@
         <div class="form-group">
           <label>Nombre de collectes souhaitées</label>
           <select id="c-nb" onchange="calculerTarif()">
-            <option value="3">3 collectes (minimum)</option>
-            <option value="5" selected>5 collectes (recommandé)</option>
-            <option value="10">10 collectes (précis)</option>
-            <option value="20">20 collectes (très précis)</option>
+            <option value="50">50 collectes</option>
+            <optionvalue="100">100 collectes</option>
+            <option value="200">200 collectes</option>
+            <option value="300">300 collectes</option>
+            <option value="custom">+ Personnalisé</option>
           </select>
+        <div id="grp-custom" style="display:none;margin-top:8px">
+           <input type="number" id="nb-custom" min="300" step="50"
+              placeholder="ex: 500, 1000..."
+              onchange="calculerTarif()"
+              style="width:100%;padding:11px;border:1.5px solid #e2e8f0;
+              border-radius:8px;font-size:0.95rem;background:#f7fafc">
+               <p style="font-size:0.72rem;color:#718096;margin-top:4px">
+                  Minimum 300 collectes pour personnalisé
+               </p>
+         </div>>
         </div>
         <div class="form-group">
           <label>Délai de livraison souhaité</label>
@@ -677,15 +688,24 @@ function mettreAJourCoords() {
 }
 
 function calculerTarif() {
-  const nb    = parseInt(document.getElementById("c-nb")?.value    || 5);
-  const delai = parseInt(document.getElementById("c-delai")?.value || 48);
+  const sel   = document.getElementById("c-nb");
+  const grp   = document.getElementById("grp-custom");
+  let nb      = parseInt(sel.value);
 
-  let prix = nb * 500;
+  if (sel.value === "custom") {
+    grp.style.display = "block";
+    nb = parseInt(document.getElementById("nb-custom").value) || 0;
+    if (!nb) return;
+  } else {
+    grp.style.display = "none";
+  }
+
+  const delai = parseInt(document.getElementById("c-delai")?.value || 48);
+  let prix    = nb * 500;
   if (delai <= 24) prix = Math.round(prix * 1.30);
   if (delai >= 72) prix = Math.round(prix * 0.90);
 
   const parAgent = Math.round(prix * 0.60 / nb);
-
   document.getElementById("t-total").textContent =
     prix.toLocaleString() + " FCFA";
   document.getElementById("t-agent").textContent =

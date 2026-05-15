@@ -312,13 +312,20 @@
         </div>
         <div class="form-group">
           <label>Nombre de collectes requis</label>
-          <select id="m-nb">
-            <option value="3">3 collectes</option>
-            <option value="5" selected>5 collectes</option>
-            <option value="10">10 collectes</option>
-            <option value="20">20 collectes</option>
-          </select>
-        </div>
+          <select id="m-nb" onchange="calculerTarifAdmin()">
+       	    <option value="50">50 collectes</option>
+     	    <option value="100">100 collectes</option>
+	    <option value="200">200 collectes</option>
+	    <option value="300">300 collectes</option>
+	    <option value="custom">+ Personnalisé</option>
+	  </select>
+	 <div id="grp-custom-admin" style="display:none;margin-top:8px">
+	  <input type="number" id="nb-custom-admin" min="300" step="50"		    placeholder="ex: 500, 1000..."
+            onchange="calculerTarifAdmin()"
+	    style="width:100%;padding:11px;border:1.5px solid #e2e8f0;
+            border-radius:8px;font-size:0.95rem;background:#f7fafc">
+	</div>
+          </div>
         <div class="form-group">
           <label>Délai</label>
           <select id="m-delai">
@@ -610,22 +617,33 @@ function mettreAJourCoordsAdmin() {
 }
 
 function calculerTarifAdmin() {
-  const nb    = parseInt(document.getElementById("m-nb").value    || 5);
-  const delai = parseInt(document.getElementById("m-delai").value || 48);
+  const sel = document.getElementById("m-nb");
+  const grp = document.getElementById("grp-custom-admin");
+  let nb    = parseInt(sel.value);
 
-  let prix = nb * 500;
+  if (sel.value === "custom") {
+    grp.style.display = "block";
+    nb = parseInt(document.getElementById("nb-custom-admin").value) || 0;
+    if (!nb) return;
+  } else {
+    grp.style.display = "none";
+  }
+
+  const delai    = parseInt(document.getElementById("m-delai").value || 48);
+  let prix       = nb * 500;
   if (delai <= 24) prix = Math.round(prix * 1.30);
   if (delai >= 72) prix = Math.round(prix * 0.90);
 
-  const marge      = Math.round(prix * 0.40);
-  const budget     = prix - marge;
-  const parAgent   = Math.round(budget / nb);
+  const marge    = Math.round(prix * 0.40);
+  const budget   = prix - marge;
+  const parAgent = nb > 0 ? Math.round(budget / nb) : 0;
 
-  document.getElementById("ta-total").textContent    = prix.toLocaleString()     + " FCFA";
-  document.getElementById("ta-marge").textContent    = marge.toLocaleString()    + " FCFA";
-  document.getElementById("ta-agents").textContent   = budget.toLocaleString()   + " FCFA";
-  document.getElementById("ta-par-agent").textContent= parAgent.toLocaleString() + " FCFA";
+  document.getElementById("ta-total").textContent     = prix.toLocaleString()     + " FCFA";
+  document.getElementById("ta-marge").textContent     = marge.toLocaleString()    + " FCFA";
+  document.getElementById("ta-agents").textContent    = budget.toLocaleString()   + " FCFA";
+  document.getElementById("ta-par-agent").textContent = parAgent.toLocaleString() + " FCFA";
 }
+
 async function creerMissionAdmin() {
   const titre  = document.getElementById("m-titre").value.trim();
   const desc   = document.getElementById("m-desc").value.trim();
