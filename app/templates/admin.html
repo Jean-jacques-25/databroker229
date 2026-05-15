@@ -689,14 +689,15 @@ async function creerMissionAdmin() {
     {method:"POST", headers:{"Content-Type":"application/json"},
      body: JSON.stringify({telephone:"admin", operateur:"admin"})});
 
- if (res2.ok) {
+  if (res2.ok) {
     showMsg("msg-creer","✅ Mission publiée avec succès !","success");
     ["m-titre","m-desc","m-produit","m-client-nom","m-client-email","m-client-tel"]
       .forEach(id => document.getElementById(id).value = "");
-    // Rafraîchir les données
     await chargerDashboard();
-    // Aller sur missions après 1.5s
     setTimeout(() => showVue("missions"), 1500);
+  } else {
+    showMsg("msg-creer","Erreur publication","error");
+  }
 }
 // ════════════════════════════════════════
 // VALIDATION

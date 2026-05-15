@@ -124,25 +124,6 @@ def creer_mission():
     )
     db.session.add(mission)
     db.session.commit()
-    # SMS confirmation au client
-    if mission.client_telephone:
-        sms_mission_publiee_client(
-            mission.client_telephone,
-            mission.client_nom or "Client",
-            mission.titre,
-            mission.nb_collectes_requis,
-            mission.delai_heures,
-            mission.date_echeance.strftime("%d/%m/%Y %H:%M")
-        )
-    # SMS à tous les agents
-    from .models import User
-    agents = User.query.filter_by(role="agent", actif=True).all()
-    notifier_tous_agents(
-        agents, mission.titre,
-        mission.marche_cible,
-        mission.points_recompense,
-        mission.date_echeance.strftime("%d/%m à %H:%M")
-    )
     return jsonify({
         "message": "Mission créée",
         "mission": mission.to_dict(),
@@ -488,6 +469,13 @@ def stats_fraudes():
         d["mission_titre"] = mission.titre if mission else "—"
         resultat.append(d)
     return jsonify(resultat), 200
+@main.route("/api/admin/contact/<int:contact_id>/traiter", methods=["POST"])
+def traiter_contact(contact_id):
+    contact = Contact.query.get_or_404(contact_id)
+    contact.traite = True
+    db.session.commit()
+    return jsonify({"message": "Marqué comme traité"}), 200
+
 @main.route("/api/admin/mission/<int:mission_id>/supprimer", methods=["DELETE"])
 def supprimer_mission(mission_id):
     mission = Mission.query.get_or_404(mission_id)
