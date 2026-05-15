@@ -430,9 +430,15 @@ let tousLesAgents     = [];
 // ════════════════════════════════════════
 // AUTH
 // ════════════════════════════════════════
-function adminLogin() {
+async function adminLogin() {
   const pwd = document.getElementById("inp-pwd").value;
-  if (pwd === ADMIN_PASSWORD) {
+  const res = await fetch("/api/admin/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({password: pwd})
+  });
+  const data = await res.json();
+  if (data.succes) {
     sessionStorage.setItem("admin_ok","1");
     document.getElementById("page-login").classList.add("hidden");
     document.getElementById("page-dashboard").classList.remove("hidden");

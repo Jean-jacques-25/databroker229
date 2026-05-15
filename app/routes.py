@@ -496,3 +496,11 @@ def supprimer_mission(mission_id):
     db.session.delete(mission)
     db.session.commit()
     return jsonify({"message": f"Mission #{mission_id} supprimée"}), 200
+@main.route("/api/admin/login", methods=["POST"])
+def admin_login():
+    data = request.get_json()
+    pwd  = data.get("password","")
+    admin_pwd = current_app.config.get("ADMIN_PASSWORD","databroker229")
+    if pwd == admin_pwd:
+        return jsonify({"succes": True}), 200
+    return jsonify({"succes": False}), 401
