@@ -1,3 +1,10 @@
+function validerNumeroBenin(tel) {
+  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
+  if (!/^01\d{8}$/.test(t)) {
+    return { valide: false, message: "Numero invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
+  }
+  return { valide: true, numero: t };
+}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
