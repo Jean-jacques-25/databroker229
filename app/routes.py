@@ -57,6 +57,13 @@ def inscription():
 
     if not telephone or not nom:
         return jsonify({"erreur": "Téléphone et nom obligatoires"}), 400
+    import re as _re
+    tel_clean = telephone.replace(" ","").replace("-","").replace("+229","")
+    if tel_clean.startswith("229"):
+        tel_clean = tel_clean[3:]
+    if not _re.match(r'^01[0-9]{8}$', tel_clean):
+        return jsonify({"erreur": "Numero invalide. Format : 0197000001"}), 400
+    telephone = tel_clean
     if User.query.filter_by(telephone=telephone).first():
         return jsonify({"erreur": "Ce numéro est déjà enregistré"}), 409
 

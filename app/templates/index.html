@@ -228,7 +228,13 @@ function toggleInscription() {
     ? `Déjà un compte ? <a href="#" onclick="toggleInscription()" style="color:#1a6b3c">Se connecter</a>`
     : `Pas encore inscrit ? <a href="#" onclick="toggleInscription()" style="color:#1a6b3c">Créer un compte</a>`;
 }
-
+function validerNumeroBenin(tel) {
+  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
+  if (!/^01\d{8}$/.test(t)) {
+    return { valide: false, message: "Numéro invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
+  }
+  return { valide: true, numero: t };
+}
 async function handleConnexion() {
   const tel = document.getElementById("inp-telephone").value.trim();
   if (!tel) return showMsg("msg-login", "Entre ton numéro de téléphone", "error");
@@ -361,12 +367,17 @@ async function chargerSelectMissions() {
 }
 
 function allerSoumettre(missionId, titreMission) {
-  showView("soumettre");
-  setTimeout(() => {
-    document.getElementById("sel-mission").value = missionId;
-    document.getElementById("mission-selectionnee-info").style.display = "block";
-    document.getElementById("mission-sel-titre").textContent = titreMission;
-  }, 200);
+  showView('soumettre');
+  chargerSelectMissions().then(() => {
+    setTimeout(() => {
+      const sel = document.getElementById("sel-mission");
+      if (sel) sel.value = missionId;
+      const info = document.getElementById("mission-selectionnee-info");
+      if (info) info.style.display = "block";
+      const titre = document.getElementById("mission-sel-titre");
+      if (titre) titre.textContent = titreMission;
+    }, 500);
+  });
 }
 
 function getLocation() {
