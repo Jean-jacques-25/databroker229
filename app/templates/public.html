@@ -942,6 +942,12 @@ async function seConnecter() {
   });
   const data = await res.json();
   if (res.ok) {
+    // Sauvegarder selon le rôle
+    if (role === "client") {
+      localStorage.setItem("db229_client", JSON.stringify(data.user));
+    } else {
+      localStorage.setItem("db229_user", JSON.stringify(data.user));
+    }
     fermerModal();
     window.location.href = role === "client" ? "/client" : "/agent";
   } else {
@@ -962,6 +968,11 @@ async function sInscrire() {
   });
   const data = await res.json();
   if (res.ok) {
+    if (role === "client") {
+      localStorage.setItem("db229_client", JSON.stringify(data.user));
+    } else {
+      localStorage.setItem("db229_user", JSON.stringify(data.user));
+    }
     fermerModal();
     window.location.href = role === "client" ? "/client" : "/agent";
   } else {
