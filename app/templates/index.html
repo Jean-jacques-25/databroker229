@@ -361,15 +361,42 @@ async function chargerSelectMissions() {
 }
 
 function allerSoumettre(missionId, titreMission) {
-  // Remplir le formulaire et afficher la modal
-  document.getElementById('modal-mission-id').value = missionId;
-  document.getElementById('modal-mission-titre').textContent = titreMission;
-  document.getElementById('modal-prix').value = '';
-  document.getElementById('modal-commentaire').value = '';
-  document.getElementById('modal-gps-status').textContent = '';
-  document.getElementById('modal-soumettre').style.display = 'flex';
-}
 
+  // Aller vers la page soumettre
+  showView("soumettre");
+
+  // Sélection automatique de la mission
+  setTimeout(() => {
+
+    const selectMission =
+      document.getElementById("sel-mission");
+
+    if (selectMission) {
+      selectMission.value = missionId;
+    }
+
+    // Afficher la mission choisie
+    const blocInfo =
+      document.getElementById("mission-selectionnee-info");
+
+    const titre =
+      document.getElementById("mission-sel-titre");
+
+    if (blocInfo && titre) {
+      blocInfo.style.display = "block";
+      titre.textContent = titreMission;
+    }
+
+    // Focus direct sur le prix
+    const champPrix =
+      document.getElementById("inp-prix");
+
+    if (champPrix) {
+      champPrix.focus();
+    }
+
+  }, 200);
+}
 function getLocation() {
   document.getElementById("btn-gps").textContent = "⏳ Localisation...";
   navigator.geolocation.getCurrentPosition(
