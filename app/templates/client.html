@@ -1,10 +1,3 @@
-function validerNumeroBenin(tel) {
-  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
-  if (!/^01\d{8}$/.test(t)) {
-    return { valide: false, message: "Numero invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
-  }
-  return { valide: true, numero: t };
-}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -501,9 +494,20 @@ function toggleForm() {
   document.getElementById("form-inscription").classList.toggle("hidden");
 }
 
+function validerNumeroBenin(tel) {
+  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
+  if (!/^01\d{8}$/.test(t)) {
+    return { valide: false, message: "Numéro invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
+  }
+  return { valide: true, numero: t };
+}
+
 async function seConnecter() {
-  const tel = document.getElementById("login-tel").value.trim();
-  if (!tel) return showMsg("msg-login","Entre ton numéro","error");
+  const telBrut = document.getElementById("login-tel").value.trim();
+  if (!telBrut) return showMsg("msg-login","Entre ton numéro","error");
+  const vTel = validerNumeroBenin(telBrut);
+  if (!vTel.valide) return showMsg("msg-login", vTel.message, "error");
+  const tel = vTel.numero;
 
   const res  = await fetch("/api/connexion", {
     method:"POST", headers:{"Content-Type":"application/json"},

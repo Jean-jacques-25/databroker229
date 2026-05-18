@@ -1,10 +1,3 @@
-function validerNumeroBenin(tel) {
-  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
-  if (!/^01\d{8}$/.test(t)) {
-    return { valide: false, message: "Numero invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
-  }
-  return { valide: true, numero: t };
-}
 {% extends "base.html" %}
 {% block content %}
 
@@ -236,8 +229,11 @@ function validerNumeroBenin(tel) {
   return { valide: true, numero: t };
 }
 async function handleConnexion() {
-  const tel = document.getElementById("inp-telephone").value.trim();
-  if (!tel) return showMsg("msg-login", "Entre ton numéro de téléphone", "error");
+  const telBrut = document.getElementById("inp-telephone").value.trim();
+  if (!telBrut) return showMsg("msg-login", "Entre ton numéro de téléphone", "error");
+  const vTel = validerNumeroBenin(telBrut);
+  if (!vTel.valide) return showMsg("msg-login", vTel.message, "error");
+  const tel = vTel.numero;
 
   if (modeInscription) {
     const nom = document.getElementById("inp-nom").value.trim();

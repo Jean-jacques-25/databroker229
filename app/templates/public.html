@@ -1,10 +1,3 @@
-function validerNumeroBenin(tel) {
-  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
-  if (!/^01\d{8}$/.test(t)) {
-    return { valide: false, message: "Numero invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
-  }
-  return { valide: true, numero: t };
-}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -928,6 +921,14 @@ function switchTab(tab) {
   document.getElementById("form-ins").classList.toggle("hidden",  tab !== "ins");
   document.getElementById("tab-conn").classList.toggle("active",  tab === "conn");
   document.getElementById("tab-ins").classList.toggle("active",   tab === "ins");
+}
+
+function validerNumeroBenin(tel) {
+  let t = tel.replace(/\s/g,'').replace(/-/g,'').replace(/\+229/g,'').replace(/^229/,'');
+  if (!/^01\d{8}$/.test(t)) {
+    return { valide: false, message: "Numéro invalide. Format : 0197000001 (10 chiffres, commence par 01)" };
+  }
+  return { valide: true, numero: t };
 }
 
 async function seConnecter() {
