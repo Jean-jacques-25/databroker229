@@ -183,9 +183,7 @@
     <a href="#" onclick="showView('missions')" id="nav-missions">
       <span class="icon">📋</span>Missions
     </a>
-    <a href="#" onclick="showView('soumettre')" id="nav-soumettre">
-      <span class="icon">➕</span>Soumettre
-    </a>
+
     <a href="#" onclick="showView('profil')" id="nav-profil">
       <span class="icon">👤</span>Profil
     </a>
@@ -362,41 +360,14 @@ async function chargerSelectMissions() {
     missions.map(m => `<option value="${m.id}">${m.titre}</option>`).join("");
 }
 
-async function allerSoumettre(missionId, titreMission) {
-  // Aller sur la vue soumettre
-  ['view-accueil','view-missions','view-profil'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-  const vs = document.getElementById('view-soumettre');
-  if (vs) vs.style.display = 'block';
-
-  // Mettre à jour la navigation
-  ['nav-accueil','nav-missions','nav-soumettre','nav-profil'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.className = id === 'nav-soumettre' ? 'active' : '';
-  });
-
-  // Charger les missions dans le select
-  await chargerSelectMissions();
-
-  setTimeout(() => {
-    const sel = document.getElementById('sel-mission');
-    if (sel) {
-      sel.value = String(missionId);
-      // Forcer la mise à jour si value pas trouvé
-      for (let i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value == missionId) {
-          sel.selectedIndex = i;
-          break;
-        }
-      }
-    }
-    const info = document.getElementById('mission-selectionnee-info');
-    if (info) info.style.display = 'block';
-    const titre = document.getElementById('mission-sel-titre');
-    if (titre) titre.textContent = titreMission;
-  }, 400);
+function allerSoumettre(missionId, titreMission) {
+  // Remplir le formulaire et afficher la modal
+  document.getElementById('modal-mission-id').value = missionId;
+  document.getElementById('modal-mission-titre').textContent = titreMission;
+  document.getElementById('modal-prix').value = '';
+  document.getElementById('modal-commentaire').value = '';
+  document.getElementById('modal-gps-status').textContent = '';
+  document.getElementById('modal-soumettre').style.display = 'flex';
 }
 
 function getLocation() {
