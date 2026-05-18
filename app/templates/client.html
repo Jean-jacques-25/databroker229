@@ -1014,5 +1014,152 @@ async function envoyerChat() {
 }
 </script>
 
+
+<!-- ══ CHATBOT CLIENT ══ -->
+<button onclick="toggleChatClient()"
+  style="position:fixed;bottom:76px;right:14px;width:48px;height:48px;
+         border-radius:50%;background:linear-gradient(135deg,#1a3a6b,#1a6b3c);
+         color:white;border:none;cursor:pointer;font-size:1.2rem;
+         box-shadow:0 4px 14px rgba(26,58,107,0.4);z-index:800;
+         display:flex;align-items:center;justify-content:center">💬</button>
+
+<div id="chat-client-win"
+  style="display:none;position:fixed;bottom:132px;right:8px;
+         width:calc(100vw - 16px);max-width:340px;height:400px;
+         background:white;border-radius:16px;flex-direction:column;
+         box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:800;overflow:hidden">
+
+  <div style="background:linear-gradient(135deg,#1a3a6b,#2d5f9e);
+              color:white;padding:11px 14px;
+              display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:1.3rem">🤖</span>
+      <div>
+        <div style="font-weight:700;font-size:0.85rem">Assistant DataBroker</div>
+        <div style="font-size:0.68rem;opacity:0.8">● Disponible 24h/24</div>
+      </div>
+    </div>
+    <button onclick="toggleChatClient()"
+      style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">×</button>
+  </div>
+
+  <div id="chat-client-msgs"
+    style="flex:1;overflow-y:auto;padding:10px;
+           display:flex;flex-direction:column;gap:8px"></div>
+
+  <div id="chat-client-sugg"
+    style="padding:5px 8px;display:flex;gap:5px;overflow-x:auto;flex-shrink:0"></div>
+
+  <div style="padding:8px;border-top:1px solid #f0f4f8;display:flex;gap:6px;flex-shrink:0">
+    <input id="chat-client-inp" type="text" placeholder="Votre question..."
+      onkeydown="if(event.key==='Enter') envoyerChatClient()"
+      style="flex:1;padding:8px 12px;border:1.5px solid #e2e8f0;
+             border-radius:20px;font-size:0.82rem;outline:none">
+    <button onclick="envoyerChatClient()"
+      style="width:34px;height:34px;border-radius:50%;background:#1a3a6b;
+             color:white;border:none;cursor:pointer">➤</button>
+  </div>
+</div>
+
+<script>
+var _chatClientOuvert = false;
+var _chatClientHisto  = [];
+var _chatClientPremier = true;
+
+var _SUGG_CLIENT = [
+  "Comment commander une mission ?",
+  "Combien ça coûte ?",
+  "Délai de livraison ?",
+  "Que contient le rapport ?"
+];
+
+var _SYS_CLIENT = "Tu es l'assistant de DataBroker 229 pour les clients entreprises. " +
+"DataBroker 229 collecte des données terrain (prix, disponibilité produits) sur les marchés béninois " +
+"grâce à des agents mobiles. Les clients reçoivent un rapport PDF/Excel automatiquement. " +
+"Tarifs : 500 FCFA/collecte de base. 24h urgent +30%, 72h étendu -10%. " +
+"Marchés couverts : Dantokpa, Ouando, Akpakpa, Missèbo, Bohicon, Parakou, Natitingou. " +
+"Paiement : MTN MoMo, Flooz, Celtiis Cash. " +
+"Contact : WhatsApp +229 61 97 67 12, Email jeanjacquesaguin30@gmail.com. " +
+"Réponds en français, maximum 2-3 phrases courtes et professionnelles.";
+
+function toggleChatClient() {
+  _chatClientOuvert = !_chatClientOuvert;
+  var w = document.getElementById('chat-client-win');
+  w.style.display = _chatClientOuvert ? 'flex' : 'none';
+  if (_chatClientOuvert && _chatClientPremier) {
+    _chatClientPremier = false;
+    _addMsgClient('bot', '👋 Bonjour ! Je suis votre assistant DataBroker 229. Comment puis-je vous aider ?');
+    _showSuggClient(_SUGG_CLIENT);
+  }
+}
+
+function _addMsgClient(type, txt) {
+  var z = document.getElementById('chat-client-msgs');
+  var d = document.createElement('div');
+  d.style.cssText = type === 'bot'
+    ? 'background:#f0f4f8;color:#1a202c;padding:8px 10px;border-radius:10px;border-bottom-left-radius:2px;font-size:0.82rem;line-height:1.5;max-width:88%;align-self:flex-start;white-space:pre-line'
+    : 'background:#1a3a6b;color:white;padding:8px 10px;border-radius:10px;border-bottom-right-radius:2px;font-size:0.82rem;line-height:1.5;max-width:88%;align-self:flex-end';
+  d.textContent = txt;
+  z.appendChild(d);
+  z.scrollTop = z.scrollHeight;
+}
+
+function _showSuggClient(liste) {
+  var z = document.getElementById('chat-client-sugg');
+  z.innerHTML = liste.map(function(s) {
+    return '<button onclick="_suggClient('' + s.replace(/'/g,"\'") + '')" ' +
+      'style="white-space:nowrap;padding:4px 10px;background:#f0f4f8;border:1px solid #e2e8f0;' +
+      'border-radius:14px;font-size:0.7rem;cursor:pointer;color:#1a3a6b;font-weight:600;flex-shrink:0">' +
+      s + '</button>';
+  }).join('');
+}
+
+function _suggClient(t) {
+  document.getElementById('chat-client-inp').value = t;
+  envoyerChatClient();
+}
+
+async function envoyerChatClient() {
+  var inp = document.getElementById('chat-client-inp');
+  var txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  document.getElementById('chat-client-sugg').innerHTML = '';
+  _addMsgClient('user', txt);
+  _chatClientHisto.push({role:'user', content:txt});
+
+  var z = document.getElementById('chat-client-msgs');
+  var ty = document.createElement('div');
+  ty.id = 'chat-client-typing';
+  ty.style.cssText = 'background:#f0f4f8;padding:8px 10px;border-radius:10px;font-size:1rem;color:#718096;align-self:flex-start';
+  ty.textContent = '• • •';
+  z.appendChild(ty); z.scrollTop = z.scrollHeight;
+
+  try {
+    var r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system:_SYS_CLIENT,
+        messages:_chatClientHisto
+      })
+    });
+    var d = await r.json();
+    var rep = d.content && d.content[0] ? d.content[0].text : 'Contactez-nous : +229 61 97 67 12';
+    var t2 = document.getElementById('chat-client-typing');
+    if (t2) t2.remove();
+    _addMsgClient('bot', rep);
+    _chatClientHisto.push({role:'assistant', content:rep});
+    _showSuggClient(['Autre question', 'Nos tarifs', 'Commander maintenant']);
+  } catch(e) {
+    var t2 = document.getElementById('chat-client-typing');
+    if (t2) t2.remove();
+    _addMsgClient('bot', 'Erreur. Contactez : +229 61 97 67 12');
+  }
+}
+</script>
+
 </body>
 </html>

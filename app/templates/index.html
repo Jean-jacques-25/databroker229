@@ -363,16 +363,40 @@ async function chargerSelectMissions() {
 }
 
 async function allerSoumettre(missionId, titreMission) {
-  showView('soumettre');
+  // Aller sur la vue soumettre
+  ['view-accueil','view-missions','view-profil'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const vs = document.getElementById('view-soumettre');
+  if (vs) vs.style.display = 'block';
+
+  // Mettre à jour la navigation
+  ['nav-accueil','nav-missions','nav-soumettre','nav-profil'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = id === 'nav-soumettre' ? 'active' : '';
+  });
+
+  // Charger les missions dans le select
   await chargerSelectMissions();
+
   setTimeout(() => {
-    const sel = document.getElementById("sel-mission");
-    if (sel) sel.value = String(missionId);
-    const info = document.getElementById("mission-selectionnee-info");
-    if (info) info.style.display = "block";
-    const titre = document.getElementById("mission-sel-titre");
+    const sel = document.getElementById('sel-mission');
+    if (sel) {
+      sel.value = String(missionId);
+      // Forcer la mise à jour si value pas trouvé
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value == missionId) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+    const info = document.getElementById('mission-selectionnee-info');
+    if (info) info.style.display = 'block';
+    const titre = document.getElementById('mission-sel-titre');
     if (titre) titre.textContent = titreMission;
-  }, 300);
+  }, 400);
 }
 
 function getLocation() {
