@@ -430,7 +430,27 @@ async function soumettreCollecte() {
 
   const photo = document.getElementById("inp-photo").files[0];
   if (photo) formData.append("photo", photo);
+	// Vérification GPS obligatoire
+  if (!gpsLat || !gpsLng) {
+  alert(
+    "Vous devez activer votre GPS avant de soumettre la mission."
+  );
+  return;
+  }
 
+       // Vérification photo obligatoire
+  const photoInput =
+  document.getElementById('inp-photo');
+
+  if (
+  !photoInput ||
+  photoInput.files.length === 0
+  ) {
+  alert(
+    "Vous devez prendre une photo avant de soumettre."
+  );
+  return;
+ }
   const res = await fetch("/api/collectes", { method: "POST", body: formData });
   const data = await res.json();
 
@@ -443,7 +463,7 @@ async function soumettreCollecte() {
   } else {
     showMsg("msg-collecte", "Erreur : " + JSON.stringify(data), "error");
   }
-}
+ }
 
 // ============================================================
 // PROFIL
