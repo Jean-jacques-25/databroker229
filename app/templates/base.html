@@ -11,163 +11,178 @@
 
     <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16 sm:h-20">
-            
-            <a href="/" class="flex items-center gap-3 group focus:outline-none">
-                <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-100 group-hover:scale-105 transition-transform">
-                    D
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-lg font-black tracking-tight text-gray-900 bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 bg-clip-text">
-                        DataBroker<span class="text-blue-600">229</span>
-                    </span>
-                    <span class="text-[10px] font-bold text-emerald-600 tracking-widest uppercase -mt-1">Bénin Terrain</span>
-                </div>
-            </a>
-
-            <div class="hidden md:flex items-center justify-between flex-1 ml-10">
+            <div class="flex justify-between items-center h-16 sm:h-20">
                 
-                {% if 'user_id' not in session %}
-                    <nav class="flex items-center gap-8 mx-auto">
-                        <a href="/" class="text-sm font-semibold text-blue-600 transition-colors">Accueil</a>
-                        <a href="#services" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Nos Services</a>
-                        <a href="#contact" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Contact</a>
-                    </nav>
-                    <div class="flex items-center gap-4">
-                        <a href="/login" class="text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors px-4 py-2">Connexion</a>
-                        <a href="/register" class="text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-5 py-2.5 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95">
-                            Rejoignez-nous
-                        </a>
+                <a href="/" class="flex items-center gap-3 group focus:outline-none">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-100 group-hover:scale-105 transition-transform">
+                        D
                     </div>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-black tracking-tight text-gray-900 bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 bg-clip-text">
+                            DataBroker<span class="text-blue-600">229</span>
+                        </span>
+                        <span class="text-[10px] font-bold text-emerald-600 tracking-widest uppercase -mt-1">Bénin Terrain</span>
+                    </div>
+                </a>
 
-                {% elif session.get('user_role') == 'agent' %}
-                    <div class="mx-auto bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full border border-blue-100 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                        Espace Agent de Collecte
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <a href="/agent/dashboard" class="text-sm font-bold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-2">
-                            📊 Mon Tableau de Bord
-                        </a>
-                        <span class="text-gray-200">|</span>
-                        <a href="/logout" class="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1">
-                            👋 Déconnexion
-                        </a>
-                    </div>
+                <div class="hidden md:flex items-center justify-between flex-1 ml-10">
+                    {% if 'user_id' not in session %}
+                        <nav class="flex items-center gap-8 mx-auto">
+                            <a href="/" class="text-sm font-semibold text-blue-600 transition-colors">Accueil</a>
+                            <a href="#services" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Nos Services</a>
+                            <a href="#contact" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">Contact</a>
+                        </nav>
+                        <div class="flex items-center gap-4">
+                            <a href="/login" class="text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors px-4 py-2">Connexion</a>
+                            <a href="/register" class="text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-5 py-2.5 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95">
+                                Rejoignez-nous
+                            </a>
+                        </div>
 
-                {% elif session.get('user_role') == 'client' %}
-                    <div class="mx-auto bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full border border-emerald-100 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Espace Client Entreprise
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <a href="/client/dashboard" class="text-sm font-bold text-gray-900 hover:text-emerald-600 transition-colors flex items-center gap-2">
-                            🏢 Mon Espace Mission
-                        </a>
-                        <span class="text-gray-200">|</span>
-                        <a href="/logout" class="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1">
-                            👋 Déconnexion
-                        </a>
-                    </div>
+                    {% elif session.get('user_role') == 'agent' %}
+                        <div class="mx-auto bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full border border-blue-100 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            Espace Agent de Collecte
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <a href="/agent/dashboard" class="text-sm font-bold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-2">
+                                📊 Mon Tableau de Bord
+                            </a>
+                            <span class="text-gray-200">|</span>
+                            <a href="/logout" class="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1">
+                                👋 Déconnexion
+                            </a>
+                        </div>
 
-                {% elif session.get('user_role') == 'admin' %}
-                    <div class="mx-auto bg-amber-50 text-amber-800 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full border border-amber-100 flex items-center gap-2">
-                        👑 Supervision Système
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <a href="/admin/dashboard" class="text-sm font-bold text-gray-900 hover:text-amber-600 transition-colors flex items-center gap-2">
-                            🛠️ Console Générale
-                        </a>
-                        <span class="text-gray-200">|</span>
-                        <a href="/logout" class="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1">
-                            👋 Déconnexion
-                        </a>
-                    </div>
-                {% endif %}
+                    {% elif session.get('user_role') == 'client' %}
+                        <div class="mx-auto bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full border border-emerald-100 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Espace Client Entreprise
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <a href="/client/dashboard" class="text-sm font-bold text-gray-900 hover:text-emerald-600 transition-colors flex items-center gap-2">
+                                🏢 Mon Espace Mission
+                            </a>
+                            <span class="text-gray-200">|</span>
+                            <a href="/logout" class="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1">
+                                👋 Déconnexion
+                            </a>
+                        </div>
+
+                    {% elif session.get('user_role') == 'admin' %}
+                        <div class="mx-auto bg-amber-50 text-amber-800 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full border border-amber-100 flex items-center gap-2">
+                            👑 Supervision Système
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <a href="/admin/dashboard" class="text-sm font-bold text-gray-900 hover:text-amber-600 transition-colors flex items-center gap-2">
+                                🛠️ Console Générale
+                            </a>
+                            <span class="text-gray-200">|</span>
+                            <a href="/logout" class="text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1">
+                                👋 Déconnexion
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path id="burger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+
             </div>
-
-            <div class="flex items-center md:hidden">
-                <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path id="burger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-            </div>
-
         </div>
-    </div>
 
-    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 bg-white px-4 pt-2 pb-6 space-y-3 shadow-inner">
-        {% if 'user_id' not in session %}
-            <a href="/" class="block px-3 py-2.5 text-base font-bold text-blue-600 rounded-xl bg-blue-50">Accueil</a>
-            <a href="#services" class="block px-3 py-2.5 text-base font-medium text-gray-600 rounded-xl hover:bg-gray-50">Nos Services</a>
-            <a href="#contact" class="block px-3 py-2.5 text-base font-medium text-gray-600 rounded-xl hover:bg-gray-50">Contact</a>
-            <div class="pt-4 border-t border-gray-100 flex flex-col gap-2">
-                <a href="/login" class="block w-full text-center font-bold text-gray-700 py-2.5 rounded-xl border border-gray-200">Connexion</a>
-                <a href="/register" class="block w-full text-center font-bold text-white bg-blue-600 py-2.5 rounded-xl">Inscription</a>
-            </div>
-        {% else %}
-            <div class="px-3 py-2 text-xs font-black text-gray-400 uppercase tracking-widest">Navigation Privée</div>
-            {% if session.get('user_role') == 'agent' %}
-                <a href="/agent/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">📊 Mon Tableau de Bord</a>
-            {% elif session.get('user_role') == 'client' %}
-                <a href="/client/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">🏢 Mon Espace Entreprise</a>
-            {% elif session.get('user_role') == 'admin' %}
-                <a href="/admin/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">🛠️ Console Admin</a>
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-100 bg-white px-4 pt-2 pb-6 space-y-3 shadow-inner">
+            {% if 'user_id' not in session %}
+                <a href="/" class="block px-3 py-2.5 text-base font-bold text-blue-600 rounded-xl bg-blue-50">Accueil</a>
+                <a href="#services" class="block px-3 py-2.5 text-base font-medium text-gray-600 rounded-xl hover:bg-gray-50">Nos Services</a>
+                <a href="#contact" class="block px-3 py-2.5 text-base font-medium text-gray-600 rounded-xl hover:bg-gray-50">Contact</a>
+                <div class="pt-4 border-t border-gray-100 flex flex-col gap-2">
+                    <a href="/login" class="block w-full text-center font-bold text-gray-700 py-2.5 rounded-xl border border-gray-200">Connexion</a>
+                    <a href="/register" class="block w-full text-center font-bold text-white bg-blue-600 py-2.5 rounded-xl">Inscription</a>
+                </div>
+            {% align_content %}
+                <div class="px-3 py-2 text-xs font-black text-gray-400 uppercase tracking-widest">Navigation Privée</div>
+                {% if session.get('user_role') == 'agent' %}
+                    <a href="/agent/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">📊 Mon Tableau de Bord</a>
+                {% elif session.get('user_role') == 'client' %}
+                    <a href="/client/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">🏢 Mon Espace Entreprise</a>
+                {% elif session.get('user_role') == 'admin' %}
+                    <a href="/admin/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">🛠️ Console Admin</a>
+                {% endif %}
+                <a href="/logout" class="block px-3 py-3 text-base font-bold text-red-600 bg-red-50 rounded-xl mt-4 text-center">👋 Se déconnecter</a>
             {% endif %}
-            <a href="/logout" class="block px-3 py-3 text-base font-bold text-red-600 bg-red-50 rounded-xl mt-4 text-center">👋 Se déconnecter</a>
-        {% endif %}
-    </div>
-</header>
-
-<script>
-    document.getElementById('mobile-menu-button').addEventListener('click', function() {
-        const menu = document.getElementById('mobile-menu');
-        const burgerIcon = document.getElementById('burger-icon');
-        
-        // Alerner la visibilité du menu
-        menu.classList.toggle('hidden');
-        
-        // Animation rapide du bouton burger vers une croix (Optionnel mais ultra fluide)
-        if (menu.classList.contains('hidden')) {
-            burgerIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
-        } else {
-            burgerIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
-        }
-    });
-</script>
+        </div>
     </header>
 
     <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+    <footer id="contact" class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            
             <div>
                 <span class="text-xl font-black text-white">Data<span class="text-emerald-500">broker229</span></span>
-                <p class="mt-4 text-sm">La plateforme intelligente de collecte de données terrain au Bénin. Fiabilité, rapidité et précision.</p>
+                <p class="mt-4 text-sm leading-relaxed">La plateforme intelligente de collecte de données terrain au Bénin. Fiabilité, rapidité et précision pour le déploiement de vos projets.</p>
             </div>
+            
             <div>
-                <h4 class="text-white font-semibold mb-4">Liens Rapides</h4>
-                <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white transition">Politique de confidentialité</a></li>
-                    <li><a href="#" class="hover:text-white transition">Conditions d'utilisation</a></li>
+                <h4 class="text-white font-semibold mb-4">Support & Contact Direct</h4>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-center gap-3">
+                        <a href="https://wa.me/2290155256871?text=Bonjour%20DataBroker229,%20je%20souhaite%20en%20savoir%20plus%20sur%20vos%20services." 
+                           target="_blank" 
+                           class="hover:text-emerald-400 transition flex items-center gap-2 text-gray-300 font-medium">
+                            <i class="fa-brands fa-whatsapp text-emerald-500 text-lg"></i> +229 01 55 25 68 71
+                        </a>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <a href="mailto:jeanjacquesaguin30@gmail.com" 
+                           class="hover:text-emerald-400 transition flex items-center gap-2 text-gray-300">
+                            <i class="fa-solid fa-envelope text-blue-500"></i> jeanjacquesaguin30@gmail.com
+                        </a>
+                    </li>
+                    <li class="text-xs text-gray-500 italic pt-1 flex items-center gap-2">
+                        <i class="fa-solid fa-location-dot text-red-500"></i> Cotonou, Bénin
+                    </li>
                 </ul>
             </div>
+            
             <div>
                 <h4 class="text-white font-semibold mb-4">Suivez-nous</h4>
                 <div class="flex gap-4 text-lg">
                     <a href="#" class="hover:text-white transition"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="#" class="hover:text-white transition"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="https://wa.me/2290155256871" target="_blank" class="hover:text-white transition"><i class="fa-brands fa-whatsapp"></i></a>
                     <a href="#" class="hover:text-white transition"><i class="fa-brands fa-linkedin"></i></a>
                 </div>
             </div>
+
         </div>
+        
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-gray-800 text-center text-xs">
             &copy; 2026 Databroker229. Tous droits réservés.
         </div>
     </footer>
+
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            const burgerIcon = document.getElementById('burger-icon');
+            
+            menu.classList.toggle('hidden');
+            
+            if (menu.classList.contains('hidden')) {
+                burgerIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            } else {
+                burgerIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            }
+        });
+    </script>
 
 </body>
 </html>
