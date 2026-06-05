@@ -31,7 +31,7 @@
                     <p class="text-sm text-gray-600 italic">"{{ sub.observations or 'Aucune note.' }}"</p>
                 </div>
 
-                <form method="POST" class="pt-4 border-t border-gray-100 flex gap-4">
+                <form action="{{ url_for('main.admin_review', submission_id=sub.id) }}" method="POST" class="pt-4 border-t border-gray-100 flex gap-4">
                     <button type="submit" name="action" value="approve" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition text-center text-sm">
                         ✅ Approuver & Payer
                     </button>
