@@ -69,6 +69,18 @@
         <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">💳 Payé & En ligne</span>
     {% endif %}
 </div>
+
+<div class="mt-4 flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
+    <div>
+        <span class="text-xs font-bold text-gray-400 uppercase block">Données récoltées</span>
+        <p class="text-sm font-bold text-gray-800">Prêt pour exploitation</p>
+    </div>
+    
+    <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" 
+       class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-sm shadow-emerald-100">
+        📊 Télécharger le fichier Excel / CSV
+    </a>
+</div>
                     {% else %}
                     <div class="text-center py-12 text-gray-400 text-sm">
                         Vous n'avez commandé aucune mission pour le moment. Remplissez le formulaire à gauche !

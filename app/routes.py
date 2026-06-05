@@ -1,4 +1,5 @@
 import os
+import csv
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -6,6 +7,8 @@ from datetime import datetime, timedelta
 from . import db
 from .models import User, Mission, Submission, Transaction, CollecteData
 from functools import wraps
+from io import StringIO
+from flask import Response
 
 main_bp = Blueprint('main', __name__)
 
@@ -332,14 +335,42 @@ def api_points_collecte():
         })
     return jsonify(features)
 
-@main_bp.route('/super-secret-cleanup-229')
-def db_cleanup():
-    # Remplacer par les pseudos ou emails exacts de tes comptes de test
-    utilisateurs_test = User.query.filter(User.username.in_(['test', 'admin123']) | User.email.in_(['test@test.com'])).all()
+@main_bp.route('/client/export/<int:mission_id>')
+def client_export_csv(mission_id):
+    # 1. Sécurité : Vérifier si l'utilisateur est connecté et est bien un client
+    if 'user_id' not in session or session.get('user_role') != 'client':
+        return redirect(url_for('main.login'))
     
-    count = len(utilisateurs_test)
-    for u in utilisateurs_test:
-        db.session.delete(u)
+    # 2. Récupérer la mission
+    mission = Mission.query.get_or_404(mission_id)
     
-    db.session.commit()
-    return f"✅ {count} comptes de test supprimés avec succès pour la production !"
+    # 3. Récupérer toutes les soumissions VALIDÉES liées à cette mission
+    sub_validees = Submission.query.filter_by(mission_id=mission.id, status='Approved').all()
+    
+    # 4. Créer le fichier CSV en mémoire
+    si = StringIO()
+    cw = csv.writer(si, delimiter=';') # Point-virgule pour une ouverture directe et propre sur Excel Europe/Afrique
+    
+    # Écriture de la ligne d'en-tête (Header)
+    cw.writerow(['ID_Soumission', 'Nom_Commerce', 'Telephone', 'Adresse_Quartier', 'Latitude', 'Longitude', 'Observations', 'Agent_ID'])
+    
+    # Écriture des données récoltées à Cotonou
+    for sub in sub_validees:
+        cw.writerow([
+            f"SUB-{sub.id}",
+            sub.shop_name,
+            sub.shop_phone if sub.shop_phone else "N/A",
+            sub.shop_address,
+            sub.latitude,
+            sub.longitude,
+            sub.observations if sub.observations else "",
+            sub.agent_id
+        ])
+    
+    # 5. Préparer la réponse Flask pour forcer le téléchargement du fichier
+    output = make_response(si.getvalue())
+    nom_fichier = f"databroker229_mission_{mission_id}.csv"
+    output.headers["Content-Disposition"] = f"attachment; filename={nom_fichier}"
+    output.headers["Content-Type"] = "text/csv; charset=utf-8"
+    
+    return output
