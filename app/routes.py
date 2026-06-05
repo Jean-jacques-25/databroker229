@@ -331,3 +331,15 @@ def api_points_collecte():
             "lng": p.longitude
         })
     return jsonify(features)
+
+@main_bp.route('/super-secret-cleanup-229')
+def db_cleanup():
+    # Remplacer par les pseudos ou emails exacts de tes comptes de test
+    utilisateurs_test = User.query.filter(User.username.in_(['test', 'admin123']) | User.email.in_(['test@test.com'])).all()
+    
+    count = len(utilisateurs_test)
+    for u in utilisateurs_test:
+        db.session.delete(u)
+    
+    db.session.commit()
+    return f"✅ {count} comptes de test supprimés avec succès pour la production !"
