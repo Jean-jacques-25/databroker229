@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto my-10 px-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+        <h1 class="text-xl font-black text-gray-900">Rapport de Collecte : {{ mission.title }}</h1>
+        <p class="text-xs text-gray-500 mt-1 mb-6">Rémunération garantie après validation : <span class="text-emerald-600 font-bold">{{ mission.price }} FCFA</span></p>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nom du commerce ou point collecté *</label>
+                <input type="text" name="shop_name" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: Boutique Moov Africa Gbégamey" required>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Téléphone du gérant</label>
+                    <input type="text" name="shop_phone" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: +229 97000000">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Adresse / Quartier *</label>
+                    <input type="text" name="shop_address" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: Rue pavée après la place bulgari" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Latitude (Auto-générée)</label>
+                    <input type="text" name="latitude" id="latitude" readonly required class="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-xs font-mono focus:outline-none cursor-not-allowed text-gray-600" value="6.3703">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Longitude (Auto-générée)</label>
+                    <input type="text" name="longitude" id="longitude" readonly required class="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-xs font-mono focus:outline-none cursor-not-allowed text-gray-600" value="2.4252">
+                </div>
+            </div>
+            <p id="geo-status" class="text-xs text-gray-500 font-medium px-1">🔄 Recherche de votre position GPS en cours...</p>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Preuve photo réelle du bâtiment *</label>
+                <input type="file" name="photo" accept="image/*" class="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Observations particulières / Notes</label>
+                <textarea name="observations" rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: La boutique est fermée tous les lundis matin..."></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-100 text-sm">
+                📤 Transmettre le dossier complet
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const latInput = document.getElementById('latitude');
+        const lngInput = document.getElementById('longitude');
+        const statusText = document.getElementById('geo-status');
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lng = position.coords.longitude.toFixed(6);
+                    
+                    latInput.value = lat;
+                    lngInput.value = lng;
+                    
+                    statusText.innerText = "✅ Position GPS synchronisée avec précision !";
+                    statusText.className = "text-xs font-medium px-1 text-green-600";
+                },
+                function(error) {
+                    console.error("Erreur GPS : ", error);
+                    statusText.innerText = "❌ Activation GPS requise. L'appareil utilise les coordonnées par défaut de Cotonou.";
+                    statusText.className = "text-xs font-medium px-1 text-amber-600";
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            statusText.innerText = "❌ Votre navigateur ne prend pas en charge la géolocalisation.";
+            statusText.className = "text-xs font-medium px-1 text-red-600";
+        }
+    });
+</script>
+{% endblock %}

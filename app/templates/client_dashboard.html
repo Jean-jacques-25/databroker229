@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900">Espace Entreprise — {{ client.fullname }}</h1>
+                <p class="text-xs text-gray-500 mt-1">Commandez des campagnes de collectes de données géolocalisées au Bénin.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">🎯 Commander une nouvelle collecte</h2>
+                
+                <form method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Intitulé de la mission *</label>
+                        <input type="text" name="title" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: Recensement des boutiques MTN à Akpakpa" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Description courte *</label>
+                        <textarea name="description" rows="2" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Décrivez globalement le but de la collecte..." required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Protocole / Instructions strictes pour l'agent *</label>
+                        <textarea name="instructions" rows="4" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: 1- Prendre en photo la devanture. 2- Demander le numéro du gérant. 3- Activer obligatoirement le GPS devant la porte..." required></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Rémunération (FCFA) *</label>
+                            <input type="number" name="price" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: 1500" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Niveau de difficulté</label>
+                            <select name="difficulty" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none">
+                                <option value="Facile">Facile</option>
+                                <option value="Standard" selected>Standard</option>
+                                <option value="Difficile">Difficile</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-sm text-sm">
+                        🚀 Lancer et financer la mission
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">📊 Historique de vos campagnes</h2>
+                <div class="space-y-4">
+                    {% for mission in my_missions %}
+                    <div class="p-4 border border-gray-100 bg-gray-50 rounded-xl flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">{{ mission.title }}</h4>
+                            <p class="text-xs text-gray-400 mt-1">Rémunération par l'entreprise : <span class="text-emerald-600 font-bold">{{ mission.price }} FCFA</span></p>
+                        </div>
+                       <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold">
+    {{ mission.status }}
+</span>
+
+<div class="mt-2">
+    {% if mission.payment_status == 'Pending_Payment' %}
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">⏳ En attente de paiement</span>
+    {% else %}
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">💳 Payé & En ligne</span>
+    {% endif %}
+</div>
+                    {% else %}
+                    <div class="text-center py-12 text-gray-400 text-sm">
+                        Vous n'avez commandé aucune mission pour le moment. Remplissez le formulaire à gauche !
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

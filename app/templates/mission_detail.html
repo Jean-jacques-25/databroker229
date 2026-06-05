@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto my-10 px-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        
+        <div class="bg-gray-900 text-white p-8">
+            <h1 class="text-2xl font-black">{{ mission.title }}</h1>
+            <p class="text-emerald-400 font-bold mt-1 text-lg">{{ mission.price }} FCFA accordés</p>
+        </div>
+
+        <div class="p-8 space-y-6">
+            <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Protocole obligatoire à suivre</h3>
+                <p class="text-gray-600 text-sm bg-gray-50 p-4 rounded-xl border border-gray-100">{{ mission.instructions }}</p>
+            </div>
+
+            <form method="POST" id="collectForm" enctype="multipart/form-data" class="space-y-4 border-t border-gray-100 pt-6">    
+            </form>  
+                <input type="hidden" name="latitude" id="lat_input">
+                <input type="hidden" name="longitude" id="lng_input">
+                <input type="file" id="photo_input" name="photo" accept="image/*" ... required>
+
+                <div id="gps_status" class="p-3 bg-red-50 text-red-700 text-xs font-bold rounded-xl flex items-center gap-2">
+                    <i class="fa-solid fa-location-crosshairs animate-pulse"></i> Position GPS manquante. Vous devez vous synchroniser.
+                </div>
+                <button type="button" onclick="lockGPS()" class="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">
+                    <i class="fa-solid fa-crosshairs mr-1"></i> Synchroniser mes coordonnées GPS
+                </button>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Nom légal de la boutique *</label>
+                        <input type="text" name="shop_name" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Numéro du gérant (Bénin) *</label>
+                        <input type="text" name="shop_phone" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Description physique du repère géographique *</label>
+                    <input type="text" name="shop_address" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: Maison en face du grand pylône MTN" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Preuve photographique brute de la façade *</label>
+                    <input type="file" id="photo_input" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Notes terrain / Observations libres</label>
+                    <textarea name="observations" rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition shadow-sm">
+                    Transmettre le dossier complet
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Capturer la position géographique de l'appareil (Fonctionne hors-ligne via la puce GPS de l'ordinateur/téléphone)
+function lockGPS() {
+    const infoBox = document.getElementById('gps_status');
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('lat_input').value = position.coords.latitude;
+            document.getElementById('lng_input').value = position.coords.longitude;
+            infoBox.className = "p-3 bg-green-50 text-green-700 text-xs font-bold rounded-xl flex items-center gap-2";
+            infoBox.innerHTML = "✅ Position géographique authentifiée et verrouillée.";
+        }, function() {
+            infoBox.innerHTML = "❌ Erreur : Accès au capteur GPS refusé par le système.";
+        });
+    } else {
+        infoBox.innerHTML = "❌ Le navigateur ne possède pas de module de localisation.";
+    }
+}
+
+// Intercepteur anti-fraude avant l'envoi vers le serveur Flask
+document.getElementById('collectForm').addEventListener('submit', function(event) {
+    const checkLat = document.getElementById('lat_input').value;
+    const checkPhoto = document.getElementById('photo_input').files.length;
+    
+    if (!checkLat || checkPhoto === 0) {
+        event.preventDefault(); // Bloquer l'envoi de force
+        alert("🔒 SYSTEME ANTI-FRAUDE : Soumission rejetée. Vous devez obligatoirement fournir vos données de localisation GPS réelles et attacher une photo de contrôle qualité.");
+    }
+});
+</script>
+{% endblock %}

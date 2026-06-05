@@ -1,0 +1,333 @@
+import os
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from datetime import datetime, timedelta
+from . import db
+from .models import User, Mission, Submission, Transaction, CollecteData
+from functools import wraps
+
+main_bp = Blueprint('main', __name__)
+
+# 🔐 DECORATEUR : Vérifie si l'utilisateur est connecté et est un ADMIN
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or session.get('user_role') != 'admin':
+            flash("🚫 Accès refusé. Cette zone est réservée à l'administration de Databroker229.")
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# 🔐 DECORATEUR : Vérifie si l'utilisateur est connecté et est un CLIENT
+def client_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or session.get('user_role') != 'client':
+            flash("🔒 Veuillez vous connecter à votre compte Client pour publier une mission.")
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# 🔐 DECORATEUR : Vérifie si l'utilisateur est connecté et est un AGENT
+def agent_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or session.get('user_role') != 'agent':
+            flash("🏃‍♂️ Zone réservée aux agents de collecte sur le terrain.")
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# CONFIGURATION DU DOSSIER D'UPLOAD DES PHOTOS
+UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# ----------------------------------------------------
+# 1. ACCUEIL ET AUTHENTIFICATION
+# ----------------------------------------------------
+
+@main_bp.route('/')
+def index():
+    return render_template('index.html')
+
+@main_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        fullname = request.form.get('fullname')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        password = request.form.get('password')
+        location = request.form.get('location')
+        
+        # 🔑 On récupère le choix du rôle et le code secret du formulaire
+        chosen_role = request.form.get('role')
+        secret_code = request.form.get('secret_code')
+
+        # 🔐 SÉCURITÉ : Validation du rôle Admin
+        if chosen_role == 'admin':
+            if secret_code == "Admin229":
+                role = 'admin'
+            else:
+                flash("🚫 Code secret Admin incorrect. Impossible de créer ce type de compte.")
+                return redirect(url_for('main.register'))
+        else:
+            role = chosen_role if chosen_role else 'agent'
+
+        # 🔍 Vérification si l'utilisateur existe déjà
+        user_exists = User.query.filter((User.email == email) | (User.phone == phone)).first()
+        if user_exists:
+            flash("Cet e-mail ou ce numéro de téléphone est déjà utilisé.")
+            return redirect(url_for('main.register'))
+
+        # 🔒 Hachage du mot de passe et création
+        hashed_password = generate_password_hash(password, method='scrypt')
+        new_user = User(
+            fullname=fullname, 
+            email=email, 
+            phone=phone, 
+            password=hashed_password, 
+            role=role, 
+            location=location
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash("Inscription réussie ! Connectez-vous.")
+        return redirect(url_for('main.login'))
+
+    return render_template('register.html')
+
+@main_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        identifier = request.form.get('identifier')
+        password = request.form.get('password')
+        
+        user = User.query.filter((User.email == identifier) | (User.phone == identifier)).first()
+        
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            session['user_role'] = user.role
+            session['user_name'] = user.fullname
+            
+            if user.role == 'agent':
+                return redirect(url_for('main.agent_dashboard'))
+            elif user.role == 'client':
+                return redirect(url_for('main.client_dashboard'))
+            elif user.role == 'admin':
+                return redirect(url_for('main.admin_dashboard'))
+        else:
+            flash("Identifiants incorrects. Veuillez réessayer.")
+            
+    return render_template('login.html')
+
+@main_bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('main.index'))
+
+# ----------------------------------------------------
+# 2. ESPACE CLIENT
+# ----------------------------------------------------
+
+@main_bp.route('/client/dashboard', methods=['GET', 'POST'])
+@client_required
+def client_dashboard():
+    if 'user_id' not in session or session.get('user_role') != 'client':
+        return redirect(url_for('main.login'))
+        
+    client = User.query.get(session['user_id'])
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        instructions = request.form.get('instructions')
+        price = request.form.get('price')
+        difficulty = request.form.get('difficulty')
+        
+        new_mission = Mission(
+            title=title,
+            description=description,
+            instructions=instructions,
+            price=int(price) if price else 0,
+            difficulty=difficulty or 'Standard',
+            deadline=datetime.utcnow() + timedelta(days=30),
+            client_id=client.id,
+            payment_status='Pending_Payment'
+        )
+        db.session.add(new_mission)
+        db.session.commit()
+        flash("Mission soumise ! Elle sera visible par les agents dès que l'administration aura validé votre paiement dépôt.")
+        return redirect(url_for('main.client_dashboard'))
+        
+    my_missions = Mission.query.filter_by(client_id=client.id).all()
+    return render_template('client_dashboard.html', client=client, my_missions=my_missions)
+
+# ----------------------------------------------------
+# 3. ESPACE AGENT
+# ----------------------------------------------------
+
+@main_bp.route('/agent/dashboard')
+@agent_required
+def agent_dashboard():
+    if 'user_id' not in session or session.get('user_role') != 'agent':
+        return redirect(url_for('main.login'))
+        
+    agent = User.query.get(session['user_id'])
+    history = Transaction.query.filter_by(user_id=agent.id).order_by(Transaction.created_at.desc()).all()
+    missions = Mission.query.filter_by(payment_status='Paid').all()
+    
+    return render_template('agent_dashboard.html', agent=agent, missions=missions, history=history)
+
+@main_bp.route('/agent/submit/<int:mission_id>', methods=['GET', 'POST'])
+@agent_required
+def agent_submit(mission_id):
+    if 'user_id' not in session or session.get('user_role') != 'agent':
+        return redirect(url_for('main.login'))
+        
+    mission = Mission.query.get_or_404(mission_id)
+    
+    if request.method == 'POST':
+        shop_name = request.form.get('shop_name')
+        shop_phone = request.form.get('shop_phone')
+        shop_address = request.form.get('shop_address')
+        observations = request.form.get('observations')
+        
+        # 📍 Récupération et conversion sécurisée des coordonnées en Float
+        latitude_raw = request.form.get('latitude')
+        longitude_raw = request.form.get('longitude')
+        
+        # Si les coordonnées existent, on les convertit, sinon on met Cotonou par défaut
+        latitude = float(latitude_raw) if latitude_raw else 6.3703
+        longitude = float(longitude_raw) if longitude_raw else 2.4406
+        
+        file = request.files.get('photo')
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            unique_filename = f"sub_{session['user_id']}_{int(datetime.utcnow().timestamp())}_{filename}"
+            file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
+            photo_relative_path = f"uploads/{unique_filename}"
+            
+            new_submission = Submission(
+                mission_id=mission.id,
+                agent_id=session['user_id'],
+                shop_name=shop_name,
+                shop_phone=shop_phone,
+                shop_address=shop_address,
+                latitude=latitude,   # Envoyé proprement comme un Float
+                longitude=longitude, # Envoyé proprement comme un Float
+                photo_path=photo_relative_path,
+                observations=observations
+            )
+            db.session.add(new_submission)
+            db.session.commit()
+            flash("Dossier envoyé ! En attente de validation par l'administration.")
+            return redirect(url_for('main.agent_dashboard'))
+            
+    return render_template('agent_submit.html', mission=mission)
+# ----------------------------------------------------
+# 4. CONSOLE ADMIN
+# ----------------------------------------------------
+
+@main_bp.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    if 'user_id' not in session or session.get('user_role') != 'admin':
+        return redirect(url_for('main.login'))
+        
+    # Recueil des statistiques de la plateforme
+    total_agents = User.query.filter_by(role='agent').count()
+    all_missions = Mission.query.all()
+    total_missions = len(all_missions)
+    pending_payments = Mission.query.filter_by(payment_status='Pending_Payment').all()
+    pending_submissions = Submission.query.filter_by(status='Pending').all()
+    all_agents = User.query.filter_by(role='agent').all()
+    
+    # Recueil des données de collectes de terrain pour l'affichage
+    collectes = CollecteData.query.all()
+    
+    return render_template('admin_dashboard.html', 
+                           total_agents=total_agents, 
+                           total_missions=total_missions, 
+                           all_agents=all_agents, 
+                           pending_submissions=pending_submissions,
+                           pending_payments=pending_payments, 
+                           all_missions=all_missions,
+                           collectes=collectes)
+
+@main_bp.route('/admin/confirm-payment/<int:mission_id>', methods=['POST'])
+@admin_required
+def confirm_payment(mission_id):
+    if 'user_id' not in session or session.get('user_role') != 'admin':
+        return redirect(url_for('main.login'))
+        
+    mission = Mission.query.get_or_404(mission_id)
+    mission.payment_status = 'Paid'
+    db.session.commit()
+    flash(f"Paiement reçu pour la mission #{mission.id}. Elle est maintenant disponible sur le terrain !")
+    return redirect(url_for('main.admin_dashboard'))
+
+@main_bp.route('/admin/review/<int:submission_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_review(submission_id):
+    if 'user_id' not in session or session.get('user_role') != 'admin':
+        return redirect(url_for('main.login'))
+        
+    sub = Submission.query.get_or_404(submission_id)
+    agent = User.query.get(sub.agent_id)
+    mission = Mission.query.get(sub.mission_id)
+    
+    if request.method == 'POST':
+        action = request.form.get('action') # 'approve' ou 'reject'
+        
+        if action == 'approve':
+            sub.status = 'Approved'
+            
+            # 1. Rémunération de l'agent
+            agent.wallet_balance += mission.price
+            
+            # 2. Historique de la transaction de gain
+            new_transaction = Transaction(
+                user_id=agent.id,
+                mission_id=mission.id,
+                amount=mission.price,
+                transaction_type='gain',
+                status='Completed'
+            )
+            db.session.add(new_transaction)
+            
+            # 3. 📍 ARCHIVAGE : Enregistrement définitif du point dans le patrimoine data
+            nouvelle_collecte = CollecteData(
+                description=f"Commerce: {sub.shop_name} ({mission.title})",
+                latitude=sub.latitude,
+                longitude=sub.longitude,
+                agent_id=agent.id
+            )
+            db.session.add(nouvelle_collecte)
+            
+            flash(f"💚 Dossier validé ! {mission.price} FCFA versés à {agent.fullname} et point ajouté au catalogue.")
+            
+        elif action == 'reject':
+            sub.status = 'Rejected'
+            flash("🔴 Dossier rejeté.")
+            
+        db.session.commit()
+        return redirect(url_for('main.admin_dashboard'))
+        
+    return render_template('admin_review.html', sub=sub, agent=agent, mission=mission)
+# API REST pour distribuer les coordonnées à la carte interactive Leaflet
+@main_bp.route('/api/points-collecte')
+@admin_required
+def api_points_collecte():
+    points = CollecteData.query.all()
+    features = []
+    for p in points:
+        features.append({
+            "id": p.id,
+            "description": p.description,
+            "lat": p.latitude,
+            "lng": p.longitude
+        })
+    return jsonify(features)

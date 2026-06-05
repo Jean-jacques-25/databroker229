@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div class="bg-gray-900 min-h-screen text-gray-100 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex justify-between items-center border-b border-gray-800 pb-6 mb-8">
+            <div>
+                <h1 class="text-2xl font-black tracking-tight text-white">Console de Supervision Générale</h1>
+                <p class="text-xs text-gray-400 mt-1">Gestion des flux de données terrain de DataBroker229</p>
+            </div>
+            <span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold rounded-full border border-amber-500/20">
+                Mode Admin Actif
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            
+            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+                <div class="text-gray-400 text-xs font-bold uppercase tracking-wider">Agents Enregistrés</div>
+                <div class="text-3xl font-black text-white mt-2 flex items-baseline gap-2">
+                    {{ total_agents }}
+                    <span class="text-xs font-normal text-emerald-400">Actifs au Bénin</span>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+                <div class="text-gray-400 text-xs font-bold uppercase tracking-wider">Total Campagnes Lancées</div>
+                <div class="text-3xl font-black text-white mt-2">
+                    {{ total_missions }}
+                </div>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 {% if pending_submissions|length > 0 %}border-amber-500/40 bg-amber-500/5{% endif %}">
+                <div class="text-gray-400 text-xs font-bold uppercase tracking-wider">Dossiers à contrôler</div>
+                <div class="text-3xl font-black mt-2 {% if pending_submissions|length > 0 %}text-amber-400{% else %}text-white{% endif %}">
+                    {{ pending_submissions|length }}
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                📍 Suivi Cartographique des Collectes (Temps Réel)
+            </h2>
+            <div id="map" class="w-full rounded-xl border border-gray-700 overflow-hidden shadow-inner" style="height: 420px; z-index: 1;"></div>
+        </div>
+        
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
+            <h2 class="text-lg font-bold text-amber-400 mb-4">💰 Dépôts Clients en attente de validation (Avant publication)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
+                        <tr>
+                            <th class="p-4">ID</th>
+                            <th class="p-4">Mission</th>
+                            <th class="p-4">Budget Requis</th>
+                            <th class="p-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        {% for mission in pending_payments %}
+                        <tr class="hover:bg-gray-700/30">
+                            <td class="p-4 text-gray-500">#{{ mission.id }}</td>
+                            <td class="p-4 font-semibold text-white">{{ mission.title }}</td>
+                            <td class="p-4 font-bold text-emerald-400">{{ mission.price }} FCFA</td>
+                            <td class="p-4">
+                                <form action="/admin/confirm-payment/{{ mission.id }}" method="POST" class="inline">
+                                    <button type="submit" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-gray-900 text-xs font-bold rounded-lg transition-colors">
+                                        ✅ Confirmer la réception des fonds
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="p-4 text-center text-gray-500">Aucun paiement client en attente. Les caisses sont à jour !</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
+            <h2 class="text-lg font-bold text-white mb-4">⏳ Collectes en attente de vérification</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
+                        <tr>
+                            <th class="p-4">Agent</th>
+                            <th class="p-4">Boutique / Commerce</th>
+                            <th class="p-4">Région / Quartier</th>
+                            <th class="p-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        {% for sub in pending_submissions %}
+                        <tr class="hover:bg-gray-700/30">
+                            <td class="p-4 font-semibold text-white">{{ sub.agent.fullname }}</td>
+                            <td class="p-4">{{ sub.shop_name }}</td>
+                            <td class="p-4 text-gray-400">{{ sub.shop_address }}</td>
+                            <td class="p-4">
+                                <a href="/admin/review/{{ sub.id }}" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors">
+                                    🔍 Inspecter & Payer
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="p-4 text-center text-gray-500">Aucun dossier en attente de validation. Paix sur le terrain !</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>  
+        </div>
+
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-white">📋 Toutes les campagnes de missions actives</h2>
+                <span class="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/20">Global</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
+                        <tr>
+                            <th class="p-4">ID</th>
+                            <th class="p-4">Titre de la Mission</th>
+                            <th class="p-4">Difficulté</th>
+                            <th class="p-4">Rémunération</th>
+                            <th class="p-4">Statut Système</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        {% if total_missions > 0 %}
+                            <tr class="hover:bg-gray-700/30">
+                                <td class="p-4 text-gray-500 font-mono">#01</td>
+                                <td class="p-4 font-semibold text-white">Collecte de visuels - Boutiques Telecom</td>
+                                <td class="p-4"><span class="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs rounded">Standard</span></td>
+                                <td class="p-4 font-bold text-emerald-400">1 500 FCFA</td>
+                                <td class="p-4 text-xs text-emerald-400 font-medium">● En cours de diffusion</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="p-4 text-center text-gray-500">Aucune mission n'a encore été créée dans le système.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+            <h2 class="text-lg font-bold text-white mb-4">👥 Performance des Agents sur le terrain</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
+                        <tr>
+                            <th class="p-4">Nom complet</th>
+                            <th class="p-4">Téléphone</th>
+                            <th class="p-4">Fiabilité</th>
+                            <th class="p-4">Solde Portefeuille</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        {% for agent in all_agents %}
+                        <tr class="hover:bg-gray-700/30">
+                            <td class="p-4 font-semibold text-white">{{ agent.fullname }}</td>
+                            <td class="p-4 text-mono">{{ agent.phone }}</td>
+                            <td class="p-4">
+                                <span class="text-emerald-400 font-bold">100%</span>
+                            </td>
+                            <td class="p-4 font-bold text-emerald-400">{{ agent.wallet_balance }} FCFA</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    // 1. Initialiser UNE SEULE FOIS la carte centrée sur Cotonou, Bénin
+    var map = L.map('map').setView([6.3703, 2.4406], 12);
+
+    // 2. Ajouter la couche de carte OpenStreetMap classique
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 3. Injection dynamique des dossiers EN ATTENTE via Jinja
+    {% for sub in pending_submissions %}
+        {% if sub.latitude and sub.longitude %}
+            var marker = L.marker([{{ sub.latitude }}, {{ sub.longitude }}]).addTo(map);
+            marker.bindPopup(`
+                <div class="text-gray-900 text-xs">
+                    <b class="text-blue-600 text-sm font-bold block mb-1">{{ sub.shop_name }}</b>
+                    <b>Mission :</b> {{ sub.mission.title if sub.mission else "Collecte Terrain" }}<br>
+                    <b>Quartier :</b> {{ sub.shop_address }}<br>
+                    <b>Agent :</b> {{ sub.agent.fullname if sub.agent else "Inconnu" }}<br>
+                    <span class="text-[10px] text-gray-400 block mt-1">Status : En attente (#SUB-{{ sub.id }})</span>
+                </div>
+            `);
+        {% endif %}
+    {% endfor %}
+
+    // 4. Fonction pour charger EN PLUS les points validés depuis notre API Flask
+    function chargerPointsTerrain() {
+        fetch('/api/points-collecte')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(point => {
+                    // On ajoute un marqueur vert ou classique pour différencier ces points
+                    L.marker([point.lat, point.lng])
+                        .addTo(map)
+                        .bindPopup(`<b>📍 Collecte Validée #${point.id}</b><br>${point.description}`);
+                });
+            })
+            .catch(err => console.error("Erreur lors du chargement des points de l'API:", err));
+    }
+
+    // 5. Lancement automatique au chargement de la page
+    chargerPointsTerrain();
+</script>

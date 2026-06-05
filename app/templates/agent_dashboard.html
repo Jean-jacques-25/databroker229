@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900">Salut, {{ agent.fullname }} ! 👋</h1>
+                <p class="text-xs text-gray-500 mt-1">Prêt pour une nouvelle collecte de données sur le terrain ?</p>
+            </div>
+            
+            <div class="flex gap-4 w-full sm:w-auto">
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex-1 sm:flex-none text-center sm:text-left">
+                    <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Mon Portefeuille</span>
+                    <span class="text-xl font-black text-emerald-600">{{ agent.wallet_balance }} FCFA</span>
+                </div>
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex-1 sm:flex-none text-center sm:text-left">
+                    <span class="block text-[10px] font-bold text-blue-700 uppercase tracking-wider">Fiabilité Terrain</span>
+                    <span class="text-xl font-black text-blue-600">{{ agent.reliability_score }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-lg font-black text-gray-900 mb-4">🎯 Missions disponibles autour de vous</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for mission in missions %}
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div>
+                    <div class="flex justify-between items-start gap-2 mb-3">
+                        <span class="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold uppercase tracking-wide">
+                            {{ mission.difficulty }}
+                        </span>
+                        <span class="text-sm font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                            +{{ mission.price }} F
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-base mb-2">{{ mission.title }}</h3>
+                    <p class="text-gray-600 text-xs line-clamp-3 mb-4">{{ mission.description }}</p>
+                </div>
+                
+                <a href="/agent/submit/{{ mission.id }}" class="w-full text-center bg-gray-900 text-white text-xs font-bold py-3 rounded-xl hover:bg-blue-600 transition-colors mt-2 block">
+                    🚀 Commencer la collecte
+                </a>
+            </div>
+            {% else %}
+            <div class="col-span-full bg-white text-center py-12 rounded-2xl border border-gray-100 text-gray-400 text-sm">
+                Aucune mission n'est disponible sur le terrain pour le moment.
+            </div>
+            {% endfor %}
+        </div>
+       
+<div class="mt-12 bg-white rounded-xl shadow-md p-6 border border-gray-100">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            📊 Historique de mes gains & Reçus
+        </h2>
+        <span class="text-sm bg-green-100 text-green-700 font-semibold px-3 py-1 rounded-full">
+            Total Portefeuille : {{ agent.wallet_balance }} FCFA
+        </span>
+    </div>
+
+    {% if history %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 text-gray-600 text-sm font-semibold uppercase border-b border-gray-200">
+                    <th class="px-6 py-3">ID Réf</th>
+                    <th class="px-6 py-3">Date</th>
+                    <th class="px-6 py-3">Mission</th>
+                    <th class="px-6 py-3">Montant</th>
+                    <th class="px-6 py-3">Statut</th>
+                    <th class="px-6 py-3">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-gray-700 text-sm">
+                {% for tx in history %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 font-mono font-bold text-gray-500">#TX-{{ tx.id }}</td>
+                    <td class="px-6 py-4">{{ tx.created_at.strftime('%d/%m/%Y à %H:%M') }}</td>
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ tx.mission.title if tx.mission else 'Mission Terrain' }}</td>
+                    <td class="px-6 py-4 font-bold text-green-600">+ {{ tx.amount }} FCFA</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                            {{ tx.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <button onclick="alert('Génération du reçu numérique pour la transaction #TX-{{ tx.id }} en cours...')" 
+                                class="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                            📥 Reçu PDF
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-500">
+        📭 Aucun gain enregistré pour le moment. Remplissez des missions sur le terrain pour alimenter votre portefeuille !
+    </div>
+    {% endif %}
+</div>
+
+        <h2 class="text-xl font-bold text-gray-900 mb-6 mt-12">Suivi de mes soumissions terrain</h2>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-gray-50 text-gray-400 text-xs uppercase">
+                        <tr>
+                            <th class="p-4">Date / Commerce</th>
+                            <th class="p-4">Statut</th>
+                            <th class="p-4">Gain attendu</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                        {% for submission in agent.submissions %}
+                        <tr>
+                            <td class="p-4 font-semibold">{{ submission.shop_name }}</td>
+                            <td class="p-4">
+                                {% if submission.status == 'Pending' %}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">⏳ En cours de vérification</span>
+                                {% elif submission.status == 'Approved' %}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">✅ Validé & Payé</span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">❌ Rejeté</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-4 font-bold {% if submission.status == 'Approved' %}text-emerald-600{% endif %}">
+                                {{ submission.mission.price }} FCFA
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="p-4 text-center text-gray-400">Vous n'avez soumis aucune mission pour le moment.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+</div>
+{% endblock %}

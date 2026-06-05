@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section id="home" class="relative bg-white overflow-hidden border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 text-center lg:pt-32">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 mb-4">
+            <i class="fa-solid fa-map-location-dot mr-2"></i> Crowdsourcing de données au Bénin
+        </span>
+        <h1 class="mx-auto max-w-4xl font-display text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl">
+            Collectez, vérifiez et exploitez des <span class="text-blue-600">données terrain</span> fiables au Bénin.
+        </h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
+            Une plateforme intelligente reliant agents collecteurs motivés et organisations ayant besoin de données terrain stratégiques et vérifiées en temps réel.
+        </p>
+        <div class="mt-10 flex justify-center gap-x-6">
+            <a href="{{ url_for('main.login') }}" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-md">
+                Commencer maintenant
+            </a>
+            <a href="{{ url_for('main.register') }}" class="bg-emerald-50 text-emerald-700 font-semibold px-6 py-3 rounded-xl hover:bg-emerald-100 transition border border-emerald-200">
+                Devenir agent collecteur
+            </a>
+        </div>
+    </div>
+</section>
+
+<section id="how-it-works" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Comment ça marche ?</h2>
+            <p class="mt-4 text-gray-600">Un processus rigoureux pour garantir une qualité de donnée irréprochable.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">1</div>
+                <h3 class="font-semibold text-gray-900 mb-2">Création</h3>
+                <p class="text-xs text-gray-500">Une entreprise crée et publie sa mission ciblée.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">2</div>
+                <h3 class="font-semibold text-gray-900 mb-2">Acceptation</h3>
+                <p class="text-xs text-gray-500">Les agents terrain qualifiés acceptent la mission.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">3</div>
+                <h3 class="font-semibold text-gray-900 mb-2">Collecte</h3>
+                <p class="text-xs text-gray-500">Collecte obligatoire avec tracking GPS + photo en direct.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">4</div>
+                <h3 class="font-semibold text-gray-900 mb-2">Validation</h3>
+                <p class="text-xs text-gray-500">L'équipe admin contrôle la conformité des données.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg"><i class="fa-solid fa-check"></i></div>
+                <h3 class="font-semibold text-gray-900 mb-2">Paiement</h3>
+                <p class="text-xs text-gray-500">L'agent reçoit ses gains de manière sécurisée.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="services" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Nos Services Terrain</h2>
+            <p class="mt-4 text-gray-600">Des solutions sur mesure pour acquérir une visibilité parfaite sur le marché béninois.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:shadow-md transition">
+                <div class="text-blue-600 text-2xl mb-4"><i class="fa-solid fa-route"></i></div>
+                <h3 class="text-lg font-bold mb-2">Cartographie & GPS</h3>
+                <p class="text-sm text-gray-600">Localisation précise de points de vente ou d'infrastructures avec coordonnées géographiques vérifiées.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:shadow-md transition">
+                <div class="text-blue-600 text-2xl mb-4"><i class="fa-solid fa-shop"></i></div>
+                <h3 class="text-lg font-bold mb-2">Audit de Points de Vente</h3>
+                <p class="text-sm text-gray-600">Vérification de l'existence de commerces, relevés de prix, inventaires et disponibilité des produits.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:shadow-md transition">
+                <div class="text-blue-600 text-2xl mb-4"><i class="fa-solid fa-camera"></i></div>
+                <h3 class="text-lg font-bold mb-2">Preuves Photos Géolocalisées</h3>
+                <p class="text-sm text-gray-600">Prise de clichés réels horodatés pour valider visuellement des campagnes publicitaires ou des façades.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-20 bg-gray-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl font-bold sm:text-4xl">Ils nous font confiance</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gray-800 p-8 rounded-2xl border border-gray-700">
+                <p class="text-gray-300 italic">"Databroker229 nous a permis de cartographier plus de 300 commerces en quelques jours à Cotonou et Calavi avec une précision impressionnante."</p>
+                <div class="mt-4 font-semibold text-emerald-400">— Directeur Commercial, Cabinet d'Études</div>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-2xl border border-gray-700">
+                <p class="text-gray-300 italic">"Une solution sérieuse, rapide et indispensable pour auditer nos projets sur le terrain. Les rapports photos sont d'une grande valeur."</p>
+                <div class="mt-4 font-semibold text-emerald-400">— Responsable Projet, ONG Internationale</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="faq" class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-gray-900">Questions Fréquentes</h2>
+        </div>
+        <div class="space-y-6">
+            <div class="bg-gray-50 p-6 rounded-xl">
+                <h4 class="font-bold text-gray-900 mb-2">Comment devenir agent collecteur ?</h4>
+                <p class="text-sm text-gray-600">Il suffit de s'inscrire, de choisir le rôle 'Agent', de remplir votre profil et de commencer à postuler aux missions disponibles près de chez vous.</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl">
+                <h4 class="font-bold text-gray-900 mb-2">Comment les paiements fonctionnent-ils ?</h4>
+                <p class="text-sm text-gray-600">Une fois la mission validée par l'administrateur, vos gains sont instantanément versés sur votre portefeuille virtuel. Vous pouvez demander un retrait via Mobile Money (MTN / Moov) ou virement bancaire.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="py-20 bg-gray-50 border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Contactez-nous</h2>
+            <p class="text-gray-600 mb-8">Une question ? Un besoin spécifique de collecte de données à grande échelle au Bénin ? Nos équipes vous répondent.</p>
+            <div class="space-y-4 font-medium text-gray-700">
+                <p><i class="fa-solid fa-envelope text-blue-600 mr-2"></i> contact@databroker229.com</p>
+                <p><i class="fa-solid fa-phone text-blue-600 mr-2"></i> +229 01 00 00 00 00</p>
+                <p><i class="fa-brands fa-whatsapp text-emerald-500 mr-2"></i> Discuter sur WhatsApp</p>
+            </div>
+        </div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Nom complet</label>
+                    <input type="text" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Email</label>
+                    <input type="email" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Message</label>
+                    <textarea rows="4" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" required></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition">Envoyer</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
