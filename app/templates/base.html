@@ -184,5 +184,120 @@
         });
     </script>
 
+    {% if session.get('user_role') != 'admin' %}
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+    
+    <div id="ai-chat-box" class="hidden w-80 sm:w-96 h-[450px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden mb-4 transition-all transform scale-95 opacity-0 duration-200 origin-bottom-right">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-base">🤖</div>
+                <div>
+                    <h3 class="text-xs font-black tracking-wide">Assistant DataBroker229</h3>
+                    <p class="text-[10px] text-blue-200">En ligne • IA Support</p>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="text-white/70 hover:text-white text-sm focus:outline-none p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50 text-xs">
+            <div class="flex items-start gap-2 max-w-[85%]">
+                <div class="w-6 h-6 bg-blue-100 text-blue-600 rounded-md flex items-center justify-center text-xs shrink-0 font-bold">📢</div>
+                <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 text-gray-700 shadow-sm leading-relaxed">
+                    Bonjour ! Je suis l'assistant virtuel de <strong>DataBroker229</strong>. 
+                    <br><br>
+                    Avez-vous des questions sur la publication de missions (Client) ou sur le retrait de vos gains en FCFA (Agent) ? Posez-les moi !
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3 bg-white border-t border-gray-100 flex gap-2 items-center">
+            <input type="text" id="chat-input" placeholder="Posez votre question ici..." class="flex-grow text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500 transition-colors">
+            <button onclick="sendMessage()" class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-all active:scale-95 shadow-md shadow-blue-100">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+        </div>
+    </div>
+
+    <button onclick="toggleChat()" class="w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-700 text-white rounded-full flex items-center justify-center shadow-xl hover:shadow-blue-200 hover:scale-105 transition-all active:scale-95 group focus:outline-none">
+        <div class="relative">
+            <i id="chat-icon-open" class="fa-solid fa-comments text-xl transition-transform duration-200"></i>
+            <span class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></span>
+        </div>
+    </button>
+</div>
+
+<script>
+    // Liste des réponses automatiques basées sur les mots-clés du projet
+    const kb = [
+        { keys: ["agent", "gagner", "travail", "collecte", "mission"], response: "En tant qu'Agent sur DataBroker229, vous parcourez Cotonou et le Bénin pour collecter des données (photos, coordonnées GPS, infos commerces). Une fois la collecte validée par l'administrateur, votre portefeuille est instantanément crédité du montant en FCFA !" },
+        { keys: ["client", "entreprise", "publier", "acheter", "donne"], response: "Pour les Entreprises, il suffit de créer un compte Client, de financer votre mission par dépôt de garantie fictif, puis de publier votre cahier des charges. Dès que les agents collectent la data sur le terrain, vous pouvez télécharger un fichier CSV propre et certifié." },
+        { keys: ["paiement", "argent", "retrait", "portefeuille", "fcfa", "flooz", "tmoney", "moov"], response: "Les paiements sont gérés en FCFA. Pour les agents, les gains s'accumulent sur votre portefeuille après contrôle qualité. Le système simule des transferts mobiles (Moov Money, MTN Mobile Money) pour garantir la sécurité et la rapidité des transactions." },
+        { keys: ["gps", "coordonnee", "latitude", "longitude", "carte"], response: "La géolocalisation sur DataBroker229 est 100% certifiée. Lors de la soumission sur le terrain, l'application capture automatiquement la position GPS exacte de l'agent pour garantir au client que la donnée provient bien du bon emplacement." },
+        { keys: ["contact", "whatsapp", "mail", "telephone", "support"], response: "Vous pouvez contacter directement notre équipe de support par WhatsApp au <strong>+229 01 55 25 68 71</strong> ou par courriel à <strong>jeanjacquesaguin30@gmail.com</strong>." }
+    ];
+
+    function toggleChat() {
+        const box = document.getElementById('ai-chat-box');
+        if (box.classList.contains('hidden')) {
+            box.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        } else {
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => box.classList.add('hidden'), 200);
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const messagesContainer = document.getElementById('chat-messages');
+
+        // 1. Ajouter le message de l'utilisateur
+        const userHtml = `<div class="flex items-start gap-2 max-w-[85%] ml-auto flex-row-reverse">
+            <div class="w-6 h-6 bg-blue-600 text-white rounded-md flex items-center justify-center text-xs shrink-0">👤</div>
+            <div class="bg-blue-600 p-3 rounded-2xl rounded-tr-none text-white shadow-sm leading-relaxed">${text}</div>
+        </div>`;
+        messagesContainer.insertAdjacentHTML('beforeend', userHtml);
+        input.value = '';
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // 2. Simuler une réflexion de l'IA (300ms)
+        setTimeout(() => {
+            let reply = "Je ne suis pas sûr de comprendre votre question. N'hésitez pas à contacter notre support direct sur WhatsApp au +229 01 55 25 68 71 pour une assistance humaine !";
+            const cleanText = text.toLowerCase();
+
+            // Recherche par mot-clé dans notre base de connaissances locale
+            for (const item of kb) {
+                if (item.keys.some(k => cleanText.includes(k))) {
+                    reply = item.response;
+                    break;
+                }
+            }
+
+            const aiHtml = `<div class="flex items-start gap-2 max-w-[85%]">
+                <div class="w-6 h-6 bg-blue-100 text-blue-600 rounded-md flex items-center justify-center text-xs shrink-0 font-bold">🤖</div>
+                <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 text-gray-700 shadow-sm leading-relaxed">${reply}</div>
+            </div>`;
+            
+            messagesContainer.insertAdjacentHTML('beforeend', aiHtml);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 400);
+    }
+
+    // Permettre la validation en appuyant sur la touche 'Entrée'
+    document.getElementById('chat-input')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+</script>
+{% endif %}
+
 </body>
 </html>
