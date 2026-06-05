@@ -39,6 +39,7 @@ def create_app():
     
     # 🛠️ Création automatique des tables au démarrage si elles n'existent pas
     with app.app_context():
+        from . import models
         db.create_all()
     
     return app
