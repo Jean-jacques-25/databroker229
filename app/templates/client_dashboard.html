@@ -1,12 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <div class="bg-gray-50 min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex justify-between items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-black text-gray-900">Espace Entreprise — {{ client.fullname }}</h1>
                 <p class="text-xs text-gray-500 mt-1">Commandez des campagnes de collectes de données géolocalisées au Bénin.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <span class="text-xs font-bold text-gray-400 uppercase">Missions lancées</span>
+                <p class="text-2xl font-black text-gray-800 mt-2">{{ stats.total_missions if stats else my_missions|length }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <span class="text-xs font-bold text-gray-400 uppercase">Campagnes Actives</span>
+                <p class="text-2xl font-black text-emerald-600 mt-2">
+                    {{ stats.active_missions if stats else my_missions|selectattr('payment_status', 'equalto', 'Paid')|list|length }}
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <span class="text-xs font-bold text-gray-400 uppercase">Données Certifiées</span>
+                <p class="text-2xl font-black text-blue-600 mt-2">
+                    {{ stats.total_data_collected if stats else submissions|length if submissions else 0 }} dossiers
+                </p>
             </div>
         </div>
 
@@ -99,6 +121,48 @@
                 </div> 
             </div> 
 
-        </div> </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+            <div class="lg:col-span-2 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+                <h3 class="text-xs font-black text-gray-400 uppercase mb-3">Cartographie de vos Données Terrain (Cotonou)</h3>
+                <div id="client-map" class="w-full h-80 rounded-xl border border-gray-100 z-10"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-black text-gray-400 uppercase mb-4">Exportation & Intégration BI</h3>
+                    <p class="text-xs text-gray-500 leading-relaxed">Vos points de collecte validés géographiquement apparaissent sur votre carte en temps réel. Les fichiers CSV sont directement compatibles avec vos outils décisionnels.</p>
+                    
+                    <div class="mt-6 bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center gap-3">
+                        <div class="text-xl">📊</div>
+                        <div class="text-[11px] text-gray-600">Encodage standardisé : UTF-8 délimité par des points-virgules ( ; ) idéal pour Excel.</div>
+                    </div>
+                </div>
+                <div class="text-[11px] text-gray-400 italic text-center pt-6 border-t border-gray-50 mt-4">
+                    DataBroker229 — Données géolocalisées souveraines.
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
+
+<script>
+    // Centrage initial de la carte sur la ville de Cotonou
+    const map = L.map('client-map').setView([6.3703, 2.3912], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Injection automatique des points de collecte approuvés via Jinja2
+    {% if submissions %}
+        {% for sub in submissions %}
+            L.marker([{{ sub.latitude }}, {{ sub.longitude }}])
+                .addTo(map)
+                .bindPopup(`<strong class="text-gray-900">${{ sub.shop_name }}</strong><br><span class="text-xs text-gray-500">${{ sub.shop_address }}</span>`);
+        {% endfor %}
+    {% endif %}
+</script>
 {% endblock %}

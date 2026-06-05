@@ -8,6 +8,8 @@ from . import db
 from .models import User, Mission, Submission, Transaction, CollecteData
 from functools import wraps
 from io import StringIO
+from PIL import Image
+import uuid
 
 main_bp = Blueprint('main', __name__)
 
@@ -134,36 +136,32 @@ def logout():
 # 2. ESPACE CLIENT
 # ----------------------------------------------------
 
-@main_bp.route('/client/dashboard', methods=['GET', 'POST'])
-@client_required
+@main_bp.route('/client/dashboard')
 def client_dashboard():
-    client = User.query.get(session['user_id'])
+    if session.get('user_role') != 'client':
+        flash("Accès réservé aux clients.", "danger")
+        return redirect(url_for('main.login'))
+        
+    client_id = session.get('user_id')
     
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        instructions = request.form.get('instructions')
-        price = request.form.get('price')
-        difficulty = request.form.get('difficulty')
-        
-        new_mission = Mission(
-            title=title,
-            description=description,
-            instructions=instructions,
-            price=int(price) if price else 0,
-            difficulty=difficulty or 'Standard',
-            deadline=datetime.utcnow() + timedelta(days=30),
-            client_id=client.id,
-            payment_status='Pending_Payment'
-        )
-        db.session.add(new_mission)
-        db.session.commit()
-        flash("Mission soumise ! Elle sera visible par les agents dès que l'administration aura validé votre paiement dépôt.")
-        return redirect(url_for('main.client_dashboard'))
-        
-    my_missions = Mission.query.filter_by(client_id=client.id).all()
-    return render_template('client_dashboard.html', client=client, my_missions=my_missions)
-
+    # 1. Récupérer toutes les missions créées par ce client
+    missions = Mission.query.filter_by(client_id=client_id).all()
+    mission_ids = [m.id for m in missions]
+    
+    # 2. Récupérer uniquement les collectes approuvées pour ces missions
+    approved_submissions = Submission.query.filter(
+        Submission.mission_id.in_(mission_ids),
+        Submission.status == 'Approved'
+    ).all()
+    
+    # 3. Calculer les statistiques rapides
+    stats = {
+        'total_missions': len(missions),
+        'active_missions': len([m for m in missions if m.payment_status == 'Paid']),
+        'total_data_collected': len(approved_submissions)
+    }
+    
+    return render_template('client_dashboard.html', missions=missions, submissions=approved_submissions, stats=stats)
 # ----------------------------------------------------
 # 3. ESPACE AGENT
 # ----------------------------------------------------
@@ -177,50 +175,35 @@ def agent_dashboard():
     
     return render_template('agent_dashboard.html', agent=agent, missions=missions, history=history)
 
-@main_bp.route('/agent/submit/<int:mission_id>', methods=['GET', 'POST'])
-@agent_required
+@main_bp.route('/agent/submit/<int:mission_id>', methods=['POST'])
 def agent_submit(mission_id):
-    mission = Mission.query.get_or_404(mission_id)
+    # ... (vérification de session et récupération du formulaire) ...
     
-    if request.method == 'POST':
-        shop_name = request.form.get('shop_name')
-        shop_phone = request.form.get('shop_phone')
-        shop_address = request.form.get('shop_address')
-        observations = request.form.get('observations')
+    photo_file = request.files.get('photo')
+    if photo_file:
+        # Traitement et compression automatique de la preuve terrain
+        photo_relative_path = save_and_compress_image(photo_file)
+    else:
+        flash("La photo de preuve est obligatoire.", "danger")
+        return redirect(request.referrer)
         
-        # 📍 Récupération et conversion sécurisée des coordonnées en Float
-        latitude_raw = request.form.get('latitude')
-        longitude_raw = request.form.get('longitude')
-        
-        latitude = float(latitude_raw) if latitude_raw else 6.3703
-        longitude = float(longitude_raw) if longitude_raw else 2.4406
-        
-        file = request.files.get('photo')
-        if file and file.filename != '':
-            filename = secure_filename(file.filename)
-            unique_filename = f"sub_{session['user_id']}_{int(datetime.utcnow().timestamp())}_{filename}"
-            file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
-            photo_relative_path = f"uploads/{unique_filename}"
-            
-            new_submission = Submission(
-                mission_id=mission.id,
-                agent_id=session['user_id'],
-                shop_name=shop_name,
-                shop_phone=shop_phone,
-                shop_address=shop_address,
-                latitude=latitude,   
-                longitude=longitude, 
-                photo_path=photo_relative_path,
-                observations=observations,
-                status='Pending'
-            )
-            db.session.add(new_submission)
-            db.session.commit()
-            flash("Dossier envoyé ! En attente de validation par l'administration.")
-            return redirect(url_for('main.agent_dashboard'))
-            
-    return render_template('agent_submit.html', mission=mission)
-
+    # Création de l'enregistrement en BDD
+    new_sub = Submission(
+        mission_id=mission_id,
+        agent_id=session['user_id'],
+        shop_name=request.form.get('shop_name'),
+        shop_phone=request.form.get('shop_phone'),
+        shop_address=request.form.get('shop_address'),
+        latitude=float(request.form.get('latitude')),
+        longitude=float(request.form.get('longitude')),
+        photo_path=photo_relative_path, # Sauvegarde du chemin .webp compressé
+        observations=request.form.get('observations')
+    )
+    
+    db.session.add(new_sub)
+    db.session.commit()
+    flash("Collecte soumise avec succès au contrôle qualité !", "success")
+    return redirect(url_for('main.agent_dashboard'))
 # ----------------------------------------------------
 # 4. CONSOLE ADMIN
 # ----------------------------------------------------
@@ -358,3 +341,28 @@ def client_export_csv(mission_id):
             "Content-Type": "text/csv; charset=utf-8"
         }
     )
+
+def save_and_compress_image(form_photo):
+    """Prend le fichier image du formulaire, le compresse et l'enregistre en WebP"""
+    # 1. Générer un nom unique avec extension .webp
+    unique_filename = f"{uuid.uuid4().hex}.webp"
+    upload_folder = os.path.join('app', 'static', 'uploads')
+    
+    # S'assurer que le dossier existe
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+        
+    target_path = os.path.join(upload_folder, unique_filename)
+    
+    # 2. Ouvrir et compresser l'image avec Pillow
+    image = Image.open(form_photo)
+    
+    # Convertir en RGB si l'image est en RGBA (PNG) car le JPEG/WebP gère mieux le RGB
+    if image.mode in ("RGBA", "P"):
+        image = image.convert("RGB")
+        
+    # Enregistrement au format WebP avec une qualité optimisée à 70%
+    image.save(target_path, "WEBP", quality=70)
+    
+    # Retourner le chemin relatif pour la base de données
+    return f"uploads/{unique_filename}"
