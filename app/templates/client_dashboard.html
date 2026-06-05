@@ -8,7 +8,7 @@
         
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-black text-gray-900">Espace Entreprise — {{ client.fullname }}</h1>
+                <h1 class="text-2xl font-black text-gray-900">Espace Entreprise — {{ session.get('user_name', 'Client') }}</h1>
                 <p class="text-xs text-gray-500 mt-1">Commandez des campagnes de collectes de données géolocalisées au Bénin.</p>
             </div>
         </div>
