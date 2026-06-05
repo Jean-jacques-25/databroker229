@@ -185,11 +185,12 @@
 
     </div>
 </div>
+
 <script>
-    // 1. Initialiser UNE SEULE FOIS la carte centrée sur Cotonou, Bénin
+    // 1. Initialiser la carte centrée sur Cotonou, Bénin
     var map = L.map('map').setView([6.3703, 2.4406], 12);
 
-    // 2. Ajouter la couche de carte OpenStreetMap classique
+    // 2. Ajouter la couche OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
@@ -210,13 +211,12 @@
         {% endif %}
     {% endfor %}
 
-    // 4. Fonction pour charger EN PLUS les points validés depuis notre API Flask
+    // 4. Charger les points validés depuis l'API Flask
     function chargerPointsTerrain() {
         fetch('/api/points-collecte')
             .then(response => response.json())
             .then(data => {
                 data.forEach(point => {
-                    // On ajoute un marqueur vert ou classique pour différencier ces points
                     L.marker([point.lat, point.lng])
                         .addTo(map)
                         .bindPopup(`<b>📍 Collecte Validée #${point.id}</b><br>${point.description}`);
@@ -225,6 +225,6 @@
             .catch(err => console.error("Erreur lors du chargement des points de l'API:", err));
     }
 
-    // 5. Lancement automatique au chargement de la page
     chargerPointsTerrain();
 </script>
+{% endblock %}

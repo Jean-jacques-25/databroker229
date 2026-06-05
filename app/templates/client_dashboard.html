@@ -7,8 +7,11 @@
             <div>
                 <h1 class="text-2xl font-black text-gray-900">Espace Entreprise — {{ client.fullname }}</h1>
                 <p class="text-xs text-gray-500 mt-1">Commandez des campagnes de collectes de données géolocalisées au Bénin.</p>
+            </div>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
                 <h2 class="text-lg font-bold text-gray-900 mb-4">🎯 Commander une nouvelle collecte</h2>
                 
@@ -52,44 +55,50 @@
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-900 mb-4">📊 Historique de vos campagnes</h2>
                 <div class="space-y-4">
+                    
                     {% for mission in my_missions %}
-                    <div class="p-4 border border-gray-100 bg-gray-50 rounded-xl flex justify-between items-center">
-                        <div>
-                            <h4 class="font-bold text-gray-800 text-sm">{{ mission.title }}</h4>
-                            <p class="text-xs text-gray-400 mt-1">Rémunération par l'entreprise : <span class="text-emerald-600 font-bold">{{ mission.price }} FCFA</span></p>
+                    <div class="p-5 border border-gray-100 bg-gray-50 rounded-xl flex flex-col justify-between">
+                        
+                        <div class="flex justify-between items-start w-full">
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">{{ mission.title }}</h4>
+                                <p class="text-xs text-gray-400 mt-1">Rémunération par l'entreprise : <span class="text-emerald-600 font-bold">{{ mission.price }} FCFA</span></p>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold">
+                                    {{ mission.status }}
+                                </span>
+                                <div>
+                                    {% if mission.payment_status == 'Pending_Payment' or mission.payment_status == 'Pending' %}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">⏳ En attente de paiement</span>
+                                    {% else %}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">💳 Payé & En ligne</span>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                       <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold">
-    {{ mission.status }}
-</span>
 
-<div class="mt-2">
-    {% if mission.payment_status == 'Pending_Payment' %}
-        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">⏳ En attente de paiement</span>
-    {% else %}
-        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">💳 Payé & En ligne</span>
-    {% endif %}
-</div>
+                        <div class="mt-4 flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+                            <div>
+                                <span class="text-xs font-bold text-gray-400 uppercase block">Données récoltées</span>
+                                <p class="text-sm font-bold text-gray-800">Prêt pour exploitation</p>
+                            </div>
+                            <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" 
+                               class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-sm">
+                                📊 Télécharger le fichier Excel / CSV
+                            </a>
+                        </div>
 
-<div class="mt-4 flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
-    <div>
-        <span class="text-xs font-bold text-gray-400 uppercase block">Données récoltées</span>
-        <p class="text-sm font-bold text-gray-800">Prêt pour exploitation</p>
-    </div>
-    
-    <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" 
-       class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-sm shadow-emerald-100">
-        📊 Télécharger le fichier Excel / CSV
-    </a>
-</div>
+                    </div>
                     {% else %}
-                    <div class="text-center py-12 text-gray-400 text-sm">
+                    <div class="text-center py-12 text-gray-400 text-sm bg-gray-50 rounded-2xl border border-gray-100">
                         Vous n'avez commandé aucune mission pour le moment. Remplissez le formulaire à gauche !
                     </div>
                     {% endfor %}
-                </div>
-            </div>
-        </div>
 
-    </div>
+                </div> 
+            </div> 
+
+        </div> </div>
 </div>
 {% endblock %}
