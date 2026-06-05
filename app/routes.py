@@ -1,6 +1,6 @@
 import os
 import csv
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
@@ -8,7 +8,6 @@ from . import db
 from .models import User, Mission, Submission, Transaction, CollecteData
 from functools import wraps
 from io import StringIO
-from flask import Response
 
 main_bp = Blueprint('main', __name__)
 
@@ -138,9 +137,6 @@ def logout():
 @main_bp.route('/client/dashboard', methods=['GET', 'POST'])
 @client_required
 def client_dashboard():
-    if 'user_id' not in session or session.get('user_role') != 'client':
-        return redirect(url_for('main.login'))
-        
     client = User.query.get(session['user_id'])
     
     if request.method == 'POST':
@@ -175,9 +171,6 @@ def client_dashboard():
 @main_bp.route('/agent/dashboard')
 @agent_required
 def agent_dashboard():
-    if 'user_id' not in session or session.get('user_role') != 'agent':
-        return redirect(url_for('main.login'))
-        
     agent = User.query.get(session['user_id'])
     history = Transaction.query.filter_by(user_id=agent.id).order_by(Transaction.created_at.desc()).all()
     missions = Mission.query.filter_by(payment_status='Paid').all()
@@ -187,9 +180,6 @@ def agent_dashboard():
 @main_bp.route('/agent/submit/<int:mission_id>', methods=['GET', 'POST'])
 @agent_required
 def agent_submit(mission_id):
-    if 'user_id' not in session or session.get('user_role') != 'agent':
-        return redirect(url_for('main.login'))
-        
     mission = Mission.query.get_or_404(mission_id)
     
     if request.method == 'POST':
@@ -202,7 +192,6 @@ def agent_submit(mission_id):
         latitude_raw = request.form.get('latitude')
         longitude_raw = request.form.get('longitude')
         
-        # Si les coordonnées existent, on les convertit, sinon on met Cotonou par défaut
         latitude = float(latitude_raw) if latitude_raw else 6.3703
         longitude = float(longitude_raw) if longitude_raw else 2.4406
         
@@ -219,10 +208,11 @@ def agent_submit(mission_id):
                 shop_name=shop_name,
                 shop_phone=shop_phone,
                 shop_address=shop_address,
-                latitude=latitude,   # Envoyé proprement comme un Float
-                longitude=longitude, # Envoyé proprement comme un Float
+                latitude=latitude,   
+                longitude=longitude, 
                 photo_path=photo_relative_path,
-                observations=observations
+                observations=observations,
+                status='Pending'
             )
             db.session.add(new_submission)
             db.session.commit()
@@ -230,6 +220,7 @@ def agent_submit(mission_id):
             return redirect(url_for('main.agent_dashboard'))
             
     return render_template('agent_submit.html', mission=mission)
+
 # ----------------------------------------------------
 # 4. CONSOLE ADMIN
 # ----------------------------------------------------
@@ -237,9 +228,6 @@ def agent_submit(mission_id):
 @main_bp.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    if 'user_id' not in session or session.get('user_role') != 'admin':
-        return redirect(url_for('main.login'))
-        
     # Recueil des statistiques de la plateforme
     total_agents = User.query.filter_by(role='agent').count()
     all_missions = Mission.query.all()
@@ -263,9 +251,6 @@ def admin_dashboard():
 @main_bp.route('/admin/confirm-payment/<int:mission_id>', methods=['POST'])
 @admin_required
 def confirm_payment(mission_id):
-    if 'user_id' not in session or session.get('user_role') != 'admin':
-        return redirect(url_for('main.login'))
-        
     mission = Mission.query.get_or_404(mission_id)
     mission.payment_status = 'Paid'
     db.session.commit()
@@ -275,9 +260,6 @@ def confirm_payment(mission_id):
 @main_bp.route('/admin/review/<int:submission_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_review(submission_id):
-    if 'user_id' not in session or session.get('user_role') != 'admin':
-        return redirect(url_for('main.login'))
-        
     sub = Submission.query.get_or_404(submission_id)
     agent = User.query.get(sub.agent_id)
     mission = Mission.query.get(sub.mission_id)
@@ -289,6 +271,8 @@ def admin_review(submission_id):
             sub.status = 'Approved'
             
             # 1. Rémunération de l'agent
+            if agent.wallet_balance is None:
+                agent.wallet_balance = 0
             agent.wallet_balance += mission.price
             
             # 2. Historique de la transaction de gain
@@ -320,12 +304,14 @@ def admin_review(submission_id):
         return redirect(url_for('main.admin_dashboard'))
         
     return render_template('admin_review.html', sub=sub, agent=agent, mission=mission)
+
 # API REST pour distribuer les coordonnées à la carte interactive Leaflet
 @main_bp.route('/api/points-collecte')
-@admin_required
 def api_points_collecte():
     points = CollecteData.query.all()
     features = []
+    
+    # Ajout des collectes validées et archivées
     for p in points:
         features.append({
             "id": p.id,
@@ -335,26 +321,20 @@ def api_points_collecte():
         })
     return jsonify(features)
 
+# 📊 EXPORTATION CSV POUR LE CLIENT
 @main_bp.route('/client/export/<int:mission_id>')
 def client_export_csv(mission_id):
-    # 1. Sécurité : Vérifier si l'utilisateur est connecté et est bien un client
     if 'user_id' not in session or session.get('user_role') != 'client':
         return redirect(url_for('main.login'))
     
-    # 2. Récupérer la mission
     mission = Mission.query.get_or_404(mission_id)
-    
-    # 3. Récupérer toutes les soumissions VALIDÉES liées à cette mission
     sub_validees = Submission.query.filter_by(mission_id=mission.id, status='Approved').all()
     
-    # 4. Créer le fichier CSV en mémoire
     si = StringIO()
-    cw = csv.writer(si, delimiter=';') # Point-virgule pour une ouverture directe et propre sur Excel Europe/Afrique
+    cw = csv.writer(si, delimiter=';') 
     
-    # Écriture de la ligne d'en-tête (Header)
     cw.writerow(['ID_Soumission', 'Nom_Commerce', 'Telephone', 'Adresse_Quartier', 'Latitude', 'Longitude', 'Observations', 'Agent_ID'])
     
-    # Écriture des données récoltées à Cotonou
     for sub in sub_validees:
         cw.writerow([
             f"SUB-{sub.id}",
@@ -367,10 +347,14 @@ def client_export_csv(mission_id):
             sub.agent_id
         ])
     
-    # 5. Préparer la réponse Flask pour forcer le téléchargement du fichier
-    output = make_response(si.getvalue())
+    output = si.getvalue()
     nom_fichier = f"databroker229_mission_{mission_id}.csv"
-    output.headers["Content-Disposition"] = f"attachment; filename={nom_fichier}"
-    output.headers["Content-Type"] = "text/csv; charset=utf-8"
     
-    return output
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename={nom_fichier}",
+            "Content-Type": "text/csv; charset=utf-8"
+        }
+    )
