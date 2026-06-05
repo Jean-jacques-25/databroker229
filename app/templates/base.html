@@ -105,7 +105,7 @@
                     <a href="/login" class="block w-full text-center font-bold text-gray-700 py-2.5 rounded-xl border border-gray-200">Connexion</a>
                     <a href="/register" class="block w-full text-center font-bold text-white bg-blue-600 py-2.5 rounded-xl">Inscription</a>
                 </div>
-            {% align_content %}
+            {% else %}
                 <div class="px-3 py-2 text-xs font-black text-gray-400 uppercase tracking-widest">Navigation Privée</div>
                 {% if session.get('user_role') == 'agent' %}
                     <a href="/agent/dashboard" class="block px-3 py-3 text-base font-bold text-gray-800 rounded-xl hover:bg-gray-50">📊 Mon Tableau de Bord</a>

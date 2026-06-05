@@ -1,55 +1,44 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-# 1. Ajoute cet import
 from flask_migrate import Migrate
 
+# Initialisation des extensions
 db = SQLAlchemy()
-# 2. Crée l'instance de Migrate
 migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
     
-    # ... tes configurations (SECRET_KEY, DATABASE_URI...) ...
-
-    db.init_app(app)
-    # 3. Initialise migrate avec l'application et la base de données
-    migrate.init_app(app, db)
-
-    # ... le reste de ton code (blueprints, etc.) ...
-    return app
-
-def create_app():
-    app = Flask(__name__)
-    
+    # 🔐 Configuration de la clé secrète
     app.config['SECRET_KEY'] = 'databroker229_secret_key_pro'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///databroker.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    db.init_app(app)
+    # 🗄️ Gestion dynamique de la base de données (Render PostgreSQL vs Local SQLite)
+    # On regarde si une variable d'environnement DATABASE_URL existe (Configurée sur Render)
+    database_url = os.environ.get('DATABASE_URL')
     
-    # Importation des modèles pour que SQLAlchemy les détectes
+    if database_url:
+        # Render fournit parfois une URL commençant par 'postgres://'
+        # SQLAlchemy exige impérativement 'postgresql://' pour fonctionner
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    else:
+        # Si aucune variable n'est détectée, on utilise l'URL PostgreSQL directe que tu as fournie
+        # (Idéal pour l'environnement de production ou les scripts d'initialisation)
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://databroker229_db_y3vx_user:FsJO1tC9Cu8WMd228lpd4xCuxCdKfwYc@dpg-d8heota8qa3s73bkaml0-a/databroker229_db_y3vx'
+
+    # 🔌 Liaison des extensions à l'application Flask
+    db.init_app(app)
+    migrate.init_app(app, db)
+    
+    # 🗺️ Enregistrement du Blueprint des routes
     from .routes import main_bp
     app.register_blueprint(main_bp)
-
+    
+    # 🛠️ Création automatique des tables au démarrage si elles n'existent pas
     with app.app_context():
         db.create_all()
-    
-    return app
-    app = Flask(__name__)
-    
-    # Configuration de base de l'application
-    app.config['SECRET_KEY'] = 'databroker229_secret_key_pro'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///databroker.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-    # Liaison de la base de données à l'application
-    db.init_init_app(app) if hasattr(db, 'init_init_app') else db.init_app(app)
-    
-    # C'est ici que nous enregistrerons nos futures routes (pages)
-    from .routes import main_bp
-    app.register_blueprint(main_bp)
     
     return app
