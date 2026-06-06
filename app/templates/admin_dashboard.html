@@ -80,7 +80,21 @@
                         <tr>
                             <td colspan="4" class="p-4 text-center text-gray-500">Aucun paiement client en attente. Les caisses sont à jour !</td>
                         </tr>
-                        {% endfor %}
+                        
+{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
+<div class="mt-2">
+    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
+       target="_blank" 
+       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
+        </svg>
+        Alerter les agents (WhatsApp)
+    </a>
+</div>
+{% endif %}
+
+{% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -114,7 +128,21 @@
                         <tr>
                             <td colspan="4" class="p-4 text-center text-gray-500">Aucun dossier en attente de validation. Paix sur le terrain !</td>
                         </tr>
-                        {% endfor %}
+                        
+{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
+<div class="mt-2">
+    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
+       target="_blank" 
+       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
+        </svg>
+        Alerter les agents (WhatsApp)
+    </a>
+</div>
+{% endif %}
+
+{% endfor %}
                     </tbody>
                 </table>
             </div>  
@@ -177,7 +205,21 @@
                             </td>
                             <td class="p-4 font-bold text-emerald-400">{{ agent.wallet_balance }} FCFA</td>
                         </tr>
-                        {% endfor %}
+                        
+{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
+<div class="mt-2">
+    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
+       target="_blank" 
+       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
+        </svg>
+        Alerter les agents (WhatsApp)
+    </a>
+</div>
+{% endif %}
+
+{% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -209,7 +251,21 @@
                 </div>
             `);
         {% endif %}
-    {% endfor %}
+    
+{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
+<div class="mt-2">
+    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
+       target="_blank" 
+       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
+        </svg>
+        Alerter les agents (WhatsApp)
+    </a>
+</div>
+{% endif %}
+
+{% endfor %}
 
     // 4. Charger les points validés depuis l'API Flask
     function chargerPointsTerrain() {
