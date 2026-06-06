@@ -413,3 +413,78 @@ def save_and_compress_image(form_photo):
     
     # Retourner le chemin relatif pour la base de données
     return f"uploads/{unique_filename}"
+# --- SYSTÈME DE RÉCUPÉRATION DE MOT DE PASSE ---
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
+from werkzeug.security import generate_password_hash
+
+# Initialisation du sérialiseur pour les tokens sécurisés (expire après 30 minutes)
+def generate_reset_token(email):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt='password-reset-salt')
+
+def verify_reset_token(token, expiration=1800):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=expiration)
+    except:
+        return None
+    return email
+
+@main_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            token = generate_reset_token(user.email)
+            reset_url = url_for('main.reset_password', token=token, _external=True)
+            
+            # Configuration temporaire du message (sera envoyé via Flask-Mail)
+            # Pour l'instant, on l'affiche aussi dans les logs pour tes tests faciles
+            print(f"\n[MAIL SIMULATION] Lien de réinitialisation pour {email} : {reset_url}\n")
+            
+            try:
+                mail = Mail(current_app)
+                msg = Message("Réinitialisation de votre mot de passe - DataBroker229",
+                              sender=current_app.config.get('MAIL_USERNAME'),
+                              recipients=[email])
+                msg.body = f"Bonjour,\n\nPour réinitialiser votre mot de passe, cliquez sur le lien suivant :\n{reset_url}\n\nCe lien expira dans 30 minutes.\nSi vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail."
+                mail.send(msg)
+            except Exception as e:
+                print(f"Erreur d'envoi d'e-mail : {e}")
+                
+            flash("Si ce compte existe, un e-mail contenant les instructions vous a été envoyé.", "info")
+        else:
+            # Sécurité : on affiche le même message pour ne pas divulguer si un mail existe ou pas
+            flash("Si ce compte existe, un e-mail contenant les instructions vous a été envoyé.", "info")
+            
+        return redirect(url_for('main.login'))
+        
+    return render_template('forgot_password.html')
+
+@main_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = verify_reset_token(token)
+    if not email:
+        flash("Le lien de réinitialisation est invalide ou a expiré.", "danger")
+        return redirect(url_for('main.login'))
+        
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if password != confirm_password:
+            flash("Les mots de passe ne correspondent pas.", "danger")
+            return redirect(request.referrer)
+            
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.password_hash = generate_password_hash(password)
+            db.session.commit()
+            flash("Votre mot de passe a été mis à jour avec succès ! Vous pouvez vous connecter.", "success")
+            return redirect(url_for('main.login'))
+            
+    return render_template('reset_password.html', token=token)
+# --- FIN SYSTÈME DE RÉCUPÉRATION ---
