@@ -1,3 +1,15 @@
+
+from math import radians, cos, sin, asin, sqrt
+import re
+
+def haversine(lon1, lat1, lon2, lat2):
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6371000
+    return c * r
 import os
 import csv
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
@@ -177,6 +189,41 @@ def agent_dashboard():
 
 @main_bp.route('/agent/submit/<int:mission_id>', methods=['POST'])
 def agent_submit(mission_id):
+
+    # --- SÉCURITÉ ANTI-TRICHE ET VALIDATION BÉNIN ---
+    shop_phone = request.form.get('shop_phone', '').strip()
+    latitude_str = request.form.get('latitude')
+    longitude_str = request.form.get('longitude')
+    
+    if not shop_phone or not latitude_str or not longitude_str:
+        flash("Données incomplètes (téléphone ou GPS manquant).", "danger")
+        return redirect(request.referrer or url_for('main.agent_dashboard'))
+        
+    try:
+        latitude = float(latitude_str)
+        longitude = float(longitude_str)
+    except ValueError:
+        flash("Coordonnées GPS invalides.", "danger")
+        return redirect(request.referrer or url_for('main.agent_dashboard'))
+
+    # Validation stricte des 10 chiffres (sans raccourci d pour éviter les bugs Python)
+    if not re.match(r"^01[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$", shop_phone):
+        flash("Erreur : Le numéro doit comporter 10 chiffres et commencer par 01 (Norme Bénin).", "danger")
+        return redirect(request.referrer or url_for('main.agent_dashboard'))
+
+    existing_phone = Submission.query.filter_by(mission_id=mission_id, shop_phone=shop_phone).first()
+    if existing_phone:
+        flash("Fraude : Ce numéro de boutique a déjà été enregistré pour cette mission !", "danger")
+        return redirect(request.referrer or url_for('main.agent_dashboard'))
+
+    past_submissions = Submission.query.filter_by(mission_id=mission_id).all()
+    for sub in past_submissions:
+        if sub.longitude and sub.latitude:
+            distance = haversine(longitude, latitude, sub.longitude, sub.latitude)
+            if distance < 15:
+                flash("Erreur de position : Une collecte existe déjà à moins de 15 mètres.", "danger")
+                return redirect(request.referrer or url_for('main.agent_dashboard'))
+    # --- FIN SÉCURITÉ ---
     # ... (vérification de session et récupération du formulaire) ...
     
     photo_file = request.files.get('photo')

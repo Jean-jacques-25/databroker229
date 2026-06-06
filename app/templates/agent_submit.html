@@ -14,7 +14,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Téléphone du gérant</label>
-                    <input type="text" name="shop_phone" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: +229 97000000">
+                    <input type="text" name="shop_phone" pattern="^01[0-9]{8}$" maxlength="10" placeholder="Ex: 01XXXXXXXX (10 chiffres)" title="Le numéro doit faire 10 chiffres et commencer par 01" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: +229 97000000">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Adresse / Quartier *</label>
