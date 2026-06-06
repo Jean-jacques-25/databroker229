@@ -165,4 +165,40 @@
         {% endfor %}
     {% endif %}
 </script>
+
+<div class="mt-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+    <p class="text-xs text-blue-700 font-semibold mb-2">💳 Paiement Mobile Money sécurisé (MTN / Moov / Celtiis)</p>
+    <button id="pay-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-2">
+        Payer la campagne avec FedaPay
+    </button>
+</div>
+
+<script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+<script>
+    document.getElementById('pay-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Initialisation du widget avec une configuration de test pour le Bénin
+        FedaPay.init('#pay-btn', {
+            public_key: 'pk_sandbox_votre_cle_publique_ici', // À remplacer par ta clé FedaPay
+            transaction: {
+                amount: 5000, // Ce montant pourra être rendu dynamique selon la mission
+                description: 'Financement de campagne DataBroker229'
+            },
+            customer: {
+                email: 'client@databroker229.bj'
+            },
+            onComplete: function(response) {
+                if (response.status === 'approved') {
+                    alert('Paiement réussi ! Votre campagne est maintenant active.');
+                    // Ici, on redirigera vers une route Flask pour valider la mission en base de données
+                    window.location.href = "/client/dashboard?payment=success";
+                } else {
+                    alert('Le paiement a échoué ou a été annulé.');
+                }
+            }
+        });
+    });
+</script>
+
 {% endblock %}
