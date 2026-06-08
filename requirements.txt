@@ -16,4 +16,4 @@ SQLAlchemy==2.0.50
 typing_extensions==4.15.0
 Werkzeug==3.1.8
 psycopg2-binary==2.9.9
-Pillow==10.2.0
+Pillow==10.2.0Flask-Mail==0.9.1
