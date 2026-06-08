@@ -5,11 +5,11 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
-  "description": "Plateforme de collecte de données géolocalisées au Bénin.",
+  "description": "Plateforme de collecte de données terrain au Bénin.",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/8144/8144211.png",
+      "src": "https://img.icons8.com/fluent/512/map-pin.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
