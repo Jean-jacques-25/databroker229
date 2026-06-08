@@ -488,3 +488,33 @@ def reset_password(token):
             
     return render_template('reset_password.html', token=token)
 # --- FIN SYSTÈME DE RÉCUPÉRATION ---
+
+# Nouvelle logique de création de campagne avec répartition Budget / Commission
+@app.route('/campaign/create', methods=['GET', 'POST'])
+def create_campaign():
+    if request.method == 'POST':
+        zone = request.form.get('zone')
+        campaign_type = request.form.get('type')
+        quantity = int(request.form.get('quantity', 1))
+        budget_total = float(request.form.get('budget_total', 0))
+        
+        # Répartition : 80% pour l'agent, 20% pour ta plateforme DataBroker229
+        budget_par_point = budget_total / quantity
+        remuneration_agent = budget_par_point * 0.80
+        commission_plateforme = budget_par_point * 0.20
+        
+        new_campaign = Campaign(
+            zone=zone,
+            type=campaign_type,
+            quantity=quantity,
+            budget_total=budget_total,
+            remuneration_agent=remuneration_agent,
+            commission_plateforme=commission_plateforme,
+            status='En attente de paiement'
+        )
+        db.session.add(new_campaign)
+        db.session.commit()
+        
+        return redirect(url_for('client_dashboard'))
+        
+    return render_template('create_campaign.html')
