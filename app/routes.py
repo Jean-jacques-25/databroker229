@@ -490,7 +490,7 @@ def reset_password(token):
 # --- FIN SYSTÈME DE RÉCUPÉRATION ---
 
 # Nouvelle logique de création de campagne avec répartition Budget / Commission
-@app.route('/campaign/create', methods=['GET', 'POST'])
+@bp.route('/campaign/create', methods=['GET', 'POST'])
 def create_campaign():
     if request.method == 'POST':
         zone = request.form.get('zone')
