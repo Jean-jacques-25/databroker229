@@ -490,31 +490,48 @@ def reset_password(token):
 # --- FIN SYSTÈME DE RÉCUPÉRATION ---
 
 # Nouvelle logique de création de campagne avec répartition Budget / Commission
-@bp.route('/campaign/create', methods=['GET', 'POST'])
+
+
+@main_bp.route('/campaign/create', methods=['GET', 'POST'])
 def create_campaign():
+    if 'user_id' not in session:
+        flash('Veuillez vous connecter pour accéder à cette page.', 'danger')
+        return redirect(url_for('main.login'))
+        
     if request.method == 'POST':
+        # 1. Récupération des données du vrai formulaire
+        title = request.form.get('title')
+        description = request.form.get('description')
+        protocol = request.form.get('protocol')
         zone = request.form.get('zone')
-        campaign_type = request.form.get('type')
+        difficulty = request.form.get('difficulty', 'Standard')
         quantity = int(request.form.get('quantity', 1))
         budget_total = float(request.form.get('budget_total', 0))
         
-        # Répartition : 80% pour l'agent, 20% pour ta plateforme DataBroker229
+        # 2. Logique de répartition (80% Agent / 20% Toi)
         budget_par_point = budget_total / quantity
         remuneration_agent = budget_par_point * 0.80
         commission_plateforme = budget_par_point * 0.20
         
-        new_campaign = Campaign(
+        # 3. Sauvegarde dans ton modèle 'Mission'
+        new_mission = Mission(
+            title=title,
+            description=description,
+            protocol=protocol,
             zone=zone,
-            type=campaign_type,
+            difficulty=difficulty,
             quantity=quantity,
             budget_total=budget_total,
             remuneration_agent=remuneration_agent,
             commission_plateforme=commission_plateforme,
-            status='En attente de paiement'
+            client_id=session['user_id'],
+            status='En attente de paiement',
+            created_at=datetime.utcnow()
         )
-        db.session.add(new_campaign)
+        db.session.add(new_mission)
         db.session.commit()
         
-        return redirect(url_for('client_dashboard'))
+        flash('Mission créée avec succès ! En attente de financement.', 'success')
+        return redirect(url_for('main.client_dashboard'))
         
     return render_template('create_campaign.html')
