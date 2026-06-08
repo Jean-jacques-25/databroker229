@@ -55,8 +55,7 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Rémunération (FCFA) *</label>
-                            <input type="number" name="price" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: 1500" required>
+                            <div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-bold text-gray-500 mb-1">Nombre de points *</label><input type="number" name="quantity" min="1" placeholder="Ex: 100" class="w-full p-2 border rounded text-sm" required></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Budget Total (FCFA) *</label><input type="number" name="budget_total" min="500" placeholder="Ex: 50000" class="w-full p-2 border rounded text-sm" required></div></div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1">Niveau de difficulté</label>
