@@ -92,6 +92,7 @@
                     <div class="p-5 border border-gray-100 bg-gray-50 rounded-xl flex flex-col justify-between">
                         
                         <div class="flex justify-between items-start w-full">
+{% for mission in missions %}
                             <div>
                                 <h4 class="font-bold text-gray-800 text-sm">{{ mission.title }}</h4>
                                 <p class="text-xs text-gray-400 mt-1">Rémunération par l'entreprise : <span class="text-emerald-600 font-bold">{{ mission.price }} FCFA</span></p>
@@ -99,6 +100,7 @@
                             <div class="flex flex-col items-end gap-2">
                                 <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold">
                                     {{ mission.status }}
+{% endfor %}
                                 </span>
                                 <div>
                                     {% if mission.payment_status == 'Pending_Payment' or mission.payment_status == 'Pending' %}

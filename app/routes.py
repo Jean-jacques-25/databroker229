@@ -159,6 +159,8 @@ def client_dashboard():
     # 1. Récupérer toutes les missions créées par ce client
     missions = Mission.query.filter_by(client_id=client_id).all()
     return render_template("client_dashboard.html", missions=missions)
+    return render_template("client_dashboard.html", missions=missions)
+    return render_template("client_dashboard.html", missions=missions)
     mission_ids = [m.id for m in missions]
     
     # 2. Récupérer uniquement les collectes approuvées pour ces missions
