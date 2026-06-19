@@ -177,10 +177,15 @@
 </script>
 
 <div class="mt-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
-    <p class="text-xs text-blue-700 font-semibold mb-2">💳 Paiement Mobile Money sécurisé (MTN / Moov / Celtiis)</p>
-    <button id="pay-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-2">
-<div class="my-8 p-6 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm text-center">
+<div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+    <h3 class="font-bold text-gray-800 mb-4 flex items-center">
+        <span class="mr-2">💳</span> Paiement Mobile Money sécurisé
+    </h3>
+    <p class="text-sm text-gray-600 mb-4">MTN / Moov / Celtiis</p>
+    <button onclick="window.location.href='/paiement-fedapay'" 
+            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:-translate-y-0.5">
         Payer la campagne avec FedaPay
+    </button>
 </div>
     </button>
 </div>
