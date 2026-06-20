@@ -20,9 +20,25 @@ class User(db.Model):
         return 100
 
 
+    organisation = db.Column(db.String(100))
+    contact = db.Column(db.String(100))
+    type_donnees = db.Column(db.String(50))
+    zone = db.Column(db.String(50))
+    quantite = db.Column(db.Integer)
+    difficulte = db.Column(db.Integer)
+    status = db.Column(db.String(20), default="En attente")
+    payment_status = db.Column(db.String(20), default="Pending")
 class Mission(db.Model):
     __tablename__ = 'missions'
     
+    organisation = db.Column(db.String(100))
+    contact = db.Column(db.String(100))
+    type_donnees = db.Column(db.String(50))
+    zone = db.Column(db.String(50))
+    quantite = db.Column(db.Integer)
+    difficulte = db.Column(db.Integer)
+    status = db.Column(db.String(20), default="En attente")
+    payment_status = db.Column(db.String(20), default="Pending")
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
