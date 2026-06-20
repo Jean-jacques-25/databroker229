@@ -9,3 +9,7 @@ def client_dashboard():
     # Logique de création de mission ici
     missions = Mission.query.filter_by(client_id=session.get('user_id')).all()
     return render_template('client_dashboard.html', missions=missions)
+
+@main.route('/')
+def index():
+    return redirect(url_for('main.client_dashboard'))
