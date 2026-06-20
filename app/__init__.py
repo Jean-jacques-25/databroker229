@@ -34,8 +34,8 @@ def create_app():
     migrate.init_app(app, db)
     
     # 🗺️ Enregistrement du Blueprint des routes
-    from .routes import main_bp
-    app.register_blueprint(main_bp)
+    from .routes import main
+    app.register_blueprint(main)
     
     # 🛠️ Création automatique des tables au démarrage si elles n'existent pas
     with app.app_context():
