@@ -1,48 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="p-8">
-    <h1 class="text-2xl font-bold">Espace Client</h1>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-        <span class="text-xs font-bold text-gray-400 uppercase">Missions lancées</span>
-        <p class="text-2xl font-black text-gray-800 mt-2">{{ missions|length }}</p>
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <h1 class="text-2xl font-black text-gray-900">Espace Client — {{ session.get('user_name', 'Client') }}</h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <span class="text-xs font-bold text-gray-400 uppercase">Missions lancées</span>
+                <p class="text-2xl font-black text-gray-800 mt-2">{{ missions|length }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <span class="text-xs font-bold text-gray-400 uppercase">Données</span>
+                <p class="text-2xl font-black text-blue-600 mt-2">{{ submissions|length }} dossiers</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold mb-4">🎯 Créer une mission</h2>
+            <form method="POST" action="{{ url_for('main.create_campaign') }}" class="space-y-4">
+                <input type="text" name="title" placeholder="Titre de la mission" class="w-full border p-3 rounded-xl" required>
+                <textarea name="description" placeholder="Description" class="w-full border p-3 rounded-xl"></textarea>
+                <button type="submit" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl">Lancer la mission</button>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold mb-4">📊 Historique</h2>
+            {% for mission in missions %}
+                <div class="p-4 border-b">{{ mission.title }} - {{ mission.status }}</div>
+            {% else %}
+                <p class="text-gray-400">Aucune mission trouvée.</p>
+            {% endfor %}
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="font-black text-gray-400 uppercase mb-3">Cartographie</h3>
+            <div id="client-map" class="w-full h-80 rounded-xl border"></div>
+        </div>
     </div>
-    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-        <span class="text-xs font-bold text-gray-400 uppercase">Données</span>
-        <p class="text-2xl font-black text-blue-600 mt-2">{{ submissions|length }} dossiers</p>
-    </div>
-</div>
-<div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8">
-    <h2 class="text-lg font-bold mb-4">🎯 Créer une mission</h2>
-    <form method="POST" class="space-y-4">
-        <input type="text" name="title" placeholder="Titre de la mission" class="w-full border p-2 rounded-lg" required>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Lancer</button>
-    </form>
-</div>
-    <div class="mt-4">
-        {% for mission in missions %}
-            <p>{{ mission.title }}</p>
-        {% else %}
-            <p>Aucune mission trouvée.</p>
-        {% endfor %}
-    </div>
-</div>
-{% endblock %}
-<div class="mt-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-    <h3 class="text-xs font-black text-gray-400 uppercase mb-4">Cartographie Terrain</h3>
-    <div id="client-map" class="w-full h-80 rounded-xl border border-gray-100"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const map = L.map("client-map").setView([6.3703, 2.3912], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
+    const map = L.map('client-map').setView([6.3703, 2.3912], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
 </script>
-<div class="mt-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-    <h3 class="font-bold text-gray-800 mb-4">💳 Paiement Mobile Money</h3>
-    <button onclick="window.location.href="/paiement-fedapay"" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">
-        Payer la campagne avec FedaPay
-    </button>
-</div>
+{% endblock %}
