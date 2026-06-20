@@ -1,58 +1,81 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="bg-gray-50 min-h-screen py-8">
-    <div class="max-w-6xl mx-auto px-4">
-        <h1 class="text-3xl font-black text-gray-900 mb-8">Espace Entreprise — {{ session.get('user_name', 'Client') }}</h1>
+    <div class="max-w-5xl mx-auto px-4 space-y-8">
+        
+        <!-- Header -->
+        <h1 class="text-3xl font-black text-gray-900">Espace Entreprise — {{ session.get('user_name', 'Client') }}</h1>
 
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8">
-            <h2 class="text-xl font-bold mb-6 text-gray-800">🚀 Commander une nouvelle mission</h2>
-            <form method="POST" action="{{ url_for('main.create_campaign') }}" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Formulaire de Commande avec Calculateur -->
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-6 text-gray-800">🎯 Commander une mission</h2>
+            <form id="missionForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
-                    <input type="text" name="title" placeholder="Intitulé de la mission *" class="w-full border p-3 rounded-xl" required>
-                    <textarea name="description" placeholder="Description détaillée *" class="w-full border p-3 rounded-xl h-24" required></textarea>
+                    <input type="text" placeholder="Nom de l'organisation" class="w-full border p-3 rounded-xl" required>
+                    <input type="text" placeholder="Contact WhatsApp / Email" class="w-full border p-3 rounded-xl" required>
+                    <input type="text" name="title" placeholder="Intitulé de la mission" class="w-full border p-3 rounded-xl" required>
                 </div>
                 <div class="space-y-4">
-                    <input type="number" name="quantity" placeholder="Nombre de collectes souhaitées *" class="w-full border p-3 rounded-xl" required>
-                    <input type="number" name="budget" placeholder="Budget estimé (FCFA) *" class="w-full border p-3 rounded-xl" required>
-                    <select name="difficulty" class="w-full border p-3 rounded-xl">
-                        <option value="Facile">Difficulté : Facile</option>
-                        <option value="Standard">Difficulté : Standard</option>
-                        <option value="Difficile">Difficulté : Difficile</option>
+                    <select id="zone" class="w-full border p-3 rounded-xl">
+                        <option value="1.2">Cotonou (Zone Urbaine)</option>
+                        <option value="1.1">Porto-Novo</option>
+                        <option value="1.5">Parakou</option>
+                        <option value="1.0">Abomey-Calavi</option>
+                    </select>
+                    <input type="number" id="quantite" placeholder="Nombre de points de collecte" class="w-full border p-3 rounded-xl" required>
+                    <select id="difficulte" class="w-full border p-3 rounded-xl">
+                        <option value="500">Facile (Zone urbaine)</option>
+                        <option value="800">Standard (Marchés)</option>
+                        <option value="1200">Difficile (Zones reculées)</option>
                     </select>
                 </div>
-                <button type="submit" class="md:col-span-2 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700">Lancer la mission</button>
+                <button type="button" onclick="calculerPrix()" class="md:col-span-2 bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-black transition">
+                    Calculer le prix de ma mission
+                </button>
             </form>
+
+            <!-- Bloc Paiement masqué par défaut -->
+            <div id="zonePaiement" class="mt-8 hidden border-t pt-6">
+                <h3 class="text-lg font-bold mb-4">Total estimé : <span id="prixTotal" class="text-blue-600">0</span> FCFA</h3>
+                <p class="text-xs text-gray-400 mb-4 italic">⚠️ Prix indicatif — confirmé par DataBroker229 sous 24h</p>
+                <div class="space-y-4">
+                    <select class="w-full border p-3 rounded-xl">
+                        <option>📱 MTN MoMo / Moov Money / Celtiis Cash</option>
+                        <option>🏦 Virement bancaire</option>
+                    </select>
+                    <button class="w-full bg-green-600 text-white font-bold py-4 rounded-xl hover:bg-green-700">✅ Confirmer et payer</button>
+                </div>
+            </div>
         </div>
 
+        <!-- Historique des campagnes -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-bold mb-4 text-gray-800">📍 Zone de couverture disponible</h2>
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="text-gray-400 text-xs uppercase border-b">
-                        <th class="pb-3">Département</th>
-                        <th class="pb-3">Ville</th>
-                        <th class="pb-3">Communes éligibles</th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm">
-                    <tr class="border-b">
-                        <td class="py-3 font-semibold">Littoral</td>
-                        <td>Cotonou</td>
-                        <td class="text-gray-600">Tous les arrondissements</td>
-                    </tr>
-                    <tr class="border-b">
-                        <td class="py-3 font-semibold">Atlantique</td>
-                        <td>Abomey-Calavi</td>
-                        <td class="text-gray-600">Godomey, Akassato, Ouèdo</td>
-                    </tr>
-                    <tr>
-                        <td class="py-3 font-semibold">Ouémé</td>
-                        <td>Porto-Novo</td>
-                        <td class="text-gray-600">Centre, Adjina, Ouando</td>
-                    </tr>
-                </tbody>
-            </table>
+            <h2 class="text-lg font-bold mb-4">📊 Historique de vos campagnes</h2>
+            {% for mission in missions %}
+            <div class="flex justify-between items-center p-4 border-b">
+                <div>
+                    <p class="font-bold text-sm">{{ mission.title }}</p>
+                    <span class="text-xs text-emerald-600 font-bold">{{ mission.status }}</span>
+                </div>
+                <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" class="text-xs bg-gray-100 px-3 py-1 rounded-full">Télécharger CSV</a>
+            </div>
+            {% else %}
+            <p class="text-gray-400 text-sm">Aucune mission pour le moment.</p>
+            {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+function calculerPrix() {
+    const qte = document.getElementById('quantite').value;
+    const diff = document.getElementById('difficulte').value;
+    const zone = document.getElementById('zone').value;
+    if(qte > 0) {
+        const total = Math.round((qte * diff * zone) * 1.4);
+        document.getElementById('prixTotal').innerText = total.toLocaleString();
+        document.getElementById('zonePaiement').classList.remove('hidden');
+    } else { alert("Entrez un nombre de points de collecte."); }
+}
+</script>
 {% endblock %}
