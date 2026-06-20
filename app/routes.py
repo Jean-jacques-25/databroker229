@@ -149,16 +149,13 @@ def logout():
 # ----------------------------------------------------
 
 @main_bp.route('/client/dashboard')
+@main.route("/client/dashboard")
 def client_dashboard():
-    if session.get('user_role') != 'client':
+    if session.get("user_role") != "client":
         flash("Accès réservé aux clients.", "danger")
-        return redirect(url_for('main.login'))
-        
-    client_id = session.get('user_id')
-    
-    # 1. Récupérer toutes les missions créées par ce client
+        return redirect(url_for("main.login"))
+    client_id = session.get("user_id")
     missions = Mission.query.filter_by(client_id=client_id).all()
-    return render_template("client_dashboard.html", missions=missions)
     return render_template("client_dashboard.html", missions=missions)
     return render_template("client_dashboard.html", missions=missions)
     mission_ids = [m.id for m in missions]
