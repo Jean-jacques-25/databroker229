@@ -39,8 +39,10 @@ def create_app():
 app.register_blueprint(admin)
     
     # 🛠️ Création automatique des tables au démarrage si elles n'existent pas
-    with app.app_context():
+with app.app_context():
         from . import models
         db.create_all()
     
+    with app.app_context():
+        db.create_all()
     return app
