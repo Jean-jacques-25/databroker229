@@ -1,14 +1,17 @@
-from flask import render_template, redirect, url_for, flash, session, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, session, abort
 from app import db
 from app.models import Mission
 from functools import wraps
+
+# Définition du Blueprint admin
+admin = Blueprint('admin', __name__)
 
 # Décorateur de sécurité
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('is_admin'):
-            abort(403) # Accès interdit
+            abort(403)
         return f(*args, **kwargs)
     return decorated_function
 
