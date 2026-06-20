@@ -1,23 +1,20 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
+from werkzeug.security import generate_password_hash, check_password_hash
+from math import radians, cos, sin, asin, sqrt
+import re
+import os
+import csv
 
 main = Blueprint("main", __name__)
 
-
-from math import radians, cos, sin, asin, sqrt
-import re
-
 def haversine(lon1, lat1, lon2, lat2):
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    dlon = lon2 - lon1 
-    dlat = lat2 - lat1 
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a)) 
+    c = 2 * asin(sqrt(a))
     r = 6371000
     return c * r
-import os
-import csv
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
-from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from . import db
