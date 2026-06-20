@@ -28,3 +28,21 @@
     </div>
 </div>
 {% endblock %}
+<div class="mt-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+    <h3 class="text-xs font-black text-gray-400 uppercase mb-4">Cartographie Terrain</h3>
+    <div id="client-map" class="w-full h-80 rounded-xl border border-gray-100"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const map = L.map("client-map").setView([6.3703, 2.3912], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+</script>
+<div class="mt-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+    <h3 class="font-bold text-gray-800 mb-4">💳 Paiement Mobile Money</h3>
+    <button onclick="window.location.href="/paiement-fedapay"" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">
+        Payer la campagne avec FedaPay
+    </button>
+</div>
