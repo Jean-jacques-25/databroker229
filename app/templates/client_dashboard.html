@@ -3,10 +3,8 @@
 <div class="bg-gray-50 min-h-screen py-8">
     <div class="max-w-5xl mx-auto px-4 space-y-8">
         
-        <!-- Header -->
         <h1 class="text-3xl font-black text-gray-900">Espace Entreprise — {{ session.get('user_name', 'Client') }}</h1>
 
-        <!-- Formulaire de Commande avec Calculateur -->
         <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <h2 class="text-xl font-bold mb-6 text-gray-800">🎯 Commander une mission</h2>
             <form id="missionForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -34,33 +32,40 @@
                 </button>
             </form>
 
-            <!-- Bloc Paiement masqué par défaut -->
             <div id="zonePaiement" class="mt-8 hidden border-t pt-6">
                 <h3 class="text-lg font-bold mb-4">Total estimé : <span id="prixTotal" class="text-blue-600">0</span> FCFA</h3>
-                <p class="text-xs text-gray-400 mb-4 italic">⚠️ Prix indicatif — confirmé par DataBroker229 sous 24h</p>
                 <div class="space-y-4">
                     <select class="w-full border p-3 rounded-xl">
                         <option>📱 MTN MoMo / Moov Money / Celtiis Cash</option>
                         <option>🏦 Virement bancaire</option>
                     </select>
+                    <label class="flex items-center space-x-2 text-sm text-gray-600">
+                        <input type="checkbox" required> <span>J'accepte les conditions de la mission</span>
+                    </label>
                     <button class="w-full bg-green-600 text-white font-bold py-4 rounded-xl hover:bg-green-700">✅ Confirmer et payer</button>
                 </div>
             </div>
         </div>
 
-        <!-- Historique des campagnes -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-bold mb-4">📊 Historique de vos campagnes</h2>
+            <h2 class="text-lg font-bold mb-4 text-gray-800">📍 Zones de couverture</h2>
+            <table class="w-full text-left text-sm">
+                <thead><tr class="text-gray-400 uppercase border-b"><th class="pb-2">Département</th><th class="pb-2">Ville</th></tr></thead>
+                <tbody>
+                    <tr><td class="py-2 font-semibold">Littoral</td><td>Cotonou</td></tr>
+                    <tr><td class="py-2 font-semibold">Atlantique</td><td>Abomey-Calavi</td></tr>
+                    <tr><td class="py-2 font-semibold">Ouémé</td><td>Porto-Novo</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold mb-4">📊 Historique des campagnes</h2>
             {% for mission in missions %}
             <div class="flex justify-between items-center p-4 border-b">
-                <div>
-                    <p class="font-bold text-sm">{{ mission.title }}</p>
-                    <span class="text-xs text-emerald-600 font-bold">{{ mission.status }}</span>
-                </div>
+                <div><p class="font-bold text-sm">{{ mission.title }}</p><span class="text-xs text-emerald-600 font-bold">{{ mission.status }}</span></div>
                 <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" class="text-xs bg-gray-100 px-3 py-1 rounded-full">Télécharger CSV</a>
             </div>
-            {% else %}
-            <p class="text-gray-400 text-sm">Aucune mission pour le moment.</p>
             {% endfor %}
         </div>
     </div>
