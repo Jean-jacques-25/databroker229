@@ -13,3 +13,7 @@ def client_dashboard():
 @main.route('/')
 def index():
     return redirect(url_for('main.client_dashboard'))
+
+@main.route('/')
+def index():
+    return render_template('index.html')
