@@ -6,4 +6,6 @@ main = Blueprint('main', __name__)
 
 @main.route('/client/dashboard', methods=['GET', 'POST'])
 def client_dashboard():
-    # ... ton code de route ici ...
+    # Logique de création de mission ici
+    missions = Mission.query.filter_by(client_id=session.get('user_id')).all()
+    return render_template('client_dashboard.html', missions=missions)
