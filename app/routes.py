@@ -1,30 +1,21 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from math import radians, cos, sin, asin, sqrt
-import re
-import os
-import csv
+import re, os, csv, uuid
+from datetime import datetime, timedelta
+from io import StringIO
+from PIL import Image
+from functools import wraps
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
+
+from . import db
+from .models import User, Mission, Submission, Transaction, CollecteData
 
 main = Blueprint("main", __name__)
 
-def haversine(lon1, lat1, lon2, lat2):
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    r = 6371000
-    return c * r
-from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta
-from . import db
-from .models import User, Mission, Submission, Transaction, CollecteData
-from functools import wraps
-from io import StringIO
-from PIL import Image
-import uuid
 
-main_bp = Blueprint('main', __name__)
 
 # 🔐 DECORATEUR : Vérifie si l'utilisateur est connecté et est un ADMIN
 def admin_required(f):
@@ -150,7 +141,6 @@ def logout():
 # ----------------------------------------------------
 
 @main_bp.route('/client/dashboard')
-@main.route("/client/dashboard")
 def client_dashboard():
     if session.get("user_role") != "client":
         flash("Accès réservé aux clients.", "danger")
