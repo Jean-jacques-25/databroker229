@@ -55,11 +55,11 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # 1. ACCUEIL ET AUTHENTIFICATION
 # ----------------------------------------------------
 
-@main_bp.route('/')
+@main.route('/')
 def index():
     return render_template('index.html')
 
-@main_bp.route('/register', methods=['GET', 'POST'])
+@main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         fullname = request.form.get('fullname')
@@ -107,7 +107,7 @@ def register():
 
     return render_template('register.html')
 
-@main_bp.route('/login', methods=['GET', 'POST'])
+@main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         identifier = request.form.get('identifier')
@@ -131,7 +131,7 @@ def login():
             
     return render_template('login.html')
 
-@main_bp.route('/logout')
+@main.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('main.index'))
@@ -140,7 +140,7 @@ def logout():
 # 2. ESPACE CLIENT
 # ----------------------------------------------------
 
-@main_bp.route('/client/dashboard')
+@main.route('/client/dashboard')
 def client_dashboard():
     if session.get("user_role") != "client":
         flash("Accès réservé aux clients.", "danger")
@@ -169,7 +169,7 @@ def client_dashboard():
 # 3. ESPACE AGENT
 # ----------------------------------------------------
 
-@main_bp.route('/agent/dashboard')
+@main.route('/agent/dashboard')
 @agent_required
 def agent_dashboard():
     agent = User.query.get(session['user_id'])
@@ -178,7 +178,7 @@ def agent_dashboard():
     
     return render_template('agent_dashboard.html', agent=agent, missions=missions, history=history)
 
-@main_bp.route('/agent/submit/<int:mission_id>', methods=['POST'])
+@main.route('/agent/submit/<int:mission_id>', methods=['POST'])
 def agent_submit(mission_id):
 
     # --- SÉCURITÉ ANTI-TRICHE ET VALIDATION BÉNIN ---
@@ -246,7 +246,7 @@ def agent_submit(mission_id):
 # 4. CONSOLE ADMIN
 # ----------------------------------------------------
 
-@main_bp.route('/admin/dashboard')
+@main.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
     # Recueil des statistiques de la plateforme
@@ -269,7 +269,7 @@ def admin_dashboard():
                            all_missions=all_missions,
                            collectes=collectes)
 
-@main_bp.route('/admin/confirm-payment/<int:mission_id>', methods=['POST'])
+@main.route('/admin/confirm-payment/<int:mission_id>', methods=['POST'])
 @admin_required
 def confirm_payment(mission_id):
     mission = Mission.query.get_or_404(mission_id)
@@ -278,7 +278,7 @@ def confirm_payment(mission_id):
     flash(f"Paiement reçu pour la mission #{mission.id}. Elle est maintenant disponible sur le terrain !")
     return redirect(url_for('main.admin_dashboard'))
 
-@main_bp.route('/admin/review/<int:submission_id>', methods=['GET', 'POST'])
+@main.route('/admin/review/<int:submission_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_review(submission_id):
     sub = Submission.query.get_or_404(submission_id)
@@ -327,7 +327,7 @@ def admin_review(submission_id):
     return render_template('admin_review.html', sub=sub, agent=agent, mission=mission)
 
 # API REST pour distribuer les coordonnées à la carte interactive Leaflet
-@main_bp.route('/api/points-collecte')
+@main.route('/api/points-collecte')
 def api_points_collecte():
     points = CollecteData.query.all()
     features = []
@@ -343,7 +343,7 @@ def api_points_collecte():
     return jsonify(features)
 
 # 📊 EXPORTATION CSV POUR LE CLIENT
-@main_bp.route('/client/export/<int:mission_id>')
+@main.route('/client/export/<int:mission_id>')
 def client_export_csv(mission_id):
     if 'user_id' not in session or session.get('user_role') != 'client':
         return redirect(url_for('main.login'))
@@ -422,7 +422,7 @@ def verify_reset_token(token, expiration=1800):
         return None
     return email
 
-@main_bp.route('/forgot-password', methods=['GET', 'POST'])
+@main.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
@@ -455,7 +455,7 @@ def forgot_password():
         
     return render_template('forgot_password.html')
 
-@main_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+@main.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     email = verify_reset_token(token)
     if not email:
@@ -483,7 +483,7 @@ def reset_password(token):
 # Nouvelle logique de création de campagne avec répartition Budget / Commission
 
 
-@main_bp.route('/campaign/create', methods=['GET', 'POST'])
+@main.route('/campaign/create', methods=['GET', 'POST'])
 def create_campaign():
     if 'user_id' not in session:
         flash('Veuillez vous connecter pour accéder à cette page.', 'danger')
