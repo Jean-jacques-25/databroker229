@@ -36,6 +36,7 @@ def create_app():
     # 🗺️ Enregistrement du Blueprint des routes
     from .routes import main
     app.register_blueprint(main)
+app.register_blueprint(admin)
     
     # 🛠️ Création automatique des tables au démarrage si elles n'existent pas
     with app.app_context():
