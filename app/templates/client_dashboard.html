@@ -1,48 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="bg-gray-50 min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <h1 class="text-2xl font-black text-gray-900">Espace Client — {{ session.get('user_name', 'Client') }}</h1>
+    <div class="max-w-6xl mx-auto px-4">
+        <h1 class="text-3xl font-black text-gray-900 mb-8">Espace Entreprise — {{ session.get('user_name', 'Client') }}</h1>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <span class="text-xs font-bold text-gray-400 uppercase">Missions lancées</span>
-                <p class="text-2xl font-black text-gray-800 mt-2">{{ missions|length }}</p>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <span class="text-xs font-bold text-gray-400 uppercase">Données</span>
-                <p class="text-2xl font-black text-blue-600 mt-2">{{ submissions|length }} dossiers</p>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-bold mb-4">🎯 Créer une mission</h2>
-            <form method="POST" action="{{ url_for('main.create_campaign') }}" class="space-y-4">
-                <input type="text" name="title" placeholder="Titre de la mission" class="w-full border p-3 rounded-xl" required>
-                <textarea name="description" placeholder="Description" class="w-full border p-3 rounded-xl"></textarea>
-                <button type="submit" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl">Lancer la mission</button>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <h2 class="text-xl font-bold mb-6 text-gray-800">🚀 Commander une nouvelle mission</h2>
+            <form method="POST" action="{{ url_for('main.create_campaign') }}" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <input type="text" name="title" placeholder="Intitulé de la mission *" class="w-full border p-3 rounded-xl" required>
+                    <textarea name="description" placeholder="Description détaillée *" class="w-full border p-3 rounded-xl h-24" required></textarea>
+                </div>
+                <div class="space-y-4">
+                    <input type="number" name="quantity" placeholder="Nombre de collectes souhaitées *" class="w-full border p-3 rounded-xl" required>
+                    <input type="number" name="budget" placeholder="Budget estimé (FCFA) *" class="w-full border p-3 rounded-xl" required>
+                    <select name="difficulty" class="w-full border p-3 rounded-xl">
+                        <option value="Facile">Difficulté : Facile</option>
+                        <option value="Standard">Difficulté : Standard</option>
+                        <option value="Difficile">Difficulté : Difficile</option>
+                    </select>
+                </div>
+                <button type="submit" class="md:col-span-2 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700">Lancer la mission</button>
             </form>
         </div>
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-bold mb-4">📊 Historique</h2>
-            {% for mission in missions %}
-                <div class="p-4 border-b">{{ mission.title }} - {{ mission.status }}</div>
-            {% else %}
-                <p class="text-gray-400">Aucune mission trouvée.</p>
-            {% endfor %}
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 class="font-black text-gray-400 uppercase mb-3">Cartographie</h3>
-            <div id="client-map" class="w-full h-80 rounded-xl border"></div>
+            <h2 class="text-lg font-bold mb-4 text-gray-800">📍 Zone de couverture disponible</h2>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-gray-400 text-xs uppercase border-b">
+                        <th class="pb-3">Département</th>
+                        <th class="pb-3">Ville</th>
+                        <th class="pb-3">Communes éligibles</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    <tr class="border-b">
+                        <td class="py-3 font-semibold">Littoral</td>
+                        <td>Cotonou</td>
+                        <td class="text-gray-600">Tous les arrondissements</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-3 font-semibold">Atlantique</td>
+                        <td>Abomey-Calavi</td>
+                        <td class="text-gray-600">Godomey, Akassato, Ouèdo</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-semibold">Ouémé</td>
+                        <td>Porto-Novo</td>
+                        <td class="text-gray-600">Centre, Adjina, Ouando</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const map = L.map('client-map').setView([6.3703, 2.3912], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
-</script>
 {% endblock %}
