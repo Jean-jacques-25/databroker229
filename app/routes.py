@@ -56,16 +56,8 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        session['user_id']   = user.id
-        session['user_role'] = user.role
-        session['user_name'] = user.fullname
-
-        if role == 'agent':
-            return redirect(url_for('main.agent_dashboard'))
-        elif role == 'client':
-            return redirect(url_for('main.client_dashboard'))
-        else:
-            return redirect(url_for('main.admin_dashboard'))
+        flash("Compte créé avec succès ! Connectez-vous maintenant.", "success")
+        return redirect(url_for('main.login'))
 
     return render_template('register.html')
 
@@ -311,3 +303,26 @@ def api_points_collecte():
     points = CollecteData.query.all()
     data   = [{'id': p.id, 'lat': p.latitude, 'lng': p.longitude, 'description': p.description} for p in points]
     return jsonify(data)
+
+
+# ─────────────────────────────────────────────
+# ROUTE SECRÈTE — CRÉATION COMPTE ADMIN
+# ─────────────────────────────────────────────
+@main.route('/setup-admin-db229secret')
+def setup_admin():
+    from werkzeug.security import generate_password_hash
+    existing = User.query.filter_by(email="admin@databroker229.com").first()
+    if existing:
+        return "<h2 style='font-family:monospace;color:green'>✅ Admin existe déjà. Connectez-vous sur /login</h2>"
+    admin = User(
+        fullname="Admin DataBroker",
+        email="admin@databroker229.com",
+        phone="00000000",
+        password=generate_password_hash("admin229"),
+        role="admin",
+        location="Cotonou",
+        wallet_balance=0
+    )
+    db.session.add(admin)
+    db.session.commit()
+    return "<h2 style='font-family:monospace;color:green'>✅ Compte admin créé ! Email: admin@databroker229.com / MDP: admin229</h2>"
