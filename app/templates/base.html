@@ -6,154 +6,107 @@
     <title>DataBroker229 — Données Terrain au Bénin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#0a0a0a">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        .glow-amber { box-shadow: 0 0 30px rgba(251,191,36,0.15); }
-        .glow-blue  { box-shadow: 0 0 30px rgba(59,130,246,0.15); }
-        .gradient-text {
-            background: linear-gradient(135deg, #fff 0%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .card-dark {
-            background: #111111;
-            border: 1px solid #222222;
-            border-radius: 20px;
-            transition: border-color 0.2s, transform 0.2s;
-        }
-        .card-dark:hover { border-color: #f59e0b44; transform: translateY(-2px); }
-        .btn-primary {
-            background: #f59e0b;
-            color: #0a0a0a;
-            font-weight: 800;
-            padding: 14px 28px;
-            border-radius: 100px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; flex-direction: column; margin: 0; }
+        .btn-primary { background: #f59e0b; color: #0a0a0a; font-weight: 800; padding: 14px 28px; border-radius: 100px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border: none; cursor: pointer; }
         .btn-primary:hover { background: #fbbf24; transform: scale(1.03); }
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-            font-weight: 700;
-            padding: 13px 28px;
-            border-radius: 100px;
-            border: 1px solid #333;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .btn-outline { background: transparent; color: #fff; font-weight: 700; padding: 13px 28px; border-radius: 100px; border: 1px solid #333; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
         .btn-outline:hover { border-color: #f59e0b; color: #f59e0b; }
+        .card-dark { background: #111; border: 1px solid #222; border-radius: 20px; transition: border-color 0.2s, transform 0.2s; }
+        .card-dark:hover { border-color: #f59e0b44; transform: translateY(-2px); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
     </style>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
-                .catch(function(err) { console.log('SW error:', err); });
-            });
-        }
-    </script>
 </head>
-<body style="background:#0a0a0a; color:#fff; min-height:100vh; display:flex; flex-direction:column;">
+<body>
 
 <!-- NAV -->
-<header style="background:rgba(10,10,10,0.85); border-bottom:1px solid #1a1a1a; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div style="display:flex; justify-content:space-between; align-items:center; height:68px;">
+<header id="main-header" style="background:rgba(10,10,10,0.95);border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:1000;backdrop-filter:blur(12px);">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;height:68px;">
 
             <!-- LOGO -->
-            <a href="/" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
-                <div style="width:38px; height:38px; background:linear-gradient(135deg,#f59e0b,#d97706); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:18px; color:#0a0a0a;">D</div>
+            <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+                <div style="width:38px;height:38px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#0a0a0a;flex-shrink:0;">D</div>
                 <div>
-                    <div style="font-weight:900; font-size:16px; color:#fff; letter-spacing:-0.5px;">DataBroker<span style="color:#f59e0b;">229</span></div>
-                    <div style="font-size:9px; font-weight:700; color:#666; letter-spacing:2px; text-transform:uppercase; margin-top:-2px;">BÉNIN TERRAIN</div>
+                    <div style="font-weight:900;font-size:16px;color:#fff;letter-spacing:-0.5px;">DataBroker<span style="color:#f59e0b;">229</span></div>
+                    <div style="font-size:9px;font-weight:700;color:#555;letter-spacing:2px;text-transform:uppercase;">BÉNIN TERRAIN</div>
                 </div>
             </a>
 
-            <!-- NAV DESKTOP -->
-            <div class="hidden md:flex" style="align-items:center; gap:32px;">
+            <!-- DESKTOP NAV -->
+            <div style="display:none;align-items:center;gap:24px;" class="desktop-nav">
                 {% if 'user_id' not in session %}
-                    <nav style="display:flex; gap:28px; align-items:center;">
-                        <a href="/" style="color:#999; font-size:14px; font-weight:600; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Accueil</a>
-                        <a href="#services" style="color:#999; font-size:14px; font-weight:600; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Services</a>
-                        <a href="#contact" style="color:#999; font-size:14px; font-weight:600; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Contact</a>
-                    </nav>
-                    <div style="display:flex; gap:12px; align-items:center;">
-                        <a href="/login" style="color:#ccc; font-size:14px; font-weight:700; text-decoration:none; padding:8px 18px; border-radius:100px; border:1px solid #2a2a2a; transition:all 0.2s;" onmouseover="this.style.borderColor='#444';this.style.color='#fff'" onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#ccc'">Connexion</a>
-                        <a href="/register" class="btn-primary" style="font-size:14px; padding:10px 22px;">Rejoindre →</a>
-                    </div>
-
+                    <a href="/" style="color:#999;font-size:14px;font-weight:600;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Accueil</a>
+                    <a href="/#services" style="color:#999;font-size:14px;font-weight:600;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Services</a>
+                    <a href="/#contact" style="color:#999;font-size:14px;font-weight:600;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Contact</a>
+                    <a href="/login" style="color:#ccc;font-size:14px;font-weight:700;text-decoration:none;padding:8px 18px;border-radius:100px;border:1px solid #2a2a2a;" onmouseover="this.style.borderColor='#555'" onmouseout="this.style.borderColor='#2a2a2a'">Connexion</a>
+                    <a href="/register" class="btn-primary" style="font-size:14px;padding:10px 22px;">Rejoindre →</a>
                 {% elif session.get('user_role') == 'agent' %}
-                    <span style="background:#111; border:1px solid #222; color:#f59e0b; font-size:11px; font-weight:800; padding:6px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
-                        <span style="width:6px;height:6px;background:#f59e0b;border-radius:50%;animation:pulse 2s infinite;"></span>
-                        Espace Agent
-                    </span>
-                    <a href="/agent/dashboard" style="color:#ccc; font-size:14px; font-weight:700; text-decoration:none;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#ccc'">📊 Tableau de bord</a>
-                    <a href="/logout" style="color:#ef4444; font-size:14px; font-weight:700; text-decoration:none;">Déconnexion</a>
-
+                    <a href="/agent/dashboard" style="color:#ccc;font-size:14px;font-weight:700;text-decoration:none;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#ccc'">📊 Tableau de bord</a>
+                    <a href="/logout" style="color:#ef4444;font-size:14px;font-weight:700;text-decoration:none;">Déconnexion</a>
                 {% elif session.get('user_role') == 'client' %}
-                    <span style="background:#111; border:1px solid #222; color:#10b981; font-size:11px; font-weight:800; padding:6px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
-                        <span style="width:6px;height:6px;background:#10b981;border-radius:50%;animation:pulse 2s infinite;"></span>
-                        Espace Client
-                    </span>
-                    <a href="/client/dashboard" style="color:#ccc; font-size:14px; font-weight:700; text-decoration:none;" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#ccc'">🏢 Mes Missions</a>
-                    <a href="/logout" style="color:#ef4444; font-size:14px; font-weight:700; text-decoration:none;">Déconnexion</a>
-
+                    <a href="/client/dashboard" style="color:#ccc;font-size:14px;font-weight:700;text-decoration:none;" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#ccc'">🏢 Mes Missions</a>
+                    <a href="/logout" style="color:#ef4444;font-size:14px;font-weight:700;text-decoration:none;">Déconnexion</a>
                 {% elif session.get('user_role') == 'admin' %}
-                    <span style="background:#111; border:1px solid #333; color:#f59e0b; font-size:11px; font-weight:800; padding:6px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase;">👑 Supervision</span>
-                    <a href="/admin/dashboard" style="color:#ccc; font-size:14px; font-weight:700; text-decoration:none;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#ccc'">🛠️ Console Admin</a>
-                    <a href="/logout" style="color:#ef4444; font-size:14px; font-weight:700; text-decoration:none;">Déconnexion</a>
+                    <a href="/admin/dashboard" style="color:#ccc;font-size:14px;font-weight:700;text-decoration:none;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#ccc'">🛠️ Console Admin</a>
+                    <a href="/logout" style="color:#ef4444;font-size:14px;font-weight:700;text-decoration:none;">Déconnexion</a>
                 {% endif %}
             </div>
 
-            <!-- BURGER MOBILE -->
-            <button id="mobile-menu-button" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;" class="md:hidden">
-                <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path id="burger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+            <!-- BURGER -->
+            <button id="burger-btn" onclick="toggleMenu()" style="background:#111;border:1px solid #222;color:#fff;cursor:pointer;padding:10px 12px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                <svg id="icon-burger" style="width:20px;height:20px;display:block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg id="icon-close" style="width:20px;height:20px;display:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
     </div>
 
     <!-- MENU MOBILE -->
-    <div id="mobile-menu" class="hidden md:hidden" style="border-top:1px solid #1a1a1a; padding:16px; display:flex; flex-direction:column; gap:8px;">
+    <div id="mobile-menu" style="display:none;border-top:1px solid #1a1a1a;padding:16px 20px;flex-direction:column;gap:6px;">
         {% if 'user_id' not in session %}
-            <a href="/" style="color:#fff; font-weight:700; padding:12px 16px; border-radius:12px; text-decoration:none; background:#111;">Accueil</a>
-            <a href="#services" style="color:#999; font-weight:600; padding:12px 16px; border-radius:12px; text-decoration:none;">Services</a>
-            <a href="#contact" style="color:#999; font-weight:600; padding:12px 16px; border-radius:12px; text-decoration:none;">Contact</a>
-            <div style="border-top:1px solid #1a1a1a; padding-top:12px; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-                <a href="/login" style="text-align:center; color:#fff; font-weight:700; padding:12px; border-radius:100px; border:1px solid #333; text-decoration:none;">Connexion</a>
-                <a href="/register" class="btn-primary" style="text-align:center; justify-content:center;">Rejoindre →</a>
+            <a href="/" onclick="closeMenu()" style="color:#fff;font-weight:700;padding:14px 16px;border-radius:12px;text-decoration:none;background:#1a1a1a;display:block;">🏠 Accueil</a>
+            <a href="/#services" onclick="closeMenu()" style="color:#999;font-weight:600;padding:14px 16px;border-radius:12px;text-decoration:none;display:block;">⚙️ Services</a>
+            <a href="/#contact" onclick="closeMenu()" style="color:#999;font-weight:600;padding:14px 16px;border-radius:12px;text-decoration:none;display:block;">📞 Contact</a>
+            <div style="border-top:1px solid #1a1a1a;padding-top:12px;margin-top:6px;display:flex;flex-direction:column;gap:10px;">
+                <a href="/login" onclick="closeMenu()" style="text-align:center;color:#fff;font-weight:700;padding:14px;border-radius:100px;border:1px solid #333;text-decoration:none;display:block;">Connexion</a>
+                <a href="/register" onclick="closeMenu()" class="btn-primary" style="text-align:center;justify-content:center;font-size:15px;">Rejoindre →</a>
             </div>
         {% else %}
             {% if session.get('user_role') == 'agent' %}
-                <a href="/agent/dashboard" style="color:#fff; font-weight:700; padding:12px 16px; border-radius:12px; text-decoration:none; background:#111;">📊 Tableau de bord</a>
+                <a href="/agent/dashboard" onclick="closeMenu()" style="color:#fff;font-weight:700;padding:14px 16px;border-radius:12px;text-decoration:none;background:#1a1a1a;display:block;">📊 Tableau de bord</a>
             {% elif session.get('user_role') == 'client' %}
-                <a href="/client/dashboard" style="color:#fff; font-weight:700; padding:12px 16px; border-radius:12px; text-decoration:none; background:#111;">🏢 Mes Missions</a>
+                <a href="/client/dashboard" onclick="closeMenu()" style="color:#fff;font-weight:700;padding:14px 16px;border-radius:12px;text-decoration:none;background:#1a1a1a;display:block;">🏢 Mes Missions</a>
             {% elif session.get('user_role') == 'admin' %}
-                <a href="/admin/dashboard" style="color:#fff; font-weight:700; padding:12px 16px; border-radius:12px; text-decoration:none; background:#111;">🛠️ Console Admin</a>
+                <a href="/admin/dashboard" onclick="closeMenu()" style="color:#fff;font-weight:700;padding:14px 16px;border-radius:12px;text-decoration:none;background:#1a1a1a;display:block;">🛠️ Console Admin</a>
             {% endif %}
-            <a href="/logout" style="text-align:center; color:#ef4444; font-weight:700; padding:12px; border-radius:100px; background:#1a0a0a; text-decoration:none; margin-top:8px;">Déconnexion</a>
+            <a href="/logout" style="text-align:center;color:#ef4444;font-weight:700;padding:14px;border-radius:100px;background:#1a0808;text-decoration:none;display:block;margin-top:8px;">Déconnexion</a>
         {% endif %}
     </div>
 </header>
 
+<style>
+@media (min-width: 768px) {
+    .desktop-nav { display: flex !important; }
+    #burger-btn { display: none !important; }
+    #mobile-menu { display: none !important; }
+}
+</style>
+
 <main style="flex:1;">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div style="max-width:600px; margin:16px auto; padding:0 16px;">
+            <div style="max-width:600px;margin:16px auto;padding:0 16px;">
                 {% for category, message in messages %}
-                <div style="padding:14px 18px; border-radius:12px; font-size:14px; font-weight:600; margin-bottom:8px;
+                <div style="padding:14px 18px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:8px;
                     background:{% if category == 'error' %}#1a0808{% else %}#081a0f{% endif %};
                     border:1px solid {% if category == 'error' %}#ef444433{% else %}#10b98133{% endif %};
                     color:{% if category == 'error' %}#ef4444{% else %}#10b981{% endif %};">
@@ -167,37 +120,33 @@
 </main>
 
 <!-- FOOTER -->
-<footer style="background:#080808; border-top:1px solid #1a1a1a; padding:60px 0 32px;">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:40px; margin-bottom:48px;">
+<footer style="background:#080808;border-top:1px solid #1a1a1a;padding:60px 20px 32px;">
+    <div style="max-width:1200px;margin:0 auto;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:40px;margin-bottom:40px;">
             <div>
-                <div style="font-weight:900; font-size:20px; color:#fff; margin-bottom:12px;">Data<span style="color:#f59e0b;">broker229</span></div>
-                <p style="font-size:13px; color:#555; line-height:1.7;">La plateforme intelligente de collecte de données terrain au Bénin. Fiabilité, rapidité et précision.</p>
+                <div style="font-weight:900;font-size:20px;color:#fff;margin-bottom:12px;">Data<span style="color:#f59e0b;">broker229</span></div>
+                <p style="font-size:13px;color:#555;line-height:1.7;">La plateforme de collecte de données terrain au Bénin. Fiabilité, rapidité, précision.</p>
             </div>
             <div>
-                <h4 style="color:#fff; font-weight:700; margin-bottom:16px; font-size:14px;">Contact Direct</h4>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <a href="https://wa.me/2290155256871" target="_blank" style="color:#555; text-decoration:none; font-size:13px; display:flex; align-items:center; gap:8px; transition:color 0.2s;" onmouseover="this.style.color='#25d366'" onmouseout="this.style.color='#555'">
+                <h4 style="color:#fff;font-weight:700;margin-bottom:16px;font-size:14px;">Contact Direct</h4>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <a href="https://wa.me/2290155256871" target="_blank" style="color:#555;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.color='#25d366'" onmouseout="this.style.color='#555'">
                         <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> +229 01 55 25 68 71
                     </a>
-                    <a href="mailto:contact@databroker229.com" style="color:#555; text-decoration:none; font-size:13px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#555'">
+                    <a href="mailto:contact@databroker229.com" style="color:#555;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#555'">
                         <i class="fa-solid fa-envelope" style="color:#f59e0b;"></i> contact@databroker229.com
                     </a>
-                    <span style="color:#444; font-size:12px; display:flex; align-items:center; gap:8px;">
-                        <i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> Cotonou, Bénin
-                    </span>
                 </div>
             </div>
             <div>
-                <h4 style="color:#fff; font-weight:700; margin-bottom:16px; font-size:14px;">Suivez-nous</h4>
-                <div style="display:flex; gap:12px;">
-                    <a href="#" style="width:38px; height:38px; background:#111; border:1px solid #222; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#666; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.borderColor='#f59e0b';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='#222';this.style.color='#666'"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="https://wa.me/2290155256871" target="_blank" style="width:38px; height:38px; background:#111; border:1px solid #222; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#666; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.borderColor='#25d366';this.style.color='#25d366'" onmouseout="this.style.borderColor='#222';this.style.color='#666'"><i class="fa-brands fa-whatsapp"></i></a>
-                    <a href="#" style="width:38px; height:38px; background:#111; border:1px solid #222; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#666; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.borderColor='#0077b5';this.style.color='#0077b5'" onmouseout="this.style.borderColor='#222';this.style.color='#666'"><i class="fa-brands fa-linkedin"></i></a>
+                <h4 style="color:#fff;font-weight:700;margin-bottom:16px;font-size:14px;">Navigation</h4>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <a href="/login" style="color:#555;text-decoration:none;font-size:13px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">Connexion</a>
+                    <a href="/register" style="color:#555;text-decoration:none;font-size:13px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">Inscription</a>
                 </div>
             </div>
         </div>
-        <div style="border-top:1px solid #1a1a1a; padding-top:24px; text-align:center; color:#333; font-size:12px;">
+        <div style="border-top:1px solid #1a1a1a;padding-top:24px;text-align:center;color:#333;font-size:12px;">
             &copy; 2026 DataBroker229. Tous droits réservés.
         </div>
     </div>
@@ -205,102 +154,104 @@
 
 <!-- CHATBOT -->
 {% if session.get('user_role') != 'admin' %}
-<div style="position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end;">
-    <div id="ai-chat-box" style="display:none; width:340px; height:440px; background:#111; border:1px solid #222; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.5); flex-direction:column; overflow:hidden; margin-bottom:12px;">
-        <div style="background:linear-gradient(135deg,#f59e0b,#d97706); padding:16px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:32px;height:32px;background:rgba(0,0,0,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">🤖</div>
+<div style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;">
+    <div id="ai-chat-box" style="display:none;width:320px;height:420px;background:#111;border:1px solid #222;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.6);flex-direction:column;overflow:hidden;margin-bottom:12px;">
+        <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:30px;height:30px;background:rgba(0,0,0,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;">🤖</div>
                 <div>
-                    <div style="font-weight:800; font-size:13px; color:#0a0a0a;">Assistant DataBroker229</div>
-                    <div style="font-size:10px; color:rgba(0,0,0,0.6);">En ligne • Support IA</div>
+                    <div style="font-weight:800;font-size:12px;color:#0a0a0a;">Assistant DataBroker229</div>
+                    <div style="font-size:10px;color:rgba(0,0,0,0.6);">Support IA · En ligne</div>
                 </div>
             </div>
-            <button onclick="toggleChat()" style="background:none;border:none;color:rgba(0,0,0,0.6);cursor:pointer;font-size:18px;">✕</button>
+            <button onclick="toggleChat()" style="background:none;border:none;color:rgba(0,0,0,0.5);cursor:pointer;font-size:16px;padding:4px;">✕</button>
         </div>
-        <div id="chat-messages" style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;background:#0d0d0d;">
-            <div style="display:flex;gap:8px;max-width:90%;">
-                <div style="width:24px;height:24px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">📢</div>
-                <div style="background:#1a1a1a;border:1px solid #222;padding:10px 14px;border-radius:0 14px 14px 14px;font-size:12px;color:#ccc;line-height:1.6;">
-                    Bonjour ! Je suis l'assistant <strong style="color:#f59e0b;">DataBroker229</strong>.<br><br>Des questions sur les missions ou vos gains ? Je vous réponds !
+        <div id="chat-messages" style="flex:1;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;background:#0d0d0d;">
+            <div style="display:flex;gap:8px;">
+                <div style="width:22px;height:22px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;">🤖</div>
+                <div style="background:#1a1a1a;border:1px solid #222;padding:10px 12px;border-radius:0 12px 12px 12px;font-size:12px;color:#ccc;line-height:1.6;">
+                    Bonjour ! Je suis l'assistant <strong style="color:#f59e0b;">DataBroker229</strong>. Comment puis-je vous aider ?
                 </div>
             </div>
         </div>
-        <div style="padding:12px;background:#111;border-top:1px solid #1a1a1a;display:flex;gap:8px;align-items:center;">
-            <input type="text" id="chat-input" placeholder="Posez votre question..." style="flex:1;background:#0d0d0d;border:1px solid #222;border-radius:100px;padding:10px 16px;color:#fff;font-size:12px;outline:none;" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
-            <button onclick="sendMessage()" style="width:38px;height:38px;background:#f59e0b;border:none;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">➤</button>
+        <div style="padding:10px;background:#111;border-top:1px solid #1a1a1a;display:flex;gap:8px;">
+            <input type="text" id="chat-input" placeholder="Votre question..." style="flex:1;background:#0d0d0d;border:1px solid #222;border-radius:100px;padding:10px 14px;color:#fff;font-size:12px;outline:none;" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+            <button onclick="sendMessage()" style="width:36px;height:36px;background:#f59e0b;border:none;border-radius:50%;cursor:pointer;font-size:14px;">➤</button>
         </div>
     </div>
-    <button onclick="toggleChat()" style="width:56px;height:56px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:50%;cursor:pointer;font-size:22px;box-shadow:0 8px 24px rgba(245,158,11,0.3);transition:all 0.2s;position:relative;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <button onclick="toggleChat()" style="width:54px;height:54px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:50%;cursor:pointer;font-size:20px;box-shadow:0 8px 24px rgba(245,158,11,0.35);position:relative;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
         💬
-        <span style="position:absolute;top:-2px;right:-2px;width:12px;height:12px;background:#10b981;border-radius:50%;border:2px solid #0a0a0a;animation:pulse 2s infinite;"></span>
+        <span style="position:absolute;top:-1px;right:-1px;width:11px;height:11px;background:#10b981;border-radius:50%;border:2px solid #0a0a0a;animation:pulse 2s infinite;"></span>
     </button>
 </div>
 <script>
-    const kb = [
-        { keys: ["agent","gagner","travail","collecte","mission"], response: "En tant qu'Agent, vous collectez des données terrain (GPS, photos, infos commerces). Une fois validée, votre portefeuille est crédité en FCFA instantanément !" },
-        { keys: ["client","entreprise","publier","données"], response: "Les Clients créent un compte, publient leur mission avec leur cahier des charges, et reçoivent des données CSV certifiées collectées par nos agents terrain." },
-        { keys: ["paiement","argent","retrait","portefeuille","fcfa","moov","mtn"], response: "Les paiements sont en FCFA. Les gains s'accumulent sur votre portefeuille après validation. Retrait via Mobile Money (MTN/Moov)." },
-        { keys: ["gps","coordonnee","latitude","carte"], response: "La géolocalisation est certifiée. L'app capture automatiquement les coordonnées GPS lors de chaque soumission terrain." },
-        { keys: ["contact","whatsapp","support","telephone"], response: "Contactez-nous sur WhatsApp : <strong style='color:#f59e0b'>+229 01 55 25 68 71</strong> ou par email : contact@databroker229.com" }
-    ];
-    function toggleChat() {
-        const box = document.getElementById('ai-chat-box');
-        if (box.style.display === 'none' || box.style.display === '') {
-            box.style.display = 'flex';
-        } else {
-            box.style.display = 'none';
-        }
-    }
-    function sendMessage() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
-        const container = document.getElementById('chat-messages');
-        container.innerHTML += `<div style="display:flex;gap:8px;max-width:90%;margin-left:auto;flex-direction:row-reverse;">
-            <div style="width:24px;height:24px;background:#f59e0b;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:#000;">👤</div>
-            <div style="background:#f59e0b;color:#0a0a0a;padding:10px 14px;border-radius:14px 0 14px 14px;font-size:12px;font-weight:600;">${text}</div>
-        </div>`;
-        input.value = '';
-        container.scrollTop = container.scrollHeight;
-        setTimeout(() => {
-            let reply = "Je ne suis pas sûr de comprendre. Contactez notre support sur WhatsApp : +229 01 55 25 68 71 !";
-            const clean = text.toLowerCase();
-            for (const item of kb) {
-                if (item.keys.some(k => clean.includes(k))) { reply = item.response; break; }
-            }
-            container.innerHTML += `<div style="display:flex;gap:8px;max-width:90%;">
-                <div style="width:24px;height:24px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">🤖</div>
-                <div style="background:#1a1a1a;border:1px solid #222;padding:10px 14px;border-radius:0 14px 14px 14px;font-size:12px;color:#ccc;line-height:1.6;">${reply}</div>
-            </div>`;
-            container.scrollTop = container.scrollHeight;
-        }, 400);
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('chat-input')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
-    });
+const kb = [
+    {keys:["agent","gagner","mission","collecte","terrain"],response:"En tant qu'Agent, vous collectez des données terrain (GPS, photos, infos commerces). Une fois validée par l'admin, votre portefeuille est crédité en FCFA !"},
+    {keys:["client","entreprise","publier","commande"],response:"Les Clients publient leurs missions et reçoivent des données CSV certifiées collectées par nos agents terrain au Bénin."},
+    {keys:["paiement","argent","retrait","fcfa","moov","mtn","portefeuille"],response:"Les paiements sont en FCFA. Les gains s'accumulent après validation. Retrait via Mobile Money (MTN / Moov / Celtiis)."},
+    {keys:["gps","coordonnee","localisation","carte"],response:"La géolocalisation est certifiée. L'app capture automatiquement les coordonnées GPS lors de chaque soumission terrain."},
+    {keys:["contact","whatsapp","support","aide"],response:"Contactez-nous : WhatsApp <strong style='color:#f59e0b'>+229 01 55 25 68 71</strong> ou email : contact@databroker229.com"}
+];
+function toggleChat() {
+    const box = document.getElementById('ai-chat-box');
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+}
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const c = document.getElementById('chat-messages');
+    c.innerHTML += `<div style="display:flex;gap:8px;flex-direction:row-reverse;"><div style="width:22px;height:22px;background:#f59e0b;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:#000;">👤</div><div style="background:#f59e0b;color:#0a0a0a;padding:10px 12px;border-radius:12px 0 12px 12px;font-size:12px;font-weight:600;">${text}</div></div>`;
+    input.value = '';
+    c.scrollTop = c.scrollHeight;
+    setTimeout(() => {
+        let reply = "Contactez notre support WhatsApp : +229 01 55 25 68 71 pour plus d'aide !";
+        const low = text.toLowerCase();
+        for (const item of kb) { if (item.keys.some(k => low.includes(k))) { reply = item.response; break; } }
+        c.innerHTML += `<div style="display:flex;gap:8px;"><div style="width:22px;height:22px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;">🤖</div><div style="background:#1a1a1a;border:1px solid #222;padding:10px 12px;border-radius:0 12px 12px 12px;font-size:12px;color:#ccc;line-height:1.6;">${reply}</div></div>`;
+        c.scrollTop = c.scrollHeight;
+    }, 400);
+}
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('chat-input')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+});
 </script>
 {% endif %}
 
 <script>
-    document.getElementById('mobile-menu-button').addEventListener('click', function() {
-        const menu = document.getElementById('mobile-menu');
-        const icon = document.getElementById('burger-icon');
-        const isHidden = menu.classList.contains('hidden');
-        menu.classList.toggle('hidden');
-        if (isHidden) {
-            menu.style.display = 'flex';
-            icon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
-        } else {
-            menu.style.display = 'none';
-            icon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
-        }
-    });
-</script>
-<style>
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+function toggleMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const iconBurger = document.getElementById('icon-burger');
+    const iconClose = document.getElementById('icon-close');
+    const isOpen = menu.style.display === 'flex';
+    if (isOpen) {
+        menu.style.display = 'none';
+        iconBurger.style.display = 'block';
+        iconClose.style.display = 'none';
+    } else {
+        menu.style.display = 'flex';
+        iconBurger.style.display = 'none';
+        iconClose.style.display = 'block';
+    }
 }
-</style>
+function closeMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const iconBurger = document.getElementById('icon-burger');
+    const iconClose = document.getElementById('icon-close');
+    menu.style.display = 'none';
+    iconBurger.style.display = 'block';
+    iconClose.style.display = 'none';
+}
+// Fermer le menu si on clique en dehors
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('mobile-menu');
+    const btn = document.getElementById('burger-btn');
+    const header = document.getElementById('main-header');
+    if (menu.style.display === 'flex' && !header.contains(e.target)) {
+        closeMenu();
+    }
+});
+</script>
+
 </body>
 </html>
