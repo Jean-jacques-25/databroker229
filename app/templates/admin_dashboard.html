@@ -4,222 +4,172 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div class="bg-gray-900 min-h-screen text-gray-100 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="flex justify-between items-center border-b border-gray-800 pb-6 mb-8">
+<div style="min-height:100vh;padding:32px 16px;">
+    <div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:24px;">
+
+        <!-- EN-TÊTE -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-white">Console de Supervision Générale</h1>
-                <p class="text-xs text-gray-400 mt-1">Gestion des flux de données terrain de DataBroker229</p>
+                <h1 style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Console de Supervision</h1>
+                <p style="color:#555;font-size:13px;margin-top:4px;">DataBroker229 · Tableau de bord administrateur</p>
             </div>
-            <span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold rounded-full border border-amber-500/20">
+            <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:11px;font-weight:800;padding:8px 18px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:8px;">
+                <span style="width:6px;height:6px;background:#f59e0b;border-radius:50%;animation:pulse 2s infinite;"></span>
                 Mode Admin Actif
             </span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-                <div class="text-gray-400 text-xs font-bold uppercase tracking-wider">Agents Enregistrés</div>
-                <div class="text-3xl font-black text-white mt-2 flex items-baseline gap-2">
-                    {{ total_agents }}
-                    <span class="text-xs font-normal text-emerald-400">Actifs au Bénin</span>
-                </div>
+        <!-- STATS -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+            <div class="card-dark" style="padding:24px;">
+                <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Agents enregistrés</div>
+                <div style="font-size:36px;font-weight:900;color:#fff;line-height:1;">{{ total_agents }}</div>
+                <div style="font-size:11px;color:#10b981;margin-top:6px;font-weight:600;">Actifs au Bénin</div>
             </div>
-
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-                <div class="text-gray-400 text-xs font-bold uppercase tracking-wider">Total Campagnes Lancées</div>
-                <div class="text-3xl font-black text-white mt-2">
-                    {{ total_missions }}
-                </div>
+            <div class="card-dark" style="padding:24px;">
+                <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Total missions</div>
+                <div style="font-size:36px;font-weight:900;color:#fff;line-height:1;">{{ total_missions }}</div>
+                <div style="font-size:11px;color:#555;margin-top:6px;font-weight:600;">Campagnes lancées</div>
             </div>
-
-            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 {% if pending_submissions|length > 0 %}border-amber-500/40 bg-amber-500/5{% endif %}">
-                <div class="text-gray-400 text-xs font-bold uppercase tracking-wider">Dossiers à contrôler</div>
-                <div class="text-3xl font-black mt-2 {% if pending_submissions|length > 0 %}text-amber-400{% else %}text-white{% endif %}">
-                    {{ pending_submissions|length }}
-                </div>
+            <div class="card-dark" style="padding:24px;{% if pending_submissions|length > 0 %}border-color:#f59e0b33;{% endif %}">
+                <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Dossiers à valider</div>
+                <div style="font-size:36px;font-weight:900;line-height:1;color:{% if pending_submissions|length > 0 %}#f59e0b{% else %}#fff{% endif %};">{{ pending_submissions|length }}</div>
+                <div style="font-size:11px;color:#555;margin-top:6px;font-weight:600;">En attente de contrôle</div>
             </div>
-
+            <div class="card-dark" style="padding:24px;{% if pending_payments|length > 0 %}border-color:#ef444433;{% endif %}">
+                <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Paiements clients</div>
+                <div style="font-size:36px;font-weight:900;line-height:1;color:{% if pending_payments|length > 0 %}#ef4444{% else %}#fff{% endif %};">{{ pending_payments|length }}</div>
+                <div style="font-size:11px;color:#555;margin-top:6px;font-weight:600;">Dépôts à confirmer</div>
+            </div>
         </div>
 
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
-            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                📍 Suivi Cartographique des Collectes (Temps Réel)
+        <!-- CARTE LEAFLET -->
+        <div class="card-dark" style="padding:24px;overflow:hidden;">
+            <h2 style="font-size:16px;font-weight:800;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+                📍 Suivi cartographique temps réel
             </h2>
-            <div id="map" class="w-full rounded-xl border border-gray-700 overflow-hidden shadow-inner" style="height: 420px; z-index: 1;"></div>
+            <div id="map" style="height:380px;border-radius:14px;border:1px solid #1a1a1a;overflow:hidden;"></div>
         </div>
-        
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
-            <h2 class="text-lg font-bold text-amber-400 mb-4">💰 Dépôts Clients en attente de validation (Avant publication)</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
-                        <tr>
-                            <th class="p-4">ID</th>
-                            <th class="p-4">Mission</th>
-                            <th class="p-4">Budget Requis</th>
-                            <th class="p-4">Action</th>
+
+        <!-- PAIEMENTS EN ATTENTE -->
+        {% if pending_payments %}
+        <div class="card-dark" style="padding:0;overflow:hidden;">
+            <div style="padding:20px 24px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:10px;">
+                <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">{{ pending_payments|length }} en attente</span>
+                <h2 style="font-size:16px;font-weight:800;color:#fff;">💰 Dépôts clients à confirmer</h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1a1a1a;">
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">ID</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Mission</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Budget requis</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-700">
+                    <tbody>
                         {% for mission in pending_payments %}
-                        <tr class="hover:bg-gray-700/30">
-                            <td class="p-4 text-gray-500">#{{ mission.id }}</td>
-                            <td class="p-4 font-semibold text-white">{{ mission.title }}</td>
-                            <td class="p-4 font-bold text-emerald-400">{{ mission.price }} FCFA</td>
-                            <td class="p-4">
-                                <form action="/admin/confirm-payment/{{ mission.id }}" method="POST" class="inline">
-                                    <button type="submit" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-gray-900 text-xs font-bold rounded-lg transition-colors">
-                                        ✅ Confirmer la réception des fonds
+                        <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                            <td style="padding:16px 20px;font-size:12px;color:#444;font-family:monospace;">#{{ mission.id }}</td>
+                            <td style="padding:16px 20px;font-size:13px;font-weight:700;color:#fff;">{{ mission.title }}</td>
+                            <td style="padding:16px 20px;font-size:14px;font-weight:900;color:#10b981;">{{ mission.price }} FCFA</td>
+                            <td style="padding:16px 20px;">
+                                <form action="/admin/confirm-payment/{{ mission.id }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-primary" style="font-size:12px;padding:8px 16px;">
+                                        ✅ Confirmer réception
                                     </button>
                                 </form>
                             </td>
                         </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="p-4 text-center text-gray-500">Aucun paiement client en attente. Les caisses sont à jour !</td>
-                        </tr>
-                        
-{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
-<div class="mt-2">
-    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
-       target="_blank" 
-       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
-        </svg>
-        Alerter les agents (WhatsApp)
-    </a>
-</div>
-{% endif %}
-
-{% endfor %}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-        
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
-            <h2 class="text-lg font-bold text-white mb-4">⏳ Collectes en attente de vérification</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
-                        <tr>
-                            <th class="p-4">Agent</th>
-                            <th class="p-4">Boutique / Commerce</th>
-                            <th class="p-4">Région / Quartier</th>
-                            <th class="p-4">Action</th>
+        {% endif %}
+
+        <!-- COLLECTES À VALIDER -->
+        <div class="card-dark" style="padding:0;overflow:hidden;">
+            <div style="padding:20px 24px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:10px;">
+                {% if pending_submissions|length > 0 %}
+                <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">{{ pending_submissions|length }} en attente</span>
+                {% endif %}
+                <h2 style="font-size:16px;font-weight:800;color:#fff;">⏳ Collectes à vérifier</h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1a1a1a;">
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Agent</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Commerce</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Adresse</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-700">
+                    <tbody>
                         {% for sub in pending_submissions %}
-                        <tr class="hover:bg-gray-700/30">
-                            <td class="p-4 font-semibold text-white">{{ sub.agent.fullname }}</td>
-                            <td class="p-4">{{ sub.shop_name }}</td>
-                            <td class="p-4 text-gray-400">{{ sub.shop_address }}</td>
-                            <td class="p-4">
-                                <a href="/admin/review/{{ sub.id }}" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors">
+                        <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                            <td style="padding:16px 20px;font-size:13px;font-weight:700;color:#fff;">{{ sub.agent.fullname }}</td>
+                            <td style="padding:16px 20px;font-size:13px;color:#ccc;">{{ sub.shop_name or '—' }}</td>
+                            <td style="padding:16px 20px;font-size:12px;color:#555;">{{ sub.shop_address or '—' }}</td>
+                            <td style="padding:16px 20px;">
+                                <a href="/admin/review/{{ sub.id }}"
+                                    style="background:#1a1a2e;border:1px solid #3b82f633;color:#60a5fa;font-size:11px;font-weight:700;padding:8px 14px;border-radius:8px;text-decoration:none;"
+                                    onmouseover="this.style.background='#1e3a5f'" onmouseout="this.style.background='#1a1a2e'">
                                     🔍 Inspecter & Payer
                                 </a>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-gray-500">Aucun dossier en attente de validation. Paix sur le terrain !</td>
-                        </tr>
-                        
-{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
-<div class="mt-2">
-    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
-       target="_blank" 
-       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
-        </svg>
-        Alerter les agents (WhatsApp)
-    </a>
-</div>
-{% endif %}
-
-{% endfor %}
-                    </tbody>
-                </table>
-            </div>  
-        </div>
-
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-white">📋 Toutes les campagnes de missions actives</h2>
-                <span class="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/20">Global</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
-                        <tr>
-                            <th class="p-4">ID</th>
-                            <th class="p-4">Titre de la Mission</th>
-                            <th class="p-4">Difficulté</th>
-                            <th class="p-4">Rémunération</th>
-                            <th class="p-4">Statut Système</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700">
-                        {% if total_missions > 0 %}
-                            <tr class="hover:bg-gray-700/30">
-                                <td class="p-4 text-gray-500 font-mono">#01</td>
-                                <td class="p-4 font-semibold text-white">Collecte de visuels - Boutiques Telecom</td>
-                                <td class="p-4"><span class="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs rounded">Standard</span></td>
-                                <td class="p-4 font-bold text-emerald-400">1 500 FCFA</td>
-                                <td class="p-4 text-xs text-emerald-400 font-medium">● En cours de diffusion</td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="5" class="p-4 text-center text-gray-500">Aucune mission n'a encore été créée dans le système.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
-            <h2 class="text-lg font-bold text-white mb-4">👥 Performance des Agents sur le terrain</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="bg-gray-700/50 text-gray-400 text-xs uppercase font-bold">
-                        <tr>
-                            <th class="p-4">Nom complet</th>
-                            <th class="p-4">Téléphone</th>
-                            <th class="p-4">Fiabilité</th>
-                            <th class="p-4">Solde Portefeuille</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700">
-                        {% for agent in all_agents %}
-                        <tr class="hover:bg-gray-700/30">
-                            <td class="p-4 font-semibold text-white">{{ agent.fullname }}</td>
-                            <td class="p-4 text-mono">{{ agent.phone }}</td>
-                            <td class="p-4">
-                                <span class="text-emerald-400 font-bold">100%</span>
+                            <td colspan="4" style="padding:48px;text-align:center;color:#333;font-size:14px;">
+                                ✅ Aucun dossier en attente de validation.
                             </td>
-                            <td class="p-4 font-bold text-emerald-400">{{ agent.wallet_balance }} FCFA</td>
                         </tr>
-                        
-{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
-<div class="mt-2">
-    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
-       target="_blank" 
-       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
-        </svg>
-        Alerter les agents (WhatsApp)
-    </a>
-</div>
-{% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-{% endfor %}
+        <!-- LISTE DES AGENTS -->
+        <div class="card-dark" style="padding:0;overflow:hidden;">
+            <div style="padding:20px 24px;border-bottom:1px solid #1a1a1a;">
+                <h2 style="font-size:16px;font-weight:800;color:#fff;">👥 Performance des agents terrain</h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1a1a1a;">
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Nom complet</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Téléphone</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Fiabilité</th>
+                            <th style="padding:14px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Solde</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for agent in all_agents %}
+                        <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                            <td style="padding:16px 20px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:32px;height:32px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#0a0a0a;font-size:13px;flex-shrink:0;">
+                                        {{ agent.fullname[0].upper() }}
+                                    </div>
+                                    <span style="font-weight:700;color:#fff;font-size:13px;">{{ agent.fullname }}</span>
+                                </div>
+                            </td>
+                            <td style="padding:16px 20px;font-size:12px;color:#555;font-family:monospace;">{{ agent.phone }}</td>
+                            <td style="padding:16px 20px;">
+                                <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;">100%</span>
+                            </td>
+                            <td style="padding:16px 20px;font-size:14px;font-weight:900;color:#10b981;">{{ agent.wallet_balance }} FCFA</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="padding:48px;text-align:center;color:#333;font-size:14px;">Aucun agent enregistré.</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -229,58 +179,27 @@
 </div>
 
 <script>
-    // 1. Initialiser la carte centrée sur Cotonou, Bénin
-    var map = L.map('map').setView([6.3703, 2.4406], 12);
+var map = L.map('map', { zoomControl: true }).setView([6.3703, 2.4406], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
 
-    // 2. Ajouter la couche OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // 3. Injection dynamique des dossiers EN ATTENTE via Jinja
-    {% for sub in pending_submissions %}
-        {% if sub.latitude and sub.longitude %}
-            var marker = L.marker([{{ sub.latitude }}, {{ sub.longitude }}]).addTo(map);
-            marker.bindPopup(`
-                <div class="text-gray-900 text-xs">
-                    <b class="text-blue-600 text-sm font-bold block mb-1">{{ sub.shop_name }}</b>
-                    <b>Mission :</b> {{ sub.mission.title if sub.mission else "Collecte Terrain" }}<br>
-                    <b>Quartier :</b> {{ sub.shop_address }}<br>
-                    <b>Agent :</b> {{ sub.agent.fullname if sub.agent else "Inconnu" }}<br>
-                    <span class="text-[10px] text-gray-400 block mt-1">Status : En attente (#SUB-{{ sub.id }})</span>
-                </div>
-            `);
-        {% endif %}
-    
-{% if mission.payment_status == 'Paid' or mission.status == 'Active' %}
-<div class="mt-2">
-    <a href="https://api.whatsapp.com/send?text=%F0%9F%93%A2%20*NOUVELLE%20MISSION%20DISPONIBLE%20SUR%20DATABROKER229*%20%F0%9F%87%A7%F0%9F%87%AF%0A%0A%F0%9F%93%8B%20*Mission%2A%20%3A%20{{ mission.title }}%0A%F0%9F%93%8D%20*Zone%2A%20%3A%20Cotonou%20et%20environs%0A%F0%9F%92%B5%20*Gain%2A%20%3A%20{{ mission.reward }}%20FCFA%20par%20collecte%0A%0A%F0%9F%93%B2%20Connectez-vous%20vite%20sur%20votre%20espace%20agent%20pour%20bloquer%20votre%20place%20%3A%20https%3A%2F%2Fdatabroker229-kdw5.onrender.com%2F" 
-       target="_blank" 
-       class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl transition-all shadow-sm mt-1">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.85-4.417 9.854-9.842 0-2.628-1.022-5.101-2.879-6.958C17.18 1.948 14.703.928 12.011.928c-5.435 0-9.855 4.417-9.859 9.844a9.782 9.782 0 0 0 1.5 5.178l-.991 3.616 3.7-.972zm11.367-7.354c-.314-.157-1.858-.915-2.142-1.018-.284-.104-.49-.157-.696.157-.206.314-.799 1.018-.98 1.223-.181.206-.361.232-.675.075-.314-.157-1.328-.488-2.531-1.562-.936-.836-1.568-1.869-1.751-2.184-.182-.314-.02-.485.137-.641.141-.14.314-.366.47-.548.157-.182.208-.314.314-.523.107-.209.053-.392-.026-.548-.079-.157-.696-1.68-.954-2.304-.251-.603-.508-.521-.696-.531-.18-.009-.387-.011-.593-.011-.206 0-.542.077-.826.392-.284.314-1.084 1.061-1.084 2.587 0 1.526 1.11 3.001 1.265 3.211.156.21 2.184 3.333 5.292 4.675.739.32 1.317.511 1.768.654.743.236 1.419.203 1.954.123.596-.089 1.858-.759 2.119-1.456.261-.696.261-1.293.183-1.42-.078-.127-.284-.204-.598-.362z"/>
-        </svg>
-        Alerter les agents (WhatsApp)
-    </a>
-</div>
-{% endif %}
-
+{% for sub in pending_submissions %}
+    {% if sub.latitude and sub.longitude %}
+    L.circleMarker([{{ sub.latitude }}, {{ sub.longitude }}], {
+        radius: 8, fillColor: '#f59e0b', color: '#0a0a0a', weight: 2, opacity: 1, fillOpacity: 0.9
+    }).addTo(map).bindPopup('<b>{{ sub.shop_name or "Commerce" }}</b><br>Agent : {{ sub.agent.fullname }}<br>Statut : En attente');
+    {% endif %}
 {% endfor %}
 
-    // 4. Charger les points validés depuis l'API Flask
-    function chargerPointsTerrain() {
-        fetch('/api/points-collecte')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(point => {
-                    L.marker([point.lat, point.lng])
-                        .addTo(map)
-                        .bindPopup(`<b>📍 Collecte Validée #${point.id}</b><br>${point.description}`);
-                });
-            })
-            .catch(err => console.error("Erreur lors du chargement des points de l'API:", err));
-    }
-
-    chargerPointsTerrain();
+fetch('/api/points-collecte')
+    .then(r => r.json())
+    .then(data => {
+        data.forEach(p => {
+            L.circleMarker([p.lat, p.lng], {
+                radius: 8, fillColor: '#10b981', color: '#0a0a0a', weight: 2, opacity: 1, fillOpacity: 0.9
+            }).addTo(map).bindPopup('<b>✅ Validée #' + p.id + '</b><br>' + p.description);
+        });
+    }).catch(e => console.error(e));
 </script>
 {% endblock %}

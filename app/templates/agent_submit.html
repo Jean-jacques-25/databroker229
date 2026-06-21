@@ -1,89 +1,104 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-2xl mx-auto my-10 px-4">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-        <h1 class="text-xl font-black text-gray-900">Rapport de Collecte : {{ mission.title }}</h1>
-        <p class="text-xs text-gray-500 mt-1 mb-6">Rémunération garantie après validation : <span class="text-emerald-600 font-bold">{{ mission.price }} FCFA</span></p>
+<div style="min-height:100vh;padding:32px 16px;">
+    <div style="max-width:640px;margin:0 auto;">
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+        <!-- EN-TÊTE -->
+        <div style="margin-bottom:28px;display:flex;align-items:center;gap:16px;">
+            <a href="/agent/dashboard" style="width:40px;height:40px;background:#111;border:1px solid #222;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#666;text-decoration:none;font-size:18px;" onmouseover="this.style.borderColor='#f59e0b';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='#222';this.style.color='#666'">←</a>
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nom du commerce ou point collecté *</label>
-                <input type="text" name="shop_name" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: Boutique Moov Africa Gbégamey" required>
+                <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Soumettre une collecte</h1>
+                <p style="color:#f59e0b;font-size:13px;margin-top:2px;font-weight:700;">{{ mission.title }}</p>
             </div>
+        </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Téléphone du gérant</label>
-                    <input type="text" name="shop_phone" pattern="^01[0-9]{8}$" maxlength="10" placeholder="Ex: 01XXXXXXXX (10 chiffres)" title="Le numéro doit faire 10 chiffres et commencer par 01" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: +229 97000000">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Adresse / Quartier *</label>
-                    <input type="text" name="shop_address" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: Rue pavée après la place bulgari" required>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Latitude (Auto-générée)</label>
-                    <input type="text" name="latitude" id="latitude" readonly required class="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-xs font-mono focus:outline-none cursor-not-allowed text-gray-600" value="6.3703">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Longitude (Auto-générée)</label>
-                    <input type="text" name="longitude" id="longitude" readonly required class="w-full bg-gray-100 border border-gray-200 rounded-lg p-2 text-xs font-mono focus:outline-none cursor-not-allowed text-gray-600" value="2.4252">
-                </div>
-            </div>
-            <p id="geo-status" class="text-xs text-gray-500 font-medium px-1">🔄 Recherche de votre position GPS en cours...</p>
-
+        <!-- INFOS MISSION -->
+        <div class="card-dark" style="padding:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Preuve photo réelle du bâtiment *</label>
-                <input type="file" name="photo" accept="image/*" class="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                <div style="font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Rémunération</div>
+                <div style="font-size:28px;font-weight:900;color:#10b981;margin-top:4px;">+{{ mission.price }} FCFA</div>
             </div>
+            <div style="font-size:12px;color:#555;max-width:280px;line-height:1.6;">{{ mission.description[:150] }}{% if mission.description|length > 150 %}...{% endif %}</div>
+        </div>
 
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Observations particulières / Notes</label>
-                <textarea name="observations" rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none" placeholder="Ex: La boutique est fermée tous les lundis matin..."></textarea>
-            </div>
+        <!-- FORMULAIRE -->
+        <div class="card-dark" style="padding:32px;">
+            <form method="POST" action="/agent/submit/{{ mission.id }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:20px;">
 
-            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-100 text-sm">
-                📤 Transmettre le dossier complet
-            </button>
-        </form>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Nom du commerce *</label>
+                    <input type="text" name="shop_name" placeholder="Ex : Boutique Chez Djossa" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Téléphone du gérant</label>
+                    <input type="text" name="shop_phone" placeholder="+229 XX XX XX XX"
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Adresse / Quartier *</label>
+                    <input type="text" name="shop_address" placeholder="Ex : Akpakpa, rue 10, près du carrefour" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Observations terrain</label>
+                    <textarea name="observations" rows="4" placeholder="Décrivez ce que vous avez observé sur le terrain..."
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;resize:vertical;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'"></textarea>
+                </div>
+
+                <!-- GÉOLOCALISATION -->
+                <div class="card-dark" style="padding:20px;background:#0d0d0d;">
+                    <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">📍 Géolocalisation GPS</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                        <input type="number" step="any" name="latitude" id="lat" placeholder="Latitude" readonly
+                            style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;color:#10b981;font-size:12px;font-family:monospace;outline:none;box-sizing:border-box;">
+                        <input type="number" step="any" name="longitude" id="lng" placeholder="Longitude" readonly
+                            style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;color:#10b981;font-size:12px;font-family:monospace;outline:none;box-sizing:border-box;">
+                    </div>
+                    <button type="button" onclick="captureGPS()" class="btn-outline" style="width:100%;justify-content:center;font-size:13px;padding:12px;">
+                        📡 Capturer ma position GPS
+                    </button>
+                    <div id="gps-status" style="font-size:11px;color:#555;text-align:center;margin-top:10px;"></div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:16px;">
+                    🚀 Soumettre la collecte
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const latInput = document.getElementById('latitude');
-        const lngInput = document.getElementById('longitude');
-        const statusText = document.getElementById('geo-status');
-
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude.toFixed(6);
-                    const lng = position.coords.longitude.toFixed(6);
-                    
-                    latInput.value = lat;
-                    lngInput.value = lng;
-                    
-                    statusText.innerText = "✅ Position GPS synchronisée avec précision !";
-                    statusText.className = "text-xs font-medium px-1 text-green-600";
-                },
-                function(error) {
-                    console.error("Erreur GPS : ", error);
-                    statusText.innerText = "❌ Activation GPS requise. L'appareil utilise les coordonnées par défaut de Cotonou.";
-                    statusText.className = "text-xs font-medium px-1 text-amber-600";
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 12000,
-                    maximumAge: 0
-                }
-            );
-        } else {
-            statusText.innerText = "❌ Votre navigateur ne prend pas en charge la géolocalisation.";
-            statusText.className = "text-xs font-medium px-1 text-red-600";
-        }
-    });
+function captureGPS() {
+    const status = document.getElementById('gps-status');
+    status.style.color = '#f59e0b';
+    status.textContent = '📡 Localisation en cours...';
+    if (!navigator.geolocation) {
+        status.style.color = '#ef4444';
+        status.textContent = '❌ Géolocalisation non supportée.';
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+            document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
+            status.style.color = '#10b981';
+            status.textContent = '✅ Position capturée avec succès !';
+        },
+        err => {
+            status.style.color = '#ef4444';
+            status.textContent = '❌ Erreur : ' + err.message;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
 </script>
 {% endblock %}

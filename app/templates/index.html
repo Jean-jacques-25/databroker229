@@ -1,170 +1,179 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section id="home" class="relative bg-white overflow-hidden border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 text-center lg:pt-32">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 mb-4">
-            <i class="fa-solid fa-map-location-dot mr-2"></i> Crowdsourcing de données au Bénin
+<!-- HERO -->
+<section style="padding:100px 16px 80px; text-align:center; position:relative; overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.07) 0%, transparent 70%);pointer-events:none;"></div>
+    <div style="max-width:720px; margin:0 auto; position:relative;">
+        <span style="display:inline-flex;align-items:center;gap:8px;background:#111;border:1px solid #222;color:#f59e0b;font-size:12px;font-weight:700;padding:6px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;margin-bottom:28px;">
+            <i class="fa-solid fa-map-location-dot"></i> Crowdsourcing de données · Bénin
         </span>
-        <h1 class="mx-auto max-w-4xl font-display text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl">
-            Collectez, vérifiez et exploitez des <span class="text-blue-600">données terrain</span> fiables au Bénin.
+        <h1 style="font-size:clamp(36px,8vw,68px);font-weight:900;line-height:1.08;letter-spacing:-2px;margin-bottom:24px;color:#fff;">
+            Collectez des données<br><span style="color:#f59e0b;">terrain fiables</span><br>au Bénin.
         </h1>
-        <p class="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
-            Une plateforme intelligente reliant agents collecteurs motivés et organisations ayant besoin de données terrain stratégiques et vérifiées en temps réel.
+        <p style="font-size:17px;color:#666;line-height:1.7;max-width:520px;margin:0 auto 40px;">
+            Une plateforme reliant des agents collecteurs motivés aux organisations qui ont besoin de données terrain vérifiées en temps réel.
         </p>
-        <div class="mt-10 flex justify-center gap-x-6">
-            <a href="{{ url_for('main.login') }}" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-md">
-                Commencer maintenant
+        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="{{ url_for('main.login') }}" class="btn-primary" style="font-size:15px;">
+                Commencer maintenant →
             </a>
-            <a href="{{ url_for('main.register') }}" class="bg-emerald-50 text-emerald-700 font-semibold px-6 py-3 rounded-xl hover:bg-emerald-100 transition border border-emerald-200">
+            <a href="{{ url_for('main.register') }}" class="btn-outline" style="font-size:15px;">
                 Devenir agent collecteur
             </a>
         </div>
     </div>
 </section>
 
-<section id="how-it-works" class="py-20 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Comment ça marche ?</h2>
-            <p class="mt-4 text-gray-600">Un processus rigoureux pour garantir une qualité de donnée irréprochable.</p>
+<!-- STATS -->
+<section style="padding:0 16px 80px;">
+    <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;">
+        <div class="card-dark" style="padding:28px;text-align:center;">
+            <div style="font-size:36px;font-weight:900;color:#f59e0b;line-height:1;">300+</div>
+            <div style="font-size:12px;color:#555;margin-top:6px;font-weight:600;">Commerces cartographiés</div>
         </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">1</div>
-                <h3 class="font-semibold text-gray-900 mb-2">Création</h3>
-                <p class="text-xs text-gray-500">Une entreprise crée et publie sa mission ciblée.</p>
+        <div class="card-dark" style="padding:28px;text-align:center;">
+            <div style="font-size:36px;font-weight:900;color:#f59e0b;line-height:1;">48h</div>
+            <div style="font-size:12px;color:#555;margin-top:6px;font-weight:600;">Délai moyen de livraison</div>
+        </div>
+        <div class="card-dark" style="padding:28px;text-align:center;">
+            <div style="font-size:36px;font-weight:900;color:#f59e0b;line-height:1;">100%</div>
+            <div style="font-size:12px;color:#555;margin-top:6px;font-weight:600;">GPS certifié sur terrain</div>
+        </div>
+        <div class="card-dark" style="padding:28px;text-align:center;">
+            <div style="font-size:36px;font-weight:900;color:#10b981;line-height:1;">FCFA</div>
+            <div style="font-size:12px;color:#555;margin-top:6px;font-weight:600;">Paiement Mobile Money</div>
+        </div>
+    </div>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section style="padding:80px 16px;" id="how-it-works">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:56px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Comment ça marche ?</h2>
+            <p style="color:#555;margin-top:12px;font-size:15px;">Un processus rigoureux pour des données irréprochables.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;">
+            {% for step in [
+                ('01', 'Création', 'Une entreprise publie sa mission ciblée avec cahier des charges.', '📋'),
+                ('02', 'Acceptation', 'Les agents terrain qualifiés acceptent la mission disponible.', '✋'),
+                ('03', 'Collecte', 'Collecte sur le terrain avec GPS + photo horodatée en direct.', '📍'),
+                ('04', 'Validation', "L'admin contrôle la conformité et la qualité des données.", '🔍'),
+                ('05', 'Paiement', "L'agent reçoit ses gains instantanément sur son portefeuille.", '💰')
+            ] %}
+            <div class="card-dark" style="padding:24px 20px;text-align:center;position:relative;">
+                <div style="font-size:10px;font-weight:900;color:#333;letter-spacing:2px;margin-bottom:12px;">{{ step[0] }}</div>
+                <div style="font-size:28px;margin-bottom:12px;">{{ step[3] }}</div>
+                <h3 style="font-weight:800;color:#fff;font-size:14px;margin-bottom:8px;">{{ step[1] }}</h3>
+                <p style="font-size:12px;color:#555;line-height:1.6;">{{ step[2] }}</p>
+                {% if not loop.last %}
+                <div style="display:none;" class="md:block" style="position:absolute;right:-12px;top:50%;color:#333;font-size:18px;">→</div>
+                {% endif %}
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">2</div>
-                <h3 class="font-semibold text-gray-900 mb-2">Acceptation</h3>
-                <p class="text-xs text-gray-500">Les agents terrain qualifiés acceptent la mission.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section style="padding:80px 16px;background:#080808;" id="services">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:56px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Nos Services Terrain</h2>
+            <p style="color:#555;margin-top:12px;font-size:15px;">Des solutions sur mesure pour le marché béninois.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+            <div class="card-dark" style="padding:32px;">
+                <div style="width:48px;height:48px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;">🗺️</div>
+                <h3 style="font-weight:800;color:#fff;font-size:16px;margin-bottom:10px;">Cartographie & GPS</h3>
+                <p style="font-size:13px;color:#555;line-height:1.7;">Localisation précise de points de vente ou d'infrastructures avec coordonnées géographiques vérifiées.</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">3</div>
-                <h3 class="font-semibold text-gray-900 mb-2">Collecte</h3>
-                <p class="text-xs text-gray-500">Collecte obligatoire avec tracking GPS + photo en direct.</p>
+            <div class="card-dark" style="padding:32px;">
+                <div style="width:48px;height:48px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;">🏪</div>
+                <h3 style="font-weight:800;color:#fff;font-size:16px;margin-bottom:10px;">Audit de Points de Vente</h3>
+                <p style="font-size:13px;color:#555;line-height:1.7;">Vérification de l'existence de commerces, relevés de prix, inventaires et disponibilité produits.</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">4</div>
-                <h3 class="font-semibold text-gray-900 mb-2">Validation</h3>
-                <p class="text-xs text-gray-500">L'équipe admin contrôle la conformité des données.</p>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg"><i class="fa-solid fa-check"></i></div>
-                <h3 class="font-semibold text-gray-900 mb-2">Paiement</h3>
-                <p class="text-xs text-gray-500">L'agent reçoit ses gains de manière sécurisée.</p>
+            <div class="card-dark" style="padding:32px;">
+                <div style="width:48px;height:48px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;">📸</div>
+                <h3 style="font-weight:800;color:#fff;font-size:16px;margin-bottom:10px;">Preuves Photos Géolocalisées</h3>
+                <p style="font-size:13px;color:#555;line-height:1.7;">Clichés réels horodatés pour valider visuellement vos campagnes publicitaires ou façades terrain.</p>
             </div>
         </div>
     </div>
 </section>
 
-<section id="services" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Nos Services Terrain</h2>
-            <p class="mt-4 text-gray-600">Des solutions sur mesure pour acquérir une visibilité parfaite sur le marché béninois.</p>
+<!-- TÉMOIGNAGES -->
+<section style="padding:80px 16px;">
+    <div style="max-width:800px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:56px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Ils nous font confiance</h2>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:shadow-md transition">
-                <div class="text-blue-600 text-2xl mb-4"><i class="fa-solid fa-route"></i></div>
-                <h3 class="text-lg font-bold mb-2">Cartographie & GPS</h3>
-                <p class="text-sm text-gray-600">Localisation précise de points de vente ou d'infrastructures avec coordonnées géographiques vérifiées.</p>
-            </div>
-            <div class="p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:shadow-md transition">
-                <div class="text-blue-600 text-2xl mb-4"><i class="fa-solid fa-shop"></i></div>
-                <h3 class="text-lg font-bold mb-2">Audit de Points de Vente</h3>
-                <p class="text-sm text-gray-600">Vérification de l'existence de commerces, relevés de prix, inventaires et disponibilité des produits.</p>
-            </div>
-            <div class="p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:shadow-md transition">
-                <div class="text-blue-600 text-2xl mb-4"><i class="fa-solid fa-camera"></i></div>
-                <h3 class="text-lg font-bold mb-2">Preuves Photos Géolocalisées</h3>
-                <p class="text-sm text-gray-600">Prise de clichés réels horodatés pour valider visuellement des campagnes publicitaires ou des façades.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="py-20 bg-gray-900 text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-3xl font-bold sm:text-4xl">Ils nous font confiance</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-gray-800 p-8 rounded-2xl border border-gray-700">
-                <p class="text-gray-300 italic">"Databroker229 nous a permis de cartographier plus de 300 commerces en quelques jours à Cotonou et Calavi avec une précision impressionnante."</p>
-                <div class="mt-4 font-semibold text-emerald-400">— Directeur Commercial, Cabinet d'Études</div>
-            </div>
-            <div class="bg-gray-800 p-8 rounded-2xl border border-gray-700">
-                <p class="text-gray-300 italic">"Une solution sérieuse, rapide et indispensable pour auditer nos projets sur le terrain. Les rapports photos sont d'une grande valeur."</p>
-                <div class="mt-4 font-semibold text-emerald-400">— Responsable Projet, ONG Internationale</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="faq" class="py-20 bg-white">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl font-bold text-gray-900">Questions Fréquentes</h2>
-        </div>
-        <div class="space-y-6">
-            <div class="bg-gray-50 p-6 rounded-xl">
-                <h4 class="font-bold text-gray-900 mb-2">Comment devenir agent collecteur ?</h4>
-                <p class="text-sm text-gray-600">Il suffit de s'inscrire, de choisir le rôle 'Agent', de remplir votre profil et de commencer à postuler aux missions disponibles près de chez vous.</p>
-            </div>
-            <div class="bg-gray-50 p-6 rounded-xl">
-                <h4 class="font-bold text-gray-900 mb-2">Comment les paiements fonctionnent-ils ?</h4>
-                <p class="text-sm text-gray-600">Une fois la mission validée par l'administrateur, vos gains sont instantanément versés sur votre portefeuille virtuel. Vous pouvez demander un retrait via Mobile Money (MTN / Moov) ou virement bancaire.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="contact" class="py-20 bg-white border-t border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <span class="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Une question ?</span>
-            <h2 class="text-3xl font-black tracking-tight text-gray-900 mt-3 sm:text-4xl">Contactez le Support DataBroker229</h2>
-            <p class="text-sm text-gray-500 mt-3">Que vous soyez une entreprise avec un besoin de collecte massif ou un agent sur le terrain, notre équipe vous répond instantanément.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            
-            <a href="https://wa.me/2290155256871?text=Bonjour%20DataBroker229,%20je%20souhaite%20en%20savoir%20plus%20sur%20vos%20services." 
-               target="_blank" 
-               class="group p-8 bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 bg-emerald-500 text-white rounded-xl flex items-center justify-center text-xl shadow-md shadow-emerald-100 group-hover:scale-110 transition-transform">
-                        <i class="fa-brands fa-whatsapp"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">Discuter sur WhatsApp</h3>
-                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Le canal le plus rapide pour échanger avec notre équipe technique et valider vos opérations de terrain au Bénin.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+            <div class="card-dark" style="padding:32px;">
+                <div style="color:#f59e0b;font-size:28px;margin-bottom:16px;">❝</div>
+                <p style="font-size:14px;color:#888;line-height:1.8;font-style:italic;">"DataBroker229 nous a permis de cartographier plus de 300 commerces en quelques jours à Cotonou et Calavi avec une précision impressionnante."</p>
+                <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1a1a1a;">
+                    <div style="font-weight:800;color:#10b981;font-size:13px;">— Directeur Commercial</div>
+                    <div style="font-size:11px;color:#444;margin-top:2px;">Cabinet d'Études, Cotonou</div>
                 </div>
-                <div class="text-sm font-black text-emerald-600 mt-6 flex items-center gap-2">
-                    +229 01 55 25 68 71 <span class="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+            <div class="card-dark" style="padding:32px;">
+                <div style="color:#f59e0b;font-size:28px;margin-bottom:16px;">❝</div>
+                <p style="font-size:14px;color:#888;line-height:1.8;font-style:italic;">"Une solution sérieuse, rapide et indispensable pour auditer nos projets sur le terrain. Les rapports photos sont d'une grande valeur."</p>
+                <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1a1a1a;">
+                    <div style="font-weight:800;color:#10b981;font-size:13px;">— Responsable Projet</div>
+                    <div style="font-size:11px;color:#444;margin-top:2px;">ONG Internationale</div>
                 </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section style="padding:80px 16px;background:#080808;" id="faq">
+    <div style="max-width:680px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:48px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Questions Fréquentes</h2>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card-dark" style="padding:24px 28px;">
+                <h4 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px;">Comment devenir agent collecteur ?</h4>
+                <p style="font-size:13px;color:#555;line-height:1.7;">Inscrivez-vous, choisissez le rôle "Agent", complétez votre profil et commencez à postuler aux missions disponibles près de chez vous.</p>
+            </div>
+            <div class="card-dark" style="padding:24px 28px;">
+                <h4 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px;">Comment les paiements fonctionnent-ils ?</h4>
+                <p style="font-size:13px;color:#555;line-height:1.7;">Une fois la mission validée par l'administrateur, vos gains sont instantanément versés sur votre portefeuille virtuel. Retrait via Mobile Money (MTN / Moov) ou virement bancaire.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section style="padding:100px 16px;text-align:center;" id="contact">
+    <div style="max-width:600px;margin:0 auto;">
+        <h2 style="font-size:clamp(28px,5vw,48px);font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:16px;">
+            Prêt à démarrer ?
+        </h2>
+        <p style="color:#555;font-size:16px;margin-bottom:40px;">Rejoignez DataBroker229 aujourd'hui en tant que client ou agent.</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:48px;">
+            <a href="{{ url_for('main.register') }}" class="btn-primary" style="font-size:15px;">Créer un compte →</a>
+            <a href="https://wa.me/2290155256871?text=Bonjour%20DataBroker229" target="_blank" class="btn-outline" style="font-size:15px;">
+                <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> Nous contacter
             </a>
-
-            <a href="mailto:contact@databroker229.com" 
-               class="group p-8 bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center text-xl shadow-md shadow-blue-100 group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-envelope"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mt-6">Envoyer un courriel</h3>
-                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Pour l'envoi de vos cahiers des charges, demandes de partenariats ou requêtes administratives officielles.</p>
-                </div>
-                <div class="text-sm font-black text-blue-600 mt-6 flex items-center gap-2">
-                    contact@databroker229.com <span class="group-hover:translate-x-1 transition-transform">→</span>
-                </div>
-            </a>
-
         </div>
-
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:480px;margin:0 auto;">
+            <a href="https://wa.me/2290155256871" target="_blank" class="card-dark" style="padding:24px;text-decoration:none;display:block;text-align:left;">
+                <div style="font-size:24px;margin-bottom:10px;">💬</div>
+                <div style="font-weight:800;color:#fff;font-size:14px;margin-bottom:4px;">WhatsApp</div>
+                <div style="font-size:12px;color:#555;">+229 01 55 25 68 71</div>
+            </a>
+            <a href="mailto:contact@databroker229.com" class="card-dark" style="padding:24px;text-decoration:none;display:block;text-align:left;">
+                <div style="font-size:24px;margin-bottom:10px;">✉️</div>
+                <div style="font-weight:800;color:#fff;font-size:14px;margin-bottom:4px;">Email</div>
+                <div style="font-size:12px;color:#555;">contact@databroker229.com</div>
+            </a>
+        </div>
     </div>
 </section>
 

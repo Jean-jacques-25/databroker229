@@ -1,8 +1,6 @@
 flask
 flask-sqlalchemy
 flask-migrate
-psycopg2-binary
+flask-wtf
+werkzeug
 gunicorn
-Pillow
-Flask-Mail
-Flask-WTF

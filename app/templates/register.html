@@ -1,74 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-md mx-auto my-16 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-    <h2 class="text-2xl font-bold text-gray-900 text-center mb-2">Créer un compte</h2>
-    <p class="text-sm text-gray-500 text-center mb-8">Rejoignez Databroker229 dès aujourd'hui</p>
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;">
+    <div style="width:100%;max-width:460px;">
 
-    <form method="POST" action="/register" class="space-y-4">
-        <div>
-    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Votre Profil *</label>
-    <select name="role" id="role-select" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600 bg-white" required>
-        <option value="agent">Agent de collecte (Terrain)</option>
-        <option value="client">Entreprise / Client (Commande de données)</option>
-        <option value="admin">Administrateur du Système</option>
-    </select>
-</div>
-
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Nom complet</label>
-            <input type="text" name="fullname" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" placeholder="Ex: Jean-Jacques Agan" required>
+        <div style="text-align:center;margin-bottom:40px;">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#0a0a0a;margin:0 auto 20px;">D</div>
+            <h2 style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:8px;">Créer un compte</h2>
+            <p style="color:#555;font-size:14px;">Rejoignez DataBroker229 aujourd'hui</p>
         </div>
 
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Numéro de téléphone</label>
-            <input type="text" name="phone" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" placeholder="Ex: +229 01000000" required>
+        <div class="card-dark" style="padding:36px;">
+            <form method="POST" action="/register" style="display:flex;flex-direction:column;gap:18px;">
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Votre profil *</label>
+                    <select name="role" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                        <option value="agent">🧑‍💼 Agent de collecte (Terrain)</option>
+                        <option value="client">🏢 Entreprise / Client (Commande données)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Nom complet *</label>
+                    <input type="text" name="fullname" placeholder="Ex: Jean-Jacques Agan" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Numéro de téléphone *</label>
+                    <input type="text" name="phone" placeholder="Ex: +229 01000000" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Adresse email *</label>
+                    <input type="email" name="email" placeholder="exemple@mail.com" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Mot de passe *</label>
+                    <input type="password" name="password" placeholder="••••••••" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Zone principale *</label>
+                    <input type="text" name="location" placeholder="Ex: Cotonou, Calavi, Parakou..." required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:15px;margin-top:4px;">
+                    Créer mon compte →
+                </button>
+            </form>
         </div>
 
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Adresse Email</label>
-            <input type="email" name="email" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" placeholder="exemple@mail.com" required>
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
-            <input type="password" name="password" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" placeholder="••••••••" required>
-        </div>
-
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Zone de localisation principale</label>
-            <input type="text" name="location" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-600" placeholder="Ex: Cotonou, Calavi, Parakou..." required>
-        </div>
-        <div id="admin-code-block" class="hidden mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl transition-all">
-    <label class="block text-xs font-black text-amber-800 uppercase mb-1">🔑 Code d'autorisation Administrateur requis *</label>
-    <input type="password" name="secret_code" id="admin_code_input" class="w-full border border-amber-300 rounded-lg p-2.5 bg-white text-sm focus:outline-none focus:border-amber-600" placeholder="Entrez le code secret master"><p class="text-[10px] text-amber-600 mt-1 font-medium">Ce profil est hautement restreint. Seul le propriétaire de la plateforme possède ce pass.</p>
-</div>
-
-<button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition mt-6">
-    S'inscrire
-</button>
-
-<script>
-    const roleSelect = document.getElementById('role-select');
-    const adminCodeBlock = document.getElementById('admin-code-block');
-    const adminCodeInput = document.getElementById('admin_code_input');
-
-    if (roleSelect) {
-        roleSelect.addEventListener('change', function() {
-            if (this.value === 'admin') {
-                adminCodeBlock.classList.remove('hidden');
-                adminCodeInput.setAttribute('required', 'true');
-            } else {
-                adminCodeBlock.classList.add('hidden');
-                adminCodeInput.removeAttribute('required');
-                adminCodeInput.value = '';
-            }
-        });
-    }
-</script>
-    </form>
-
-    <p class="text-xs text-center text-gray-500 mt-6">
-        Vous avez déjà un compte ? <a href="/login" class="text-blue-600 font-semibold hover:underline">Connectez-vous ici</a>
-    </p>
+        <p style="text-align:center;color:#444;font-size:13px;margin-top:24px;">
+            Déjà un compte ?
+            <a href="/login" style="color:#f59e0b;font-weight:700;text-decoration:none;">Se connecter</a>
+        </p>
+    </div>
 </div>
 {% endblock %}

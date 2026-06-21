@@ -1,144 +1,128 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="bg-gray-50 min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div style="min-height:100vh;padding:32px 16px;">
+    <div style="max-width:1100px;margin:0 auto;">
+
+        <!-- EN-TÊTE -->
+        <div class="card-dark" style="padding:28px 32px;margin-bottom:28px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;">
             <div>
-                <h1 class="text-2xl font-black text-gray-900">Salut, {{ agent.fullname }} ! 👋</h1>
-                <p class="text-xs text-gray-500 mt-1">Prêt pour une nouvelle collecte de données sur le terrain ?</p>
+                <h1 style="font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Salut, {{ agent.fullname }} 👋</h1>
+                <p style="color:#555;font-size:13px;margin-top:4px;">Prêt pour une nouvelle collecte de données sur le terrain ?</p>
             </div>
-            
-            <div class="flex gap-4 w-full sm:w-auto">
-                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex-1 sm:flex-none text-center sm:text-left">
-                    <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Mon Portefeuille</span>
-                    <span class="text-xl font-black text-emerald-600">{{ agent.wallet_balance }} FCFA</span>
+            <div style="display:flex;gap:12px;">
+                <div style="background:#0d0d0d;border:1px solid #1a1a1a;padding:16px 24px;border-radius:14px;text-align:center;">
+                    <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Portefeuille</div>
+                    <div style="font-size:22px;font-weight:900;color:#10b981;">{{ agent.wallet_balance }} FCFA</div>
                 </div>
-                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex-1 sm:flex-none text-center sm:text-left">
-                    <span class="block text-[10px] font-bold text-blue-700 uppercase tracking-wider">Fiabilité Terrain</span>
-                    <span class="text-xl font-black text-blue-600">{{ agent.reliability_score }}%</span>
+                <div style="background:#0d0d0d;border:1px solid #1a1a1a;padding:16px 24px;border-radius:14px;text-align:center;">
+                    <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Fiabilité</div>
+                    <div style="font-size:22px;font-weight:900;color:#f59e0b;">{{ agent.reliability_score }}%</div>
                 </div>
             </div>
         </div>
 
-        <h2 class="text-lg font-black text-gray-900 mb-4">🎯 Missions disponibles autour de vous</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- MISSIONS DISPONIBLES -->
+        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">🎯 Missions disponibles</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px;">
             {% for mission in missions %}
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div class="card-dark" style="padding:24px;display:flex;flex-direction:column;justify-content:space-between;">
                 <div>
-                    <div class="flex justify-between items-start gap-2 mb-3">
-                        <span class="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold uppercase tracking-wide">
-                            {{ mission.difficulty }}
-                        </span>
-                        <span class="text-sm font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                            +{{ mission.price }} F
-                        </span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <span style="background:#1a1a1a;color:#888;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:1px;">{{ mission.difficulty }}</span>
+                        <span style="color:#10b981;font-size:15px;font-weight:900;">+{{ mission.price }} FCFA</span>
                     </div>
-                    <h3 class="font-bold text-gray-900 text-base mb-2">{{ mission.title }}</h3>
-                    <p class="text-gray-600 text-xs line-clamp-3 mb-4">{{ mission.description }}</p>
+                    <h3 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:8px;">{{ mission.title }}</h3>
+                    <p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:20px;">{{ mission.description[:120] }}{% if mission.description|length > 120 %}...{% endif %}</p>
                 </div>
-                
-                <a href="/agent/submit/{{ mission.id }}" class="w-full text-center bg-gray-900 text-white text-xs font-bold py-3 rounded-xl hover:bg-blue-600 transition-colors mt-2 block">
+                <a href="/agent/submit/{{ mission.id }}" class="btn-primary" style="text-align:center;justify-content:center;font-size:13px;padding:12px 20px;">
                     🚀 Commencer la collecte
                 </a>
             </div>
             {% else %}
-            <div class="col-span-full bg-white text-center py-12 rounded-2xl border border-gray-100 text-gray-400 text-sm">
-                Aucune mission n'est disponible sur le terrain pour le moment.
+            <div style="grid-column:1/-1;" class="card-dark">
+                <div style="text-align:center;padding:48px;color:#444;font-size:14px;">
+                    📭 Aucune mission disponible pour le moment. Revenez bientôt !
+                </div>
             </div>
             {% endfor %}
         </div>
-       
-<div class="mt-12 bg-white rounded-xl shadow-md p-6 border border-gray-100">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-            📊 Historique de mes gains & Reçus
-        </h2>
-        <span class="text-sm bg-green-100 text-green-700 font-semibold px-3 py-1 rounded-full">
-            Total Portefeuille : {{ agent.wallet_balance }} FCFA
-        </span>
-    </div>
 
-    {% if history %}
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-50 text-gray-600 text-sm font-semibold uppercase border-b border-gray-200">
-                    <th class="px-6 py-3">ID Réf</th>
-                    <th class="px-6 py-3">Date</th>
-                    <th class="px-6 py-3">Mission</th>
-                    <th class="px-6 py-3">Montant</th>
-                    <th class="px-6 py-3">Statut</th>
-                    <th class="px-6 py-3">Action</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 text-gray-700 text-sm">
-                {% for tx in history %}
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 font-mono font-bold text-gray-500">#TX-{{ tx.id }}</td>
-                    <td class="px-6 py-4">{{ tx.created_at.strftime('%d/%m/%Y à %H:%M') }}</td>
-                    <td class="px-6 py-4 font-medium text-gray-900">{{ tx.mission.title if tx.mission else 'Mission Terrain' }}</td>
-                    <td class="px-6 py-4 font-bold text-green-600">+ {{ tx.amount }} FCFA</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                            {{ tx.status }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <button onclick="alert('Génération du reçu numérique pour la transaction #TX-{{ tx.id }} en cours...')" 
-                                class="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                            📥 Reçu PDF
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="text-center py-8 text-gray-500">
-        📭 Aucun gain enregistré pour le moment. Remplissez des missions sur le terrain pour alimenter votre portefeuille !
-    </div>
-    {% endif %}
-</div>
-
-        <h2 class="text-xl font-bold text-gray-900 mb-6 mt-12">Suivi de mes soumissions terrain</h2>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-gray-50 text-gray-400 text-xs uppercase">
-                        <tr>
-                            <th class="p-4">Date / Commerce</th>
-                            <th class="p-4">Statut</th>
-                            <th class="p-4">Gain attendu</th>
+        <!-- HISTORIQUE GAINS -->
+        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">💰 Historique de mes gains</h2>
+        <div class="card-dark" style="padding:0;overflow:hidden;margin-bottom:40px;">
+            {% if history %}
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1a1a1a;">
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Réf</th>
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Date</th>
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Mission</th>
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Montant</th>
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Statut</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-gray-700">
-                        {% for submission in agent.submissions %}
-                        <tr>
-                            <td class="p-4 font-semibold">{{ submission.shop_name }}</td>
-                            <td class="p-4">
-                                {% if submission.status == 'Pending' %}
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">⏳ En cours de vérification</span>
-                                {% elif submission.status == 'Approved' %}
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">✅ Validé & Payé</span>
+                    <tbody>
+                        {% for tx in history %}
+                        <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                            <td style="padding:16px 20px;font-size:12px;color:#444;font-family:monospace;">#TX-{{ tx.id }}</td>
+                            <td style="padding:16px 20px;font-size:12px;color:#666;">{{ tx.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td style="padding:16px 20px;font-size:13px;color:#ccc;font-weight:600;">{{ tx.mission.title if tx.mission else 'Mission Terrain' }}</td>
+                            <td style="padding:16px 20px;font-size:14px;font-weight:900;color:#10b981;">+ {{ tx.amount }} FCFA</td>
+                            <td style="padding:16px 20px;">
+                                <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">{{ tx.status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:48px;color:#444;font-size:14px;">
+                📭 Aucun gain enregistré. Complétez des missions pour alimenter votre portefeuille !
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- SUIVI SOUMISSIONS -->
+        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">📋 Suivi de mes soumissions</h2>
+        <div class="card-dark" style="padding:0;overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1a1a1a;">
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Commerce</th>
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Statut</th>
+                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Gain</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in agent.submissions %}
+                        <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                            <td style="padding:16px 20px;font-size:13px;color:#ccc;font-weight:600;">{{ sub.shop_name or '—' }}</td>
+                            <td style="padding:16px 20px;">
+                                {% if sub.status == 'Pending' %}
+                                    <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ En vérification</span>
+                                {% elif sub.status == 'Approved' %}
+                                    <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">✅ Validé & Payé</span>
                                 {% else %}
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">❌ Rejeté</span>
+                                    <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">❌ Rejeté</span>
                                 {% endif %}
                             </td>
-                            <td class="p-4 font-bold {% if submission.status == 'Approved' %}text-emerald-600{% endif %}">
-                                {{ submission.mission.price }} FCFA
+                            <td style="padding:16px 20px;font-size:13px;font-weight:900;color:{% if sub.status == 'Approved' %}#10b981{% else %}#555{% endif %};">
+                                {{ sub.mission.price }} FCFA
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="p-4 text-center text-gray-400">Vous n'avez soumis aucune mission pour le moment.</td>
+                            <td colspan="3" style="padding:48px;text-align:center;color:#444;font-size:14px;">Aucune soumission pour le moment.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-        </div>
+
+    </div>
 </div>
 {% endblock %}
