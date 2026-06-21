@@ -9,7 +9,7 @@
         {% for n in notifs %}
         <div style="background:{% if n.type=='success' %}#081a0f{% else %}#0a0f1a{% endif %};border:1px solid {% if n.type=='success' %}#10b98133{% else %}#3b82f633{% endif %};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
             <span style="font-size:13px;color:#ccc;">{{ n.message }}</span>
-            <button onclick="fetch('/client/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;">✕</button>
+            <button onclick="fetch('/client/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;">✕</button>
         </div>
         {% endfor %}
     </div>
@@ -19,7 +19,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
         <div>
             <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Espace Entreprise</h1>
-            <p style="color:#555;font-size:13px;margin-top:2px;">{{ client.organisation or client.fullname }}</p>
+            <p style="color:#888;font-size:13px;margin-top:2px;">{{ client.organisation or client.fullname }}</p>
         </div>
         <a href="/client/profile" class="btn-outline" style="font-size:13px;padding:10px 18px;">⚙️ Mon profil</a>
     </div>
@@ -27,19 +27,19 @@
     <!-- STATS -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Missions actives</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Missions actives</div>
             <div style="font-size:30px;font-weight:900;color:#fff;">{{ missions|selectattr('status','equalto','Actif')|list|length }}</div>
         </div>
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">En attente</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">En attente</div>
             <div style="font-size:30px;font-weight:900;color:#f59e0b;">{{ missions|selectattr('status','equalto','En attente')|list|length }}</div>
         </div>
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Données collectées</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Données collectées</div>
             <div style="font-size:30px;font-weight:900;color:#10b981;">{{ data_count }}</div>
         </div>
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Budget dépensé</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Budget dépensé</div>
             <div style="font-size:22px;font-weight:900;color:#f59e0b;">{{ budget_mois }}<span style="font-size:11px;"> FCFA</span></div>
         </div>
     </div>
@@ -50,33 +50,33 @@
         <form method="POST" action="{{ url_for('main.client_dashboard') }}" style="display:flex;flex-direction:column;gap:16px;">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Organisation *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Organisation *</label>
                     <input type="text" name="organisation" placeholder="ex : UNICEF, FIDADEV..." required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Contact *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Contact *</label>
                     <input type="text" name="contact" placeholder="+229 XX XX XX XX" required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
             </div>
             <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Titre de la mission *</label>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Titre de la mission *</label>
                 <input type="text" name="title" placeholder="ex : Audit prix marché Cotonou" required
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
             </div>
             <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Description / Protocole</label>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Description / Protocole</label>
                 <textarea name="description" rows="3" placeholder="Décrivez vos besoins terrain..."
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;resize:vertical;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'"></textarea>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Type de données</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Type de données</label>
                     <select name="type_donnees" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
                         <option value="prix">Prix de marché</option>
                         <option value="disponibilite">Disponibilité produit</option>
@@ -86,7 +86,7 @@
                     </select>
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Zone</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Zone</label>
                     <select id="zone" name="zone" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
                         <option value="1.2">Cotonou</option>
                         <option value="1.1">Porto-Novo</option>
@@ -97,13 +97,13 @@
                     </select>
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Points *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Points *</label>
                     <input type="number" id="quantite" name="quantite" min="1" placeholder="100" required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Difficulté</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Difficulté</label>
                     <select id="difficulte" name="difficulte" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
                         <option value="300">Facile — 300 FCFA/pt</option>
                         <option value="500" selected>Standard — 500 FCFA/pt</option>
@@ -112,7 +112,7 @@
                     </select>
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Format livraison</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Format livraison</label>
                     <select name="format_livraison" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
                         <option value="pdf">PDF</option>
                         <option value="excel">Excel / CSV</option>
@@ -120,7 +120,7 @@
                     </select>
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Photos requises ?</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Photos requises ?</label>
                     <select name="photos" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
                         <option value="non">Non</option>
                         <option value="oui">Oui</option>
@@ -130,7 +130,7 @@
             <!-- ESTIMATEUR -->
             <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
                 <div>
-                    <div style="font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Estimation du prix</div>
+                    <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Estimation du prix</div>
                     <div style="font-size:26px;font-weight:900;color:#f59e0b;" id="prixEstime">— FCFA</div>
                     <div style="font-size:11px;color:#333;margin-top:2px;">Tarif indicatif · confirmé sous 24h</div>
                 </div>
@@ -149,7 +149,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
                     <div>
                         <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">{{ mission.title }}</div>
-                        <div style="font-size:12px;color:#555;">{{ mission.organisation or '—' }} · {{ mission.type_donnees or '—' }}</div>
+                        <div style="font-size:12px;color:#888;">{{ mission.organisation or '—' }} · {{ mission.type_donnees or '—' }}</div>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                         {% if mission.status == 'Actif' %}
@@ -168,7 +168,7 @@
                 </div>
                 <!-- BARRE DE PROGRESSION -->
                 <div style="margin-bottom:14px;">
-                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:6px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:6px;">
                         <span>{{ mission.points_collectes }} / {{ mission.quantite }} points collectés</span>
                         <span style="color:#f59e0b;font-weight:700;">{{ mission.progression }}%</span>
                     </div>

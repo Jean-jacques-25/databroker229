@@ -10,7 +10,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
         <div>
             <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Console de Supervision</h1>
-            <p style="color:#555;font-size:13px;margin-top:2px;">DataBroker229 · Administration</p>
+            <p style="color:#888;font-size:13px;margin-top:2px;">DataBroker229 · Administration</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <a href="/admin/missions" class="btn-outline" style="font-size:12px;padding:9px 16px;">🎯 Gestion missions</a>
@@ -24,34 +24,34 @@
     <!-- STATS GLOBALES -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;">
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Agents</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Agents</div>
             <div style="font-size:30px;font-weight:900;color:#fff;">{{ total_agents }}</div>
             <div style="font-size:11px;color:#10b981;margin-top:4px;">Actifs au Bénin</div>
         </div>
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Clients</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Clients</div>
             <div style="font-size:30px;font-weight:900;color:#fff;">{{ total_clients }}</div>
             <div style="font-size:11px;color:#3b82f6;margin-top:4px;">Entreprises</div>
         </div>
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Missions</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Missions</div>
             <div style="font-size:30px;font-weight:900;color:#fff;">{{ total_missions }}</div>
-            <div style="font-size:11px;color:#555;margin-top:4px;">Total campagnes</div>
+            <div style="font-size:11px;color:#888;margin-top:4px;">Total campagnes</div>
         </div>
         <div class="card-dark" style="padding:20px;{% if pending_submissions|length > 0 %}border-color:#f59e0b44;{% endif %}">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">À valider</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">À valider</div>
             <div style="font-size:30px;font-weight:900;color:{% if pending_submissions|length > 0 %}#f59e0b{% else %}#fff{% endif %};">{{ pending_submissions|length }}</div>
-            <div style="font-size:11px;color:#555;margin-top:4px;">Collectes en attente</div>
+            <div style="font-size:11px;color:#888;margin-top:4px;">Collectes en attente</div>
         </div>
         <div class="card-dark" style="padding:20px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Aujourd'hui</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Aujourd'hui</div>
             <div style="font-size:30px;font-weight:900;color:#10b981;">{{ collectes_today }}</div>
-            <div style="font-size:11px;color:#555;margin-top:4px;">Collectes soumises</div>
+            <div style="font-size:11px;color:#888;margin-top:4px;">Collectes soumises</div>
         </div>
         <div class="card-dark" style="padding:20px;{% if pending_retraits|length > 0 %}border-color:#ef444433;{% endif %}">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Retraits en attente</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Retraits en attente</div>
             <div style="font-size:30px;font-weight:900;color:{% if pending_retraits|length > 0 %}#ef4444{% else %}#fff{% endif %};">{{ total_pending_pay }} <span style="font-size:12px;">FCFA</span></div>
-            <div style="font-size:11px;color:#555;margin-top:4px;">{{ pending_retraits|length }} demandes</div>
+            <div style="font-size:11px;color:#888;margin-top:4px;">{{ pending_retraits|length }} demandes</div>
         </div>
     </div>
 
@@ -98,7 +98,7 @@
                         <td style="padding:14px 18px;font-size:13px;font-weight:700;color:#fff;">{{ r.agent.fullname }}</td>
                         <td style="padding:14px 18px;font-size:14px;font-weight:900;color:#10b981;">{{ r.montant }} FCFA</td>
                         <td style="padding:14px 18px;font-size:12px;color:#ccc;">{{ r.mode_paiement }}</td>
-                        <td style="padding:14px 18px;font-size:12px;color:#555;font-family:monospace;">{{ r.numero_mobile }}</td>
+                        <td style="padding:14px 18px;font-size:12px;color:#888;font-family:monospace;">{{ r.numero_mobile }}</td>
                         <td style="padding:14px 18px;font-size:11px;color:#444;">{{ r.created_at.strftime('%d/%m/%Y') }}</td>
                         <td style="padding:14px 18px;">
                             <form action="/admin/retrait/{{ r.id }}/payer" method="POST" style="display:inline;">
@@ -167,7 +167,7 @@
                     <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
                         <td style="padding:14px 18px;font-size:13px;font-weight:700;color:#fff;">{{ sub.agent.fullname }}</td>
                         <td style="padding:14px 18px;font-size:12px;color:#ccc;">{{ sub.shop_name or '—' }}</td>
-                        <td style="padding:14px 18px;font-size:11px;color:#555;">{{ sub.mission.title[:30] }}...</td>
+                        <td style="padding:14px 18px;font-size:11px;color:#888;">{{ sub.mission.title[:30] }}...</td>
                         <td style="padding:14px 18px;font-size:11px;color:#444;">{{ sub.submitted_at.strftime('%d/%m/%Y') }}</td>
                         <td style="padding:14px 18px;">
                             <a href="/admin/review/{{ sub.id }}" style="background:#1a1a2e;border:1px solid #3b82f633;color:#60a5fa;font-size:11px;font-weight:700;padding:7px 14px;border-radius:8px;text-decoration:none;" onmouseover="this.style.background='#1e3a5f'" onmouseout="this.style.background='#1a1a2e'">🔍 Inspecter</a>

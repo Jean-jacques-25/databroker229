@@ -9,7 +9,7 @@
         {% for n in notifs %}
         <div style="background:{% if n.type=='success' %}#081a0f{% elif n.type=='warning' %}#1a1200{% else %}#0a0f1a{% endif %};border:1px solid {% if n.type=='success' %}#10b98133{% elif n.type=='warning' %}#f59e0b33{% else %}#3b82f633{% endif %};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
             <span style="font-size:13px;color:#ccc;">{{ n.message }}</span>
-            <button onclick="fetch('/agent/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;flex-shrink:0;">✕</button>
+            <button onclick="fetch('/agent/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;flex-shrink:0;">✕</button>
         </div>
         {% endfor %}
     </div>
@@ -19,25 +19,25 @@
     <div style="display:grid;grid-template-columns:1fr repeat(4,auto);gap:16px;align-items:center;flex-wrap:wrap;">
         <div>
             <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Salut, {{ agent.fullname }} {{ agent.niveau_badge[1] }}</h1>
-            <p style="color:#555;font-size:13px;margin-top:2px;">
+            <p style="color:#888;font-size:13px;margin-top:2px;">
                 <span style="color:{{ agent.niveau_badge[2] }};font-weight:700;">{{ agent.niveau_badge[0] }}</span>
                 · {{ agent.location }}
             </p>
         </div>
         <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:110px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Portefeuille</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Portefeuille</div>
             <div style="font-size:20px;font-weight:900;color:#10b981;">{{ agent.wallet_balance }}<span style="font-size:11px;font-weight:600;"> FCFA</span></div>
         </div>
         <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:100px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Fiabilité</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Fiabilité</div>
             <div style="font-size:20px;font-weight:900;color:#f59e0b;">{{ agent.reliability_score }}%</div>
         </div>
         <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:100px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Missions</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Missions</div>
             <div style="font-size:20px;font-weight:900;color:#fff;">{{ agent.total_missions }}</div>
         </div>
         <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:100px;">
-            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Soumissions</div>
+            <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Soumissions</div>
             <div style="font-size:20px;font-weight:900;color:#fff;">{{ agent.submissions|length }}</div>
         </div>
     </div>
@@ -66,7 +66,7 @@
                         <span style="color:#10b981;font-size:16px;font-weight:900;">+{{ mission.price }} FCFA</span>
                     </div>
                     <h3 style="font-weight:800;color:#fff;font-size:14px;margin-bottom:6px;">{{ mission.title }}</h3>
-                    <p style="font-size:12px;color:#555;line-height:1.6;">{{ mission.description[:100] }}{% if mission.description|length > 100 %}...{% endif %}</p>
+                    <p style="font-size:12px;color:#888;line-height:1.6;">{{ mission.description[:100] }}{% if mission.description|length > 100 %}...{% endif %}</p>
                     {% if mission.deadline %}
                     <div style="font-size:11px;color:#f59e0b;margin-top:8px;">⏰ Deadline : {{ mission.deadline.strftime('%d/%m/%Y') }}</div>
                     {% endif %}
@@ -109,7 +109,7 @@
                         {% for sub in agent.submissions|sort(attribute='submitted_at',reverse=True) %}
                         <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
                             <td style="padding:14px 18px;font-size:13px;color:#ccc;font-weight:600;">{{ sub.shop_name or '—' }}</td>
-                            <td style="padding:14px 18px;font-size:12px;color:#555;">{{ sub.mission.title[:30] }}...</td>
+                            <td style="padding:14px 18px;font-size:12px;color:#888;">{{ sub.mission.title[:30] }}...</td>
                             <td style="padding:14px 18px;">
                                 {% if sub.status == 'Pending' %}
                                     <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ En attente</span>
@@ -136,16 +136,16 @@
     <div>
         <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:14px;">💸 Demander un retrait</h2>
         <div class="card-dark" style="padding:28px;">
-            <div style="font-size:13px;color:#555;margin-bottom:20px;">Solde disponible : <strong style="color:#10b981;font-size:18px;">{{ agent.wallet_balance }} FCFA</strong></div>
+            <div style="font-size:13px;color:#888;margin-bottom:20px;">Solde disponible : <strong style="color:#10b981;font-size:18px;">{{ agent.wallet_balance }} FCFA</strong></div>
             <form method="POST" action="/agent/retrait" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end;">
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Montant (FCFA) *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Montant (FCFA) *</label>
                     <input type="number" name="montant" min="1000" max="{{ agent.wallet_balance }}" placeholder="ex: 5000" required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Opérateur *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Opérateur *</label>
                     <select name="mode_paiement" required style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
                         <option value="MTN MoMo">MTN MoMo</option>
                         <option value="Moov Money">Moov Money</option>
@@ -153,7 +153,7 @@
                     </select>
                 </div>
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Numéro Mobile *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Numéro Mobile *</label>
                     <input type="text" name="numero_mobile" placeholder="+229 XX XX XX XX" required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">

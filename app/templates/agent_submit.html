@@ -15,10 +15,10 @@
         <!-- INFOS MISSION -->
         <div class="card-dark" style="padding:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div>
-                <div style="font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Rémunération</div>
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Rémunération</div>
                 <div style="font-size:28px;font-weight:900;color:#10b981;margin-top:4px;">+{{ mission.price }} FCFA</div>
             </div>
-            <div style="font-size:12px;color:#555;max-width:280px;line-height:1.6;">{{ mission.description[:150] }}{% if mission.description|length > 150 %}...{% endif %}</div>
+            <div style="font-size:12px;color:#888;max-width:280px;line-height:1.6;">{{ mission.description[:150] }}{% if mission.description|length > 150 %}...{% endif %}</div>
         </div>
 
         <!-- FORMULAIRE -->
@@ -26,28 +26,28 @@
             <form method="POST" action="/agent/submit/{{ mission.id }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:20px;">
 
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Nom du commerce *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Nom du commerce *</label>
                     <input type="text" name="shop_name" placeholder="Ex : Boutique Chez Djossa" required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
 
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Téléphone du gérant</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Téléphone du gérant</label>
                     <input type="text" name="shop_phone" placeholder="+229 XX XX XX XX"
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
 
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Adresse / Quartier *</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Adresse / Quartier *</label>
                     <input type="text" name="shop_address" placeholder="Ex : Akpakpa, rue 10, près du carrefour" required
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
 
                 <div>
-                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Observations terrain</label>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Observations terrain</label>
                     <textarea name="observations" rows="4" placeholder="Décrivez ce que vous avez observé sur le terrain..."
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;resize:vertical;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'"></textarea>
@@ -55,7 +55,7 @@
 
                 <!-- GÉOLOCALISATION -->
                 <div class="card-dark" style="padding:20px;background:#0d0d0d;">
-                    <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">📍 Géolocalisation GPS</div>
+                    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">📍 Géolocalisation GPS</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
                         <input type="number" step="any" name="latitude" id="lat" placeholder="Latitude" readonly
                             style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;color:#10b981;font-size:12px;font-family:monospace;outline:none;box-sizing:border-box;">
@@ -65,7 +65,7 @@
                     <button type="button" onclick="captureGPS()" class="btn-outline" style="width:100%;justify-content:center;font-size:13px;padding:12px;">
                         📡 Capturer ma position GPS
                     </button>
-                    <div id="gps-status" style="font-size:11px;color:#555;text-align:center;margin-top:10px;"></div>
+                    <div id="gps-status" style="font-size:11px;color:#888;text-align:center;margin-top:10px;"></div>
                 </div>
 
                 <button type="submit" class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:16px;">
