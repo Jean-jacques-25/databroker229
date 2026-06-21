@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="min-height:100vh;padding:28px 16px;">
+<div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+
+    <div style="display:flex;align-items:center;gap:14px;">
+        <a href="/admin/dashboard" style="width:38px;height:38px;background:#111;border:1px solid #222;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#666;text-decoration:none;" onmouseover="this.style.borderColor='#f59e0b';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='#222';this.style.color='#666'">←</a>
+        <h1 style="font-size:20px;font-weight:900;color:#fff;">Gestion des Missions</h1>
+    </div>
+
+    <div class="card-dark" style="padding:0;overflow:hidden;">
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid #1a1a1a;">
+                    <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Mission</th>
+                    <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Client</th>
+                    <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Progression</th>
+                    <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Budget</th>
+                    <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Statut</th>
+                    <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Action</th>
+                </tr></thead>
+                <tbody>
+                    {% for mission in missions %}
+                    <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                        <td style="padding:14px 18px;">
+                            <div style="font-size:13px;font-weight:700;color:#fff;">{{ mission.title }}</div>
+                            <div style="font-size:10px;color:#444;margin-top:2px;">{{ mission.type_donnees or '—' }} · {{ mission.zone or '—' }}</div>
+                        </td>
+                        <td style="padding:14px 18px;font-size:12px;color:#555;">{{ mission.organisation or '—' }}</td>
+                        <td style="padding:14px 18px;">
+                            <div style="font-size:11px;color:#555;margin-bottom:5px;">{{ mission.points_collectes }}/{{ mission.quantite }} pts</div>
+                            <div style="background:#1a1a1a;border-radius:100px;height:4px;width:120px;overflow:hidden;">
+                                <div style="height:100%;background:#f59e0b;border-radius:100px;width:{{ mission.progression }}%;"></div>
+                            </div>
+                        </td>
+                        <td style="padding:14px 18px;font-size:13px;font-weight:900;color:#10b981;">{{ mission.price }} FCFA</td>
+                        <td style="padding:14px 18px;">
+                            {% if mission.is_suspended %}
+                                <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⛔ Suspendue</span>
+                            {% elif mission.status == 'Actif' %}
+                                <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">✅ Active</span>
+                            {% else %}
+                                <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ {{ mission.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding:14px 18px;">
+                            <form action="/admin/mission/{{ mission.id }}/suspendre" method="POST" style="display:inline;">
+                                <button type="submit" style="background:{% if mission.is_suspended %}#0a1a0f{% else %}#1a0808{% endif %};border:1px solid {% if mission.is_suspended %}#10b98133{% else %}#ef444433{% endif %};color:{% if mission.is_suspended %}#10b981{% else %}#ef4444{% endif %};font-size:10px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;">
+                                    {% if mission.is_suspended %}▶ Réactiver{% else %}⏸ Suspendre{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="padding:40px;text-align:center;color:#333;">Aucune mission.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}

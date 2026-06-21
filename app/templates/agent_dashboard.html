@@ -1,128 +1,188 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="min-height:100vh;padding:32px 16px;">
-    <div style="max-width:1100px;margin:0 auto;">
+<div style="min-height:100vh;padding:28px 16px;">
+<div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
 
-        <!-- EN-TÊTE -->
-        <div class="card-dark" style="padding:28px 32px;margin-bottom:28px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;">
-            <div>
-                <h1 style="font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Salut, {{ agent.fullname }} 👋</h1>
-                <p style="color:#555;font-size:13px;margin-top:4px;">Prêt pour une nouvelle collecte de données sur le terrain ?</p>
-            </div>
-            <div style="display:flex;gap:12px;">
-                <div style="background:#0d0d0d;border:1px solid #1a1a1a;padding:16px 24px;border-radius:14px;text-align:center;">
-                    <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Portefeuille</div>
-                    <div style="font-size:22px;font-weight:900;color:#10b981;">{{ agent.wallet_balance }} FCFA</div>
-                </div>
-                <div style="background:#0d0d0d;border:1px solid #1a1a1a;padding:16px 24px;border-radius:14px;text-align:center;">
-                    <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Fiabilité</div>
-                    <div style="font-size:22px;font-weight:900;color:#f59e0b;">{{ agent.reliability_score }}%</div>
-                </div>
-            </div>
+    <!-- NOTIFICATIONS -->
+    {% if notifs %}
+    <div style="display:flex;flex-direction:column;gap:8px;">
+        {% for n in notifs %}
+        <div style="background:{% if n.type=='success' %}#081a0f{% elif n.type=='warning' %}#1a1200{% else %}#0a0f1a{% endif %};border:1px solid {% if n.type=='success' %}#10b98133{% elif n.type=='warning' %}#f59e0b33{% else %}#3b82f633{% endif %};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <span style="font-size:13px;color:#ccc;">{{ n.message }}</span>
+            <button onclick="fetch('/agent/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;flex-shrink:0;">✕</button>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <!-- MISSIONS DISPONIBLES -->
-        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">🎯 Missions disponibles</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px;">
+    <!-- EN-TÊTE + STATS -->
+    <div style="display:grid;grid-template-columns:1fr repeat(4,auto);gap:16px;align-items:center;flex-wrap:wrap;">
+        <div>
+            <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Salut, {{ agent.fullname }} {{ agent.niveau_badge[1] }}</h1>
+            <p style="color:#555;font-size:13px;margin-top:2px;">
+                <span style="color:{{ agent.niveau_badge[2] }};font-weight:700;">{{ agent.niveau_badge[0] }}</span>
+                · {{ agent.location }}
+            </p>
+        </div>
+        <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:110px;">
+            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Portefeuille</div>
+            <div style="font-size:20px;font-weight:900;color:#10b981;">{{ agent.wallet_balance }}<span style="font-size:11px;font-weight:600;"> FCFA</span></div>
+        </div>
+        <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:100px;">
+            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Fiabilité</div>
+            <div style="font-size:20px;font-weight:900;color:#f59e0b;">{{ agent.reliability_score }}%</div>
+        </div>
+        <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:100px;">
+            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Missions</div>
+            <div style="font-size:20px;font-weight:900;color:#fff;">{{ agent.total_missions }}</div>
+        </div>
+        <div class="card-dark" style="padding:16px 20px;text-align:center;min-width:100px;">
+            <div style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Soumissions</div>
+            <div style="font-size:20px;font-weight:900;color:#fff;">{{ agent.submissions|length }}</div>
+        </div>
+    </div>
+
+    <!-- BADGE NIVEAU -->
+    <div class="card-dark" style="padding:20px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+        <div style="font-size:40px;">{{ agent.niveau_badge[1] }}</div>
+        <div style="flex:1;">
+            <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:6px;">Niveau <span style="color:{{ agent.niveau_badge[2] }};">{{ agent.niveau_badge[0] }}</span></div>
+            <div style="background:#1a1a1a;border-radius:100px;height:6px;overflow:hidden;margin-bottom:6px;">
+                <div style="height:100%;background:{{ agent.niveau_badge[2] }};border-radius:100px;width:{% if agent.total_missions >= 50 %}100{% elif agent.total_missions >= 20 %}{{ (agent.total_missions/50*100)|int }}{% elif agent.total_missions >= 5 %}{{ (agent.total_missions/20*100)|int }}{% else %}{{ (agent.total_missions/5*100)|int }}{% endif %}%;transition:width 0.5s;"></div>
+            </div>
+            <div style="font-size:11px;color:#444;">{% if agent.total_missions < 5 %}{{ 5 - agent.total_missions }} missions pour atteindre Standard{% elif agent.total_missions < 20 %}{{ 20 - agent.total_missions }} missions pour atteindre Expert{% elif agent.total_missions < 50 %}{{ 50 - agent.total_missions }} missions pour atteindre Pro{% else %}Niveau maximum atteint 🏆{% endif %}</div>
+        </div>
+    </div>
+
+    <!-- MISSIONS DISPONIBLES -->
+    <div>
+        <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:14px;">🎯 Missions disponibles</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;">
             {% for mission in missions %}
-            <div class="card-dark" style="padding:24px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="card-dark" style="padding:22px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
                 <div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                        <span style="background:#1a1a1a;color:#888;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:1px;">{{ mission.difficulty }}</span>
-                        <span style="color:#10b981;font-size:15px;font-weight:900;">+{{ mission.price }} FCFA</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="background:#1a1a1a;color:#888;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;text-transform:uppercase;">{{ mission.type_donnees or mission.difficulty }}</span>
+                        <span style="color:#10b981;font-size:16px;font-weight:900;">+{{ mission.price }} FCFA</span>
                     </div>
-                    <h3 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:8px;">{{ mission.title }}</h3>
-                    <p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:20px;">{{ mission.description[:120] }}{% if mission.description|length > 120 %}...{% endif %}</p>
+                    <h3 style="font-weight:800;color:#fff;font-size:14px;margin-bottom:6px;">{{ mission.title }}</h3>
+                    <p style="font-size:12px;color:#555;line-height:1.6;">{{ mission.description[:100] }}{% if mission.description|length > 100 %}...{% endif %}</p>
+                    {% if mission.deadline %}
+                    <div style="font-size:11px;color:#f59e0b;margin-top:8px;">⏰ Deadline : {{ mission.deadline.strftime('%d/%m/%Y') }}</div>
+                    {% endif %}
+                    <!-- Progression -->
+                    <div style="margin-top:10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-bottom:4px;">
+                            <span>Progression</span>
+                            <span>{{ mission.points_collectes }}/{{ mission.quantite }}</span>
+                        </div>
+                        <div style="background:#1a1a1a;border-radius:100px;height:4px;overflow:hidden;">
+                            <div style="height:100%;background:#f59e0b;border-radius:100px;width:{{ mission.progression }}%;"></div>
+                        </div>
+                    </div>
                 </div>
-                <a href="/agent/submit/{{ mission.id }}" class="btn-primary" style="text-align:center;justify-content:center;font-size:13px;padding:12px 20px;">
-                    🚀 Commencer la collecte
+                <a href="/agent/submit/{{ mission.id }}" class="btn-primary" style="text-align:center;justify-content:center;font-size:13px;padding:11px 16px;">
+                    🚀 Commencer
                 </a>
             </div>
             {% else %}
-            <div style="grid-column:1/-1;" class="card-dark">
-                <div style="text-align:center;padding:48px;color:#444;font-size:14px;">
-                    📭 Aucune mission disponible pour le moment. Revenez bientôt !
-                </div>
+            <div class="card-dark" style="grid-column:1/-1;padding:48px;text-align:center;color:#333;font-size:14px;">
+                📭 Aucune mission disponible pour le moment.
             </div>
             {% endfor %}
         </div>
+    </div>
 
-        <!-- HISTORIQUE GAINS -->
-        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">💰 Historique de mes gains</h2>
-        <div class="card-dark" style="padding:0;overflow:hidden;margin-bottom:40px;">
-            {% if history %}
-            <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;">
-                    <thead>
-                        <tr style="border-bottom:1px solid #1a1a1a;">
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Réf</th>
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Date</th>
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Mission</th>
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Montant</th>
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for tx in history %}
-                        <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
-                            <td style="padding:16px 20px;font-size:12px;color:#444;font-family:monospace;">#TX-{{ tx.id }}</td>
-                            <td style="padding:16px 20px;font-size:12px;color:#666;">{{ tx.created_at.strftime('%d/%m/%Y') }}</td>
-                            <td style="padding:16px 20px;font-size:13px;color:#ccc;font-weight:600;">{{ tx.mission.title if tx.mission else 'Mission Terrain' }}</td>
-                            <td style="padding:16px 20px;font-size:14px;font-weight:900;color:#10b981;">+ {{ tx.amount }} FCFA</td>
-                            <td style="padding:16px 20px;">
-                                <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">{{ tx.status }}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div style="text-align:center;padding:48px;color:#444;font-size:14px;">
-                📭 Aucun gain enregistré. Complétez des missions pour alimenter votre portefeuille !
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- SUIVI SOUMISSIONS -->
-        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">📋 Suivi de mes soumissions</h2>
+    <!-- MES SOUMISSIONS -->
+    <div>
+        <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:14px;">📋 Mes soumissions</h2>
         <div class="card-dark" style="padding:0;overflow:hidden;">
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;">
-                    <thead>
-                        <tr style="border-bottom:1px solid #1a1a1a;">
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Commerce</th>
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Statut</th>
-                            <th style="padding:16px 20px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Gain</th>
-                        </tr>
-                    </thead>
+                    <thead><tr style="border-bottom:1px solid #1a1a1a;">
+                        <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Commerce</th>
+                        <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Mission</th>
+                        <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Statut</th>
+                        <th style="padding:14px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Gain</th>
+                    </tr></thead>
                     <tbody>
-                        {% for sub in agent.submissions %}
+                        {% for sub in agent.submissions|sort(attribute='submitted_at',reverse=True) %}
                         <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
-                            <td style="padding:16px 20px;font-size:13px;color:#ccc;font-weight:600;">{{ sub.shop_name or '—' }}</td>
-                            <td style="padding:16px 20px;">
+                            <td style="padding:14px 18px;font-size:13px;color:#ccc;font-weight:600;">{{ sub.shop_name or '—' }}</td>
+                            <td style="padding:14px 18px;font-size:12px;color:#555;">{{ sub.mission.title[:30] }}...</td>
+                            <td style="padding:14px 18px;">
                                 {% if sub.status == 'Pending' %}
-                                    <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ En vérification</span>
+                                    <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ En attente</span>
                                 {% elif sub.status == 'Approved' %}
-                                    <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">✅ Validé & Payé</span>
+                                    <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">✅ Validé</span>
                                 {% else %}
-                                    <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">❌ Rejeté</span>
+                                    <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;" title="{{ sub.motif_rejet or '' }}">❌ Rejeté</span>
                                 {% endif %}
                             </td>
-                            <td style="padding:16px 20px;font-size:13px;font-weight:900;color:{% if sub.status == 'Approved' %}#10b981{% else %}#555{% endif %};">
-                                {{ sub.mission.price }} FCFA
+                            <td style="padding:14px 18px;font-size:13px;font-weight:900;color:{% if sub.status == 'Approved' %}#10b981{% else %}#333{% endif %};">
+                                {% if sub.status == 'Approved' %}+{{ sub.mission.price }} FCFA{% else %}—{% endif %}
                             </td>
                         </tr>
                         {% else %}
-                        <tr>
-                            <td colspan="3" style="padding:48px;text-align:center;color:#444;font-size:14px;">Aucune soumission pour le moment.</td>
-                        </tr>
+                        <tr><td colspan="4" style="padding:40px;text-align:center;color:#333;font-size:14px;">Aucune soumission.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-
     </div>
+
+    <!-- DEMANDE DE RETRAIT -->
+    <div>
+        <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:14px;">💸 Demander un retrait</h2>
+        <div class="card-dark" style="padding:28px;">
+            <div style="font-size:13px;color:#555;margin-bottom:20px;">Solde disponible : <strong style="color:#10b981;font-size:18px;">{{ agent.wallet_balance }} FCFA</strong></div>
+            <form method="POST" action="/agent/retrait" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end;">
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Montant (FCFA) *</label>
+                    <input type="number" name="montant" min="1000" max="{{ agent.wallet_balance }}" placeholder="ex: 5000" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Opérateur *</label>
+                    <select name="mode_paiement" required style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
+                        <option value="MTN MoMo">MTN MoMo</option>
+                        <option value="Moov Money">Moov Money</option>
+                        <option value="Celtiis Cash">Celtiis Cash</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Numéro Mobile *</label>
+                    <input type="text" name="numero_mobile" placeholder="+229 XX XX XX XX" required
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                </div>
+                <button type="submit" class="btn-primary" style="justify-content:center;padding:13px;">💰 Demander retrait</button>
+            </form>
+
+            {% if retraits %}
+            <div style="margin-top:24px;border-top:1px solid #1a1a1a;padding-top:20px;">
+                <div style="font-size:12px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Historique retraits</div>
+                {% for r in retraits %}
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #111;">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#fff;">{{ r.montant }} FCFA · {{ r.mode_paiement }}</div>
+                        <div style="font-size:11px;color:#444;">{{ r.numero_mobile }} · {{ r.created_at.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                    <span style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;
+                        {% if r.status == 'Payé' %}background:#0a1a0f;border:1px solid #10b98133;color:#10b981;
+                        {% elif r.status == 'Rejeté' %}background:#1a0808;border:1px solid #ef444433;color:#ef4444;
+                        {% else %}background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;{% endif %}">
+                        {{ r.status }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
 </div>
 {% endblock %}

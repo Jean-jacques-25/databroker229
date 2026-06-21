@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="min-height:100vh;padding:28px 16px;">
+<div style="max-width:600px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <a href="/client/dashboard" style="width:38px;height:38px;background:#111;border:1px solid #222;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#666;text-decoration:none;" onmouseover="this.style.borderColor='#f59e0b';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='#222';this.style.color='#666'">←</a>
+        <h1 style="font-size:20px;font-weight:900;color:#fff;">Profil Entreprise</h1>
+    </div>
+    <div class="card-dark" style="padding:28px;">
+        <form method="POST" action="/client/profile" style="display:flex;flex-direction:column;gap:16px;">
+            {% for label, name, val, ph in [
+                ('Nom du responsable', 'fullname', client.fullname, 'Jean-Jacques Agan'),
+                ('Nom de l\'organisation', 'organisation', client.organisation or '', 'ex: UNICEF Bénin'),
+                ('Secteur d\'activité', 'secteur', client.secteur or '', 'ex: ONG, Microfinance, Agro...'),
+                ('NIF / RCCM', 'nif_rccm', client.nif_rccm or '', 'ex: NIF-123456'),
+                ('Téléphone', 'phone', client.phone, '+229 XX XX XX XX')
+            ] %}
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">{{ label }}</label>
+                <input type="text" name="{{ name }}" value="{{ val }}" placeholder="{{ ph }}"
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+            </div>
+            {% endfor %}
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Email</label>
+                <input type="text" value="{{ client.email }}" disabled
+                    style="width:100%;background:#0a0a0a;border:1px solid #111;border-radius:10px;padding:12px 14px;color:#444;font-size:13px;outline:none;cursor:not-allowed;">
+            </div>
+            <button type="submit" class="btn-primary" style="justify-content:center;padding:14px;font-size:14px;margin-top:8px;">💾 Sauvegarder le profil</button>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

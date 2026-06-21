@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div style="min-height:100vh;padding:28px 16px;">
+<div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+
+    <div style="display:flex;align-items:center;gap:14px;">
+        <a href="/client/dashboard" style="width:38px;height:38px;background:#111;border:1px solid #222;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#666;text-decoration:none;" onmouseover="this.style.borderColor='#f59e0b';this.style.color='#f59e0b'" onmouseout="this.style.borderColor='#222';this.style.color='#666'">←</a>
+        <div>
+            <h1 style="font-size:20px;font-weight:900;color:#fff;">{{ mission.title }}</h1>
+            <p style="color:#555;font-size:12px;margin-top:2px;">{{ mission.organisation }} · {{ mission.zone }} · {{ mission.points_collectes }}/{{ mission.quantite }} points</p>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;">
+        <div class="card-dark" style="padding:18px;text-align:center;">
+            <div style="font-size:28px;font-weight:900;color:#10b981;">{{ mission.points_collectes }}</div>
+            <div style="font-size:11px;color:#555;margin-top:4px;">Points validés</div>
+        </div>
+        <div class="card-dark" style="padding:18px;text-align:center;">
+            <div style="font-size:28px;font-weight:900;color:#f59e0b;">{{ submissions|selectattr('status','equalto','Pending')|list|length }}</div>
+            <div style="font-size:11px;color:#555;margin-top:4px;">En attente</div>
+        </div>
+        <div class="card-dark" style="padding:18px;text-align:center;">
+            <div style="font-size:28px;font-weight:900;color:#ef4444;">{{ submissions|selectattr('status','equalto','Rejected')|list|length }}</div>
+            <div style="font-size:11px;color:#555;margin-top:4px;">Rejetés</div>
+        </div>
+        <div class="card-dark" style="padding:18px;text-align:center;">
+            <div style="font-size:28px;font-weight:900;color:#f59e0b;">{{ mission.progression }}%</div>
+            <div style="font-size:11px;color:#555;margin-top:4px;">Progression</div>
+        </div>
+    </div>
+
+    <!-- CARTE GPS -->
+    <div class="card-dark" style="padding:20px;">
+        <h2 style="font-size:15px;font-weight:800;color:#fff;margin-bottom:14px;">🗺️ Carte des points collectés</h2>
+        <div id="map" style="height:340px;border-radius:12px;border:1px solid #1a1a1a;"></div>
+    </div>
+
+    <!-- GALERIE PHOTOS -->
+    {% set photos = submissions|selectattr('photo_path')|list %}
+    {% if photos %}
+    <div class="card-dark" style="padding:20px;">
+        <h2 style="font-size:15px;font-weight:800;color:#fff;margin-bottom:14px;">📸 Galerie photos géolocalisées ({{ photos|length }})</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+            {% for sub in photos %}
+            <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;border:1px solid #1a1a1a;">
+                <img src="{{ url_for('static', filename=sub.photo_path) }}" style="width:100%;height:100%;object-fit:cover;">
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:8px;font-size:10px;color:#fff;font-weight:600;">{{ sub.shop_name or '—' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TABLEAU DONNÉES -->
+    <div class="card-dark" style="padding:0;overflow:hidden;">
+        <div style="padding:18px 22px;border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;">
+            <h2 style="font-size:15px;font-weight:800;color:#fff;">📊 Données collectées</h2>
+            <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" class="btn-primary" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
+        </div>
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid #1a1a1a;">
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Agent</th>
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Commerce</th>
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Adresse</th>
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">GPS</th>
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Statut</th>
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Date</th>
+                </tr></thead>
+                <tbody>
+                    {% for sub in submissions %}
+                    <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                        <td style="padding:12px 16px;font-size:12px;color:#ccc;font-weight:600;">{{ sub.agent.fullname }}</td>
+                        <td style="padding:12px 16px;font-size:12px;color:#fff;">{{ sub.shop_name or '—' }}</td>
+                        <td style="padding:12px 16px;font-size:11px;color:#555;">{{ sub.shop_address or '—' }}</td>
+                        <td style="padding:12px 16px;font-size:10px;color:#3b82f6;font-family:monospace;">
+                            {% if sub.latitude %}{{ "%.4f"|format(sub.latitude) }}, {{ "%.4f"|format(sub.longitude) }}{% else %}—{% endif %}
+                        </td>
+                        <td style="padding:12px 16px;">
+                            {% if sub.status == 'Approved' %}<span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;">✅ Validé</span>
+                            {% elif sub.status == 'Pending' %}<span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;">⏳ En attente</span>
+                            {% else %}<span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;">❌ Rejeté</span>{% endif %}
+                        </td>
+                        <td style="padding:12px 16px;font-size:11px;color:#444;">{{ sub.submitted_at.strftime('%d/%m/%Y') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="padding:40px;text-align:center;color:#333;">Aucune donnée collectée.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</div>
+<script>
+var map = L.map('map').setView([6.3703, 2.4406], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+var points = [
+    {% for sub in submissions %}{% if sub.latitude and sub.longitude %}
+    {lat: {{ sub.latitude }}, lng: {{ sub.longitude }}, nom: "{{ sub.shop_name or 'Commerce' }}", statut: "{{ sub.status }}"},
+    {% endif %}{% endfor %}
+];
+points.forEach(p => {
+    var color = p.statut === 'Approved' ? '#10b981' : p.statut === 'Pending' ? '#f59e0b' : '#ef4444';
+    L.circleMarker([p.lat, p.lng], {radius:8,fillColor:color,color:'#0a0a0a',weight:2,opacity:1,fillOpacity:0.9})
+        .addTo(map).bindPopup('<b>' + p.nom + '</b><br>' + p.statut);
+});
+if (points.length > 0) map.setView([points[0].lat, points[0].lng], 13);
+</script>
+{% endblock %}
