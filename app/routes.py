@@ -89,7 +89,7 @@ def agent_dashboard():
     if session.get('user_role') != 'agent':
         return redirect(url_for('main.login'))
     agent    = User.query.get_or_404(session['user_id'])
-    missions = Mission.query.filter_by(status='Actif', is_suspended=False).all()
+    missions = Mission.query.filter(Mission.status=='Actif', Mission.is_suspended==False).all()
     history  = Transaction.query.filter_by(user_id=agent.id, transaction_type='gain').order_by(Transaction.created_at.desc()).limit(10).all()
     notifs   = Notification.query.filter_by(user_id=agent.id, is_read=False).order_by(Notification.created_at.desc()).all()
     retraits = Retrait.query.filter_by(agent_id=agent.id).order_by(Retrait.created_at.desc()).limit(5).all()
@@ -469,14 +469,20 @@ def api_mission_points(mission_id):
 # ── ROUTE SECRÈTE ADMIN ────────────────────────────────────────
 @main.route('/setup-admin-db229secret')
 def setup_admin():
-    existing = User.query.filter_by(email="admin@databroker229.com").first()
-    if existing:
-        return "<h2 style='font-family:monospace;padding:40px;color:green'>✅ Admin existe déjà. Connectez-vous sur /login</h2>"
-    admin = User(
-        fullname="Admin DataBroker", email="admin@databroker229.com",
-        phone="00000000", password=generate_password_hash("admin229"),
-        role="admin", location="Cotonou", wallet_balance=0
-    )
-    db.session.add(admin)
-    db.session.commit()
-    return "<h2 style='font-family:monospace;padding:40px;color:green'>✅ Compte admin créé ! Email: admin@databroker229.com / MDP: admin229</h2>"
+    try:
+        existing = db.session.execute(
+            db.select(User).where(User.email == "admin@databroker229.com")
+        ).scalar_one_or_none()
+        if existing:
+            return "<h2 style='font-family:monospace;padding:40px;color:green'>✅ Admin existe déjà. Connectez-vous sur /login</h2>"
+        admin = User(
+            fullname="Admin DataBroker", email="admin@databroker229.com",
+            phone="00000000", password=generate_password_hash("admin229"),
+            role="admin", location="Cotonou", wallet_balance=0
+        )
+        db.session.add(admin)
+        db.session.commit()
+        return "<h2 style='font-family:monospace;padding:40px;color:green'>✅ Compte admin créé ! Email: admin@databroker229.com / MDP: admin229</h2>"
+    except Exception as e:
+        db.session.rollback()
+        return f"<h2 style='font-family:monospace;padding:40px;color:red'>❌ Erreur : {str(e)}</h2>"
