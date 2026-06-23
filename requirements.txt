@@ -4,3 +4,4 @@ flask-migrate
 flask-wtf
 werkzeug
 gunicorn
+psycopg2-binary

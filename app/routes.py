@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
 from datetime import datetime
-import csv, io
+import csv, io, math, os
 
 main = Blueprint('main', __name__)
 ADMIN_SECRET_CODE = 'DB229ADMIN'
@@ -96,12 +96,59 @@ def agent_dashboard():
     return render_template('agent_dashboard.html', agent=agent, missions=missions,
                            history=history, notifs=notifs, retraits=retraits)
 
+def haversine(lat1, lon1, lat2, lon2):
+    """Distance en mètres entre deux points GPS."""
+    R = 6371000
+    p = math.pi / 180
+    a = (math.sin((lat2-lat1)*p/2)**2 +
+         math.cos(lat1*p) * math.cos(lat2*p) *
+         math.sin((lon2-lon1)*p/2)**2)
+    return 2 * R * math.asin(math.sqrt(a))
+
+
 @main.route('/agent/submit/<int:mission_id>', methods=['GET', 'POST'])
 def agent_submit(mission_id):
     if session.get('user_role') != 'agent':
         return redirect(url_for('main.login'))
     mission = Mission.query.get_or_404(mission_id)
+
     if request.method == 'POST':
+        lat  = request.form.get('latitude',  type=float)
+        lng  = request.form.get('longitude', type=float)
+
+        # GPS obligatoire
+        if not lat or not lng:
+            flash("La géolocalisation GPS est obligatoire.", "error")
+            return render_template('agent_submit.html', mission=mission)
+
+        # Sauvegarde photo
+        photo_path = None
+        photo_file = request.files.get('photo')
+        if photo_file and photo_file.filename:
+            upload_dir = os.path.join('app', 'static', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            filename = f"sub_{session['user_id']}_{mission_id}_{int(__import__('time').time())}.jpg"
+            photo_file.save(os.path.join(upload_dir, filename))
+            photo_path = f"uploads/{filename}"
+        elif mission.photos_requises == 'oui':
+            flash("Une photo est obligatoire pour cette mission.", "error")
+            return render_template('agent_submit.html', mission=mission)
+
+        # Anti-fraude GPS — vérifier doublons (distance < 50m pour même mission)
+        subs_existantes = Submission.query.filter_by(
+            user_id=session['user_id'],
+            mission_id=mission_id
+        ).filter(Submission.latitude.isnot(None)).all()
+
+        statut_auto = 'Pending'
+        motif_auto  = None
+        for s in subs_existantes:
+            dist = haversine(lat, lng, s.latitude, s.longitude)
+            if dist < 50:
+                statut_auto = 'Rejected'
+                motif_auto  = f"Doublon GPS détecté — point déjà collecté à {int(dist)}m de cette position."
+                break
+
         sub = Submission(
             user_id        = session['user_id'],
             mission_id     = mission_id,
@@ -110,21 +157,33 @@ def agent_submit(mission_id):
             shop_address   = request.form.get('shop_address', '').strip(),
             observations   = request.form.get('observations', '').strip(),
             data_submitted = request.form.get('observations', ''),
-            latitude       = request.form.get('latitude', type=float),
-            longitude      = request.form.get('longitude', type=float),
-            status         = 'Pending'
+            latitude       = lat,
+            longitude      = lng,
+            photo_path     = photo_path,
+            status         = statut_auto,
+            motif_rejet    = motif_auto
         )
         db.session.add(sub)
+
         agent = User.query.get(session['user_id'])
         agent.total_missions += 1
+
+        if statut_auto == 'Rejected':
+            notif(session['user_id'],
+                  f"⚠️ Collecte refusée automatiquement pour \"{mission.title}\" — {motif_auto}", 'warning')
+            db.session.commit()
+            flash("⚠️ Doublon GPS détecté — cette position a déjà été collectée pour cette mission.", "error")
+            return redirect(url_for('main.agent_dashboard'))
+
         notif(session['user_id'], f"Collecte soumise pour \"{mission.title}\" — en attente de validation.", 'info')
-        # Notifier l'admin
         admins = User.query.filter_by(role='admin').all()
         for adm in admins:
             notif(adm.id, f"Nouvelle collecte soumise par {agent.fullname} pour \"{mission.title}\".", 'info')
+
         db.session.commit()
         flash("Collecte soumise avec succès ! En attente de validation.", "success")
         return redirect(url_for('main.agent_dashboard'))
+
     return render_template('agent_submit.html', mission=mission)
 
 @main.route('/agent/retrait', methods=['POST'])
