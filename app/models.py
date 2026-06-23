@@ -73,6 +73,7 @@ class Mission(db.Model):
     difficulte       = db.Column(db.Integer, default=500)
     format_livraison = db.Column(db.String(20))
     photos_requises  = db.Column(db.String(5), default='non')
+    champs_requis    = db.Column(db.String(300), default='nom_boutique,observations')
 
     status           = db.Column(db.String(20), default='En attente')
     payment_status   = db.Column(db.String(30), default='Pending_Payment')
@@ -135,11 +136,13 @@ class Retrait(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     agent_id      = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     montant       = db.Column(db.Integer, nullable=False)
-    mode_paiement = db.Column(db.String(30), nullable=False)  # MTN, Moov, Celtiis
+    mode_paiement = db.Column(db.String(30), nullable=False)
     numero_mobile = db.Column(db.String(20), nullable=False)
     status        = db.Column(db.String(20), default='En attente')  # En attente, Payé, Rejeté
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     paid_at       = db.Column(db.DateTime, nullable=True)
+    # L'argent reste bloqué dans le portefeuille jusqu'à confirmation admin
+    montant_bloque = db.Column(db.Boolean, default=True)
 
 
 class Notification(db.Model):

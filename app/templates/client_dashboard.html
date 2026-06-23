@@ -136,6 +136,26 @@
                 </div>
                 <button type="button" onclick="calculerPrix()" class="btn-outline" style="font-size:13px;padding:11px 18px;">🧮 Calculer</button>
             </div>
+            <!-- CHAMPS REQUIS POUR L'AGENT -->
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Informations que l'agent doit collecter *</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+                    {% for val, label in [
+                        ('nom_boutique', '🏪 Nom du commerce'),
+                        ('prix_produit', '💰 Prix du produit'),
+                        ('disponibilite', '📦 Disponibilité produit'),
+                        ('nombre_employes', '👥 Nombre d'employés'),
+                        ('type_commerce', '🏬 Type de commerce'),
+                        ('observations', '📝 Observations terrain')
+                    ] %}
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#222'">
+                        <input type="checkbox" name="champs_requis" value="{{ val }}" {% if val in ['nom_boutique','observations'] %}checked{% endif %} style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
             <button type="submit" class="btn-primary" style="justify-content:center;font-size:15px;padding:15px;">✅ Soumettre la mission →</button>
         </form>
     </div>
@@ -176,7 +196,10 @@
                         <div style="height:100%;background:linear-gradient(90deg,#f59e0b,#10b981);border-radius:100px;width:{{ mission.progression }}%;transition:width 0.5s;"></div>
                     </div>
                 </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    {% if mission.payment_status != 'Paid' %}
+                    <button onclick="ouvrirPaiement({{ mission.id }}, {{ mission.price }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ mission.price }} FCFA</button>
+                    {% endif %}
                     <a href="/client/mission/{{ mission.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
                     <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
                 </div>
@@ -199,4 +222,56 @@ function calculerPrix() {
     document.getElementById('prixEstime').innerText = total.toLocaleString('fr-FR') + ' FCFA';
 }
 </script>
+
+<!-- MODAL PAIEMENT -->
+<div id="modal-paiement" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#111;border:1px solid #222;border-radius:20px;padding:32px;width:100%;max-width:400px;">
+        <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;">💳 Payer la mission</h2>
+        <p style="font-size:13px;color:#888;margin-bottom:24px;">Montant : <strong style="color:#f59e0b;" id="modal-montant"></strong> FCFA</p>
+
+        <form id="form-paiement" method="POST" style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Choisir votre opérateur</label>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    {% for op, color, emoji in [('MTN MoMo','#ffcc00','🟡'), ('Moov Money','#0066cc','🔵'), ('Celtiis Cash','#ff6600','🟠')] %}
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='{{ color }}'" onmouseout="this.style.borderColor='#222'">
+                        <input type="radio" name="mode_paiement" value="{{ op }}" required style="accent-color:{{ color }};width:18px;height:18px;">
+                        <span style="font-size:14px;font-weight:700;color:#fff;">{{ emoji }} {{ op }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Votre numéro Mobile Money *</label>
+                <input type="text" name="numero_mobile" placeholder="+229 XX XX XX XX" required
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+            </div>
+            <div style="background:#0a1a0f;border:1px solid #10b98133;border-radius:10px;padding:12px 14px;font-size:12px;color:#10b981;">
+                ℹ️ Envoyez le montant sur le numéro indiqué, puis confirmez ici. Votre mission sera activée instantanément.
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="fermerPaiement()" class="btn-outline" style="flex:1;justify-content:center;padding:13px;font-size:14px;">Annuler</button>
+                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:13px;font-size:14px;">✅ Confirmer le paiement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function ouvrirPaiement(missionId, montant) {
+    document.getElementById('modal-montant').textContent = montant.toLocaleString('fr-FR');
+    document.getElementById('form-paiement').action = '/client/payer/' + missionId;
+    const modal = document.getElementById('modal-paiement');
+    modal.style.display = 'flex';
+}
+function fermerPaiement() {
+    document.getElementById('modal-paiement').style.display = 'none';
+}
+// Fermer si clic en dehors
+document.getElementById('modal-paiement').addEventListener('click', function(e) {
+    if (e.target === this) fermerPaiement();
+});
+</script>
+
 {% endblock %}

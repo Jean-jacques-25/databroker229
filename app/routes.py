@@ -197,12 +197,12 @@ def agent_retrait():
     if montant <= 0 or montant > agent.wallet_balance:
         flash("Montant invalide ou insuffisant.", "error")
         return redirect(url_for('main.agent_dashboard'))
-    r = Retrait(agent_id=agent.id, montant=montant, mode_paiement=mode, numero_mobile=numero)
-    agent.wallet_balance -= montant
+    r = Retrait(agent_id=agent.id, montant=montant, mode_paiement=mode, numero_mobile=numero, montant_bloque=True)
+    # L'argent reste dans le portefeuille — bloqué jusqu'à confirmation admin
     db.session.add(r)
-    notif(agent.id, f"Demande de retrait de {montant} FCFA via {mode} soumise.", 'info')
+    notif(agent.id, f"Demande de retrait de {montant} FCFA via {mode} soumise. Traitement sous 24h.", 'info')
     db.session.commit()
-    flash(f"Demande de retrait de {montant} FCFA envoyée. Traitement sous 24h.", "success")
+    flash(f"Demande de retrait de {montant} FCFA envoyée. L'argent sera déduit après confirmation.", "success")
     return redirect(url_for('main.agent_dashboard'))
 
 @main.route('/agent/notif-read/<int:notif_id>', methods=['POST'])
@@ -240,6 +240,13 @@ def client_dashboard():
         difficulte = int(request.form.get('difficulte', 500))
         zone_val   = request.form.get('zone', '1.2')
         prix       = round(quantite * difficulte * float(zone_val) * 1.4)
+        # Construire les champs requis selon les choix du client
+        champs = request.form.getlist('champs_requis')
+        if not champs:
+            champs = ['nom_boutique', 'observations']
+        if request.form.get('photos', 'non') == 'oui' and 'photo' not in champs:
+            champs.append('photo')
+
         mission = Mission(
             title            = request.form.get('title', '').strip(),
             description      = request.form.get('description', '').strip(),
@@ -254,6 +261,7 @@ def client_dashboard():
             difficulte       = difficulte,
             format_livraison = request.form.get('format_livraison', 'pdf'),
             photos_requises  = request.form.get('photos', 'non'),
+            champs_requis    = ','.join(champs),
             status           = 'En attente',
             payment_status   = 'Pending_Payment',
             client_id        = session['user_id']
@@ -271,6 +279,36 @@ def client_dashboard():
     budget_mois = sum(m.price for m in missions if m.payment_status == 'Paid')
     return render_template('client_dashboard.html', missions=missions, data_count=data_count,
                            client=client, notifs=notifs, budget_mois=budget_mois)
+
+
+
+# ─── PAIEMENT CLIENT ──────────────────────────────────────────
+@main.route('/client/payer/<int:mission_id>', methods=['POST'])
+def client_payer_mission(mission_id):
+    if session.get('user_role') != 'client':
+        return redirect(url_for('main.login'))
+    mission = Mission.query.get_or_404(mission_id)
+    if mission.client_id != session['user_id']:
+        flash("Accès non autorisé.", "error")
+        return redirect(url_for('main.client_dashboard'))
+    if mission.payment_status == 'Paid':
+        flash("Cette mission est déjà payée.", "info")
+        return redirect(url_for('main.client_dashboard'))
+
+    mode    = request.form.get('mode_paiement', '')
+    numero  = request.form.get('numero_mobile', '').strip()
+
+    # Simulation paiement — mission activée instantanément
+    mission.payment_status = 'Paid'
+    mission.status         = 'Actif'
+    db.session.commit()
+
+    notif(session['user_id'],
+          f"💳 Paiement de {mission.price} FCFA via {mode} confirmé. Mission \"{mission.title}\" maintenant active !",
+          'success')
+    db.session.commit()
+    flash(f"✅ Paiement confirmé via {mode} ! Votre mission est maintenant active.", "success")
+    return redirect(url_for('main.client_dashboard'))
 
 @main.route('/client/mission/<int:mission_id>')
 def client_mission_detail(mission_id):
@@ -405,11 +443,16 @@ def admin_payer_retrait(retrait_id):
     if session.get('user_role') != 'admin':
         return redirect(url_for('main.login'))
     r = Retrait.query.get_or_404(retrait_id)
+    agent = User.query.get_or_404(r.agent_id)
+    # Déduire l'argent du portefeuille seulement maintenant
+    if r.montant_bloque and agent.wallet_balance >= r.montant:
+        agent.wallet_balance -= r.montant
+        r.montant_bloque = False
     r.status  = 'Payé'
     r.paid_at = datetime.utcnow()
-    notif(r.agent_id, f"💰 Retrait de {r.montant} FCFA via {r.mode_paiement} effectué avec succès !", 'success')
+    notif(r.agent_id, f"💰 Retrait de {r.montant} FCFA via {r.mode_paiement} effectué ! Votre argent a été envoyé.", 'success')
     db.session.commit()
-    flash(f"Retrait de {r.montant} FCFA marqué comme payé.", "success")
+    flash(f"Retrait de {r.montant} FCFA confirmé et déduit du portefeuille de {agent.fullname}.", "success")
     return redirect(url_for('main.admin_dashboard'))
 
 @main.route('/admin/mission/<int:mission_id>/suspendre', methods=['POST'])
