@@ -7,9 +7,9 @@
     {% if notifs %}
     <div style="display:flex;flex-direction:column;gap:8px;">
         {% for n in notifs %}
-        <div style="background:{% if n.type=='success' %}#081a0f{% else %}#0a0f1a{% endif %};border:1px solid {% if n.type=='success' %}#10b98133{% else %}#3b82f633{% endif %};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="background:#0a0f1a;border:1px solid #3b82f633;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
             <span style="font-size:13px;color:#ccc;">{{ n.message }}</span>
-            <button onclick="fetch('/client/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;">✕</button>
+            <button onclick="fetch('/client/notif-read/{{ n.id }}',{method:'POST'}).then(()=>this.parentElement.remove())" style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;">✕</button>
         </div>
         {% endfor %}
     </div>
@@ -40,44 +40,48 @@
         </div>
         <div class="card-dark" style="padding:20px;">
             <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Budget dépensé</div>
-            <div style="font-size:22px;font-weight:900;color:#f59e0b;">{{ budget_mois }}<span style="font-size:11px;"> FCFA</span></div>
+            <div style="font-size:22px;font-weight:900;color:#f59e0b;">{{ budget_mois }} <span style="font-size:11px;">FCFA</span></div>
         </div>
     </div>
 
     <!-- FORMULAIRE MISSION -->
     <div class="card-dark" style="padding:28px;">
         <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:22px;">🎯 Commander une mission terrain</h2>
-        <form method="POST" action="{{ url_for('main.client_dashboard') }}" style="display:flex;flex-direction:column;gap:16px;">
+        <form method="POST" action="/client/dashboard" style="display:flex;flex-direction:column;gap:16px;">
+
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Organisation *</label>
                     <input type="text" name="organisation" placeholder="ex : UNICEF, FIDADEV..." required
-                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Contact *</label>
                     <input type="text" name="contact" placeholder="+229 XX XX XX XX" required
-                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
             </div>
+
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Titre de la mission *</label>
                 <input type="text" name="title" placeholder="ex : Audit prix marché Cotonou" required
-                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
             </div>
+
             <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Description / Protocole</label>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Description</label>
                 <textarea name="description" rows="3" placeholder="Décrivez vos besoins terrain..."
-                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;resize:vertical;"
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;resize:vertical;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'"></textarea>
             </div>
+
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Type de données</label>
-                    <select name="type_donnees" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
+                    <select name="type_donnees" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="prix">Prix de marché</option>
                         <option value="disponibilite">Disponibilité produit</option>
                         <option value="enquete">Enquête ménage</option>
@@ -87,7 +91,7 @@
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Zone</label>
-                    <select id="zone" name="zone" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
+                    <select id="zone" name="zone" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="1.2">Cotonou</option>
                         <option value="1.1">Porto-Novo</option>
                         <option value="1.5">Parakou</option>
@@ -99,12 +103,12 @@
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Points *</label>
                     <input type="number" id="quantite" name="quantite" min="1" placeholder="100" required
-                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;"
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Difficulté</label>
-                    <select id="difficulte" name="difficulte" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
+                    <select id="difficulte" name="difficulte" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="300">Facile — 300 FCFA/pt</option>
                         <option value="500" selected>Standard — 500 FCFA/pt</option>
                         <option value="800">Difficile — 800 FCFA/pt</option>
@@ -113,7 +117,7 @@
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Format livraison</label>
-                    <select name="format_livraison" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
+                    <select name="format_livraison" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="pdf">PDF</option>
                         <option value="excel">Excel / CSV</option>
                         <option value="les_deux">PDF + Excel</option>
@@ -121,39 +125,52 @@
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Photos requises ?</label>
-                    <select name="photos" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;">
+                    <select name="photos" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="non">Non</option>
                         <option value="oui">Oui</option>
                     </select>
                 </div>
             </div>
+
+            <!-- CHAMPS REQUIS -->
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Informations que l'agent doit collecter *</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                        <input type="checkbox" name="champs_requis" value="nom_boutique" checked style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">🏪 Nom du commerce</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                        <input type="checkbox" name="champs_requis" value="prix_produit" style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">💰 Prix du produit</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                        <input type="checkbox" name="champs_requis" value="disponibilite" style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">📦 Disponibilité</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                        <input type="checkbox" name="champs_requis" value="nombre_employes" style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">👥 Nb d'employés</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                        <input type="checkbox" name="champs_requis" value="type_commerce" style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">🏬 Type de commerce</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                        <input type="checkbox" name="champs_requis" value="observations" checked style="accent-color:#f59e0b;width:16px;height:16px;">
+                        <span style="font-size:13px;color:#ccc;font-weight:600;">📝 Observations</span>
+                    </label>
+                </div>
+            </div>
+
             <!-- ESTIMATEUR -->
             <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
                 <div>
                     <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Estimation du prix</div>
                     <div style="font-size:26px;font-weight:900;color:#f59e0b;" id="prixEstime">— FCFA</div>
-                    <div style="font-size:11px;color:#333;margin-top:2px;">Tarif indicatif · confirmé sous 24h</div>
+                    <div style="font-size:11px;color:#444;margin-top:2px;">Tarif indicatif · confirmé sous 24h</div>
                 </div>
                 <button type="button" onclick="calculerPrix()" class="btn-outline" style="font-size:13px;padding:11px 18px;">🧮 Calculer</button>
-            </div>
-            <!-- CHAMPS REQUIS POUR L'AGENT -->
-            <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Informations que l'agent doit collecter *</label>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-                    {% for val, label in [
-                        ('nom_boutique', '🏪 Nom du commerce'),
-                        ('prix_produit', '💰 Prix du produit'),
-                        ('disponibilite', '📦 Disponibilité produit'),
-                        ('nombre_employes', '👥 Nombre d'employés'),
-                        ('type_commerce', '🏬 Type de commerce'),
-                        ('observations', '📝 Observations terrain')
-                    ] %}
-                    <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#222'">
-                        <input type="checkbox" name="champs_requis" value="{{ val }}" {% if val in ['nom_boutique','observations'] %}checked{% endif %} style="accent-color:#f59e0b;width:16px;height:16px;">
-                        <span style="font-size:13px;color:#ccc;font-weight:600;">{{ label }}</span>
-                    </label>
-                    {% endfor %}
-                </div>
             </div>
 
             <button type="submit" class="btn-primary" style="justify-content:center;font-size:15px;padding:15px;">✅ Soumettre la mission →</button>
@@ -164,84 +181,74 @@
     <div>
         <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:14px;">📁 Mes campagnes</h2>
         <div style="display:flex;flex-direction:column;gap:12px;">
-            {% for mission in missions %}
+            {% for m in missions %}
             <div class="card-dark" style="padding:22px;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
                     <div>
-                        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">{{ mission['title'] }}</div>
-                        <div style="font-size:12px;color:#888;">{{ mission['organisation'] or '—' }} · {{ mission['type_donnees'] or '—' }}</div>
+                        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">{{ m.title }}</div>
+                        <div style="font-size:12px;color:#888;">{{ m.organisation }} · {{ m.type_donnees }}</div>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        {% if mission['status'] == 'Actif' %}
+                        {% if m.status == 'Actif' %}
                             <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">✅ Actif</span>
-                        {% elif mission['status'] == 'Suspendue' %}
+                        {% elif m.status == 'Suspendue' %}
                             <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⛔ Suspendue</span>
                         {% else %}
-                            <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ {{ mission['status'] }}</span>
+                            <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ {{ m.status }}</span>
                         {% endif %}
-                        {% if mission['payment_status'] == 'Paid' %}
+                        {% if m.payment_status == 'Paid' %}
                             <span style="color:#10b981;font-size:11px;font-weight:700;">💚 Payé</span>
                         {% else %}
                             <span style="color:#f59e0b;font-size:11px;font-weight:700;">⏳ Paiement en attente</span>
                         {% endif %}
                     </div>
                 </div>
-                <!-- BARRE DE PROGRESSION -->
+                <!-- PROGRESSION -->
                 <div style="margin-bottom:14px;">
                     <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:6px;">
-                        <span>{{ mission['points_collectes'] }} / {{ mission['quantite'] }} points collectés</span>
-                        <span style="color:#f59e0b;font-weight:700;">{{ mission['progression'] }}%</span>
+                        <span>{{ m.points_collectes }} / {{ m.quantite }} points collectés</span>
+                        <span style="color:#f59e0b;font-weight:700;">{{ m.progression }}%</span>
                     </div>
                     <div style="background:#1a1a1a;border-radius:100px;height:6px;overflow:hidden;">
-                        <div style="height:100%;background:linear-gradient(90deg,#f59e0b,#10b981);border-radius:100px;width:{{ mission['progression'] }}%;transition:width 0.5s;"></div>
+                        <div style="height:100%;background:linear-gradient(90deg,#f59e0b,#10b981);border-radius:100px;width:{{ m.progression }}%;"></div>
                     </div>
                 </div>
+                <!-- BOUTONS -->
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                    {% if mission['payment_status'] != 'Paid' %}
-                    <button onclick="ouvrirPaiement({{ mission['id'] }}, {{ mission['price'] }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ mission['price'] }} FCFA</button>
+                    {% if m.payment_status != 'Paid' %}
+                    <button onclick="ouvrirPaiement({{ m.id }}, {{ m.price }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ m.price }} FCFA</button>
                     {% endif %}
-                    <a href="/client/mission/{{ mission['id'] }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
-                    <a href="{{ url_for('main.client_export_csv', mission_id=mission['id']) }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
+                    <a href="/client/mission/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
+                    <a href="/client/export/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
                 </div>
             </div>
             {% else %}
-            <div class="card-dark" style="padding:48px;text-align:center;color:#333;font-size:14px;">Aucune mission créée. Lancez votre première campagne ci-dessus !</div>
+            <div class="card-dark" style="padding:48px;text-align:center;color:#444;font-size:14px;">Aucune mission créée. Lancez votre première campagne ci-dessus !</div>
             {% endfor %}
         </div>
     </div>
 
 </div>
 </div>
-<script>
-function calculerPrix() {
-    const qte = parseInt(document.getElementById('quantite').value);
-    const diff = parseInt(document.getElementById('difficulte').value);
-    const zone = parseFloat(document.getElementById('zone').value);
-    if (!qte || qte <= 0) { alert("Entrez un nombre de points."); return; }
-    const total = Math.round(qte * diff * zone * 1.4);
-    document.getElementById('prixEstime').innerText = total.toLocaleString('fr-FR') + ' FCFA';
-}
-</script>
 
 <!-- MODAL PAIEMENT -->
-<div id="modal-paiement" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+<div id="modal-paiement" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:20px;">
     <div style="background:#111;border:1px solid #222;border-radius:20px;padding:32px;width:100%;max-width:400px;">
         <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;">💳 Payer la mission</h2>
         <p style="font-size:13px;color:#888;margin-bottom:24px;">Montant : <strong style="color:#f59e0b;" id="modal-montant"></strong> FCFA</p>
-
         <form id="form-paiement" method="POST" style="display:flex;flex-direction:column;gap:16px;">
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Choisir votre opérateur</label>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #1a1200;border-radius:12px;padding:14px 16px;cursor:pointer;">
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;">
                         <input type="radio" name="mode_paiement" value="MTN MoMo" required style="accent-color:#ffcc00;width:18px;height:18px;">
                         <span style="font-size:14px;font-weight:700;color:#fff;">🟡 MTN MoMo</span>
                     </label>
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #1a2a3a;border-radius:12px;padding:14px 16px;cursor:pointer;">
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;">
                         <input type="radio" name="mode_paiement" value="Moov Money" style="accent-color:#0066cc;width:18px;height:18px;">
                         <span style="font-size:14px;font-weight:700;color:#fff;">🔵 Moov Money</span>
                     </label>
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #2a1a0a;border-radius:12px;padding:14px 16px;cursor:pointer;">
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;">
                         <input type="radio" name="mode_paiement" value="Celtiis Cash" style="accent-color:#ff6600;width:18px;height:18px;">
                         <span style="font-size:14px;font-weight:700;color:#fff;">🟠 Celtiis Cash</span>
                     </label>
@@ -254,30 +261,38 @@ function calculerPrix() {
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
             </div>
             <div style="background:#0a1a0f;border:1px solid #10b98133;border-radius:10px;padding:12px 14px;font-size:12px;color:#10b981;">
-                ℹ️ Envoyez le montant sur le numéro indiqué, puis confirmez ici. Votre mission sera activée instantanément.
+                ℹ️ Envoyez le montant sur notre numéro puis confirmez ici. Votre mission sera activée instantanément.
             </div>
             <div style="display:flex;gap:10px;">
                 <button type="button" onclick="fermerPaiement()" class="btn-outline" style="flex:1;justify-content:center;padding:13px;font-size:14px;">Annuler</button>
-                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:13px;font-size:14px;">✅ Confirmer le paiement</button>
+                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;padding:13px;font-size:14px;">✅ Confirmer</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-function ouvrirPaiement(missionId, montant) {
-    document.getElementById('modal-montant').textContent = montant.toLocaleString('fr-FR');
-    document.getElementById('form-paiement').action = '/client/payer/' + missionId;
-    const modal = document.getElementById('modal-paiement');
-    modal.style.display = 'flex';
+function calculerPrix() {
+    var qte = parseInt(document.getElementById('quantite').value);
+    var diff = parseInt(document.getElementById('difficulte').value);
+    var zone = parseFloat(document.getElementById('zone').value);
+    if (!qte || qte <= 0) { alert("Entrez un nombre de points."); return; }
+    var total = Math.round(qte * diff * zone * 1.4);
+    document.getElementById('prixEstime').innerText = total.toLocaleString('fr-FR') + ' FCFA';
 }
+
+function ouvrirPaiement(id, montant) {
+    document.getElementById('modal-montant').textContent = montant.toLocaleString('fr-FR');
+    document.getElementById('form-paiement').action = '/client/payer/' + id;
+    document.getElementById('modal-paiement').style.display = 'flex';
+}
+
 function fermerPaiement() {
     document.getElementById('modal-paiement').style.display = 'none';
 }
-// Fermer si clic en dehors
+
 document.getElementById('modal-paiement').addEventListener('click', function(e) {
     if (e.target === this) fermerPaiement();
 });
 </script>
-
 {% endblock %}
