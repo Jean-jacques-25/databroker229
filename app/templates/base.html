@@ -30,8 +30,12 @@
         <div style="display:flex;justify-content:space-between;align-items:center;height:68px;">
 
             <!-- LOGO -->
-            <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="DataBroker229" style="height:44px;width:auto;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">
+            <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="DataBroker229" style="height:44px;width:auto;object-fit:contain;border-radius:8px;background:#fff;padding:3px;flex-shrink:0;">
+                <div style="line-height:1.1;">
+                    <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-0.5px;">DATABR<i class="fa-solid fa-location-dot" style="color:#f59e0b;font-size:14px;margin:0 1px;"></i>KER</div>
+                    <div style="font-size:13px;font-weight:900;color:#f59e0b;letter-spacing:1px;">229 🇧🇯</div>
+                </div>
             </a>
 
             <!-- DESKTOP NAV -->
