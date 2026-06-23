@@ -168,18 +168,18 @@
             <div class="card-dark" style="padding:22px;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
                     <div>
-                        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">{{ mission.title }}</div>
-                        <div style="font-size:12px;color:#888;">{{ mission.organisation or '—' }} · {{ mission.type_donnees or '—' }}</div>
+                        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">{{ mission['title'] }}</div>
+                        <div style="font-size:12px;color:#888;">{{ mission['organisation'] or '—' }} · {{ mission['type_donnees'] or '—' }}</div>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        {% if mission.status == 'Actif' %}
+                        {% if mission['status'] == 'Actif' %}
                             <span style="background:#0a1a0f;border:1px solid #10b98133;color:#10b981;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">✅ Actif</span>
-                        {% elif mission.status == 'Suspendue' %}
+                        {% elif mission['status'] == 'Suspendue' %}
                             <span style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⛔ Suspendue</span>
                         {% else %}
-                            <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ {{ mission.status }}</span>
+                            <span style="background:#1a1200;border:1px solid #f59e0b33;color:#f59e0b;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;">⏳ {{ mission['status'] }}</span>
                         {% endif %}
-                        {% if mission.payment_status == 'Paid' %}
+                        {% if mission['payment_status'] == 'Paid' %}
                             <span style="color:#10b981;font-size:11px;font-weight:700;">💚 Payé</span>
                         {% else %}
                             <span style="color:#f59e0b;font-size:11px;font-weight:700;">⏳ Paiement en attente</span>
@@ -189,16 +189,16 @@
                 <!-- BARRE DE PROGRESSION -->
                 <div style="margin-bottom:14px;">
                     <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:6px;">
-                        <span>{{ mission.points_collectes }} / {{ mission.quantite }} points collectés</span>
-                        <span style="color:#f59e0b;font-weight:700;">{{ mission.progression }}%</span>
+                        <span>{{ mission['points_collectes'] }} / {{ mission['quantite'] }} points collectés</span>
+                        <span style="color:#f59e0b;font-weight:700;">{{ mission['progression'] }}%</span>
                     </div>
                     <div style="background:#1a1a1a;border-radius:100px;height:6px;overflow:hidden;">
-                        <div style="height:100%;background:linear-gradient(90deg,#f59e0b,#10b981);border-radius:100px;width:{{ mission.progression }}%;transition:width 0.5s;"></div>
+                        <div style="height:100%;background:linear-gradient(90deg,#f59e0b,#10b981);border-radius:100px;width:{{ mission['progression'] }}%;transition:width 0.5s;"></div>
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                    {% if mission.payment_status != 'Paid' %}
-                    <button onclick="ouvrirPaiement({{ mission['id'] }}, {{ mission['price'] }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ mission.price }} FCFA</button>
+                    {% if mission['payment_status'] != 'Paid' %}
+                    <button onclick="ouvrirPaiement({{ mission['id'] }}, {{ mission['price'] }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ mission['price'] }} FCFA</button>
                     {% endif %}
                     <a href="/client/mission/{{ mission['id'] }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
                     <a href="{{ url_for('main.client_export_csv', mission_id=mission['id']) }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
@@ -233,12 +233,18 @@ function calculerPrix() {
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Choisir votre opérateur</label>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    {% for op, color, emoji in [('MTN MoMo','#ffcc00','🟡'), ('Moov Money','#0066cc','🔵'), ('Celtiis Cash','#ff6600','🟠')] %}
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='{{ color }}'" onmouseout="this.style.borderColor='#222'">
-                        <input type="radio" name="mode_paiement" value="{{ op }}" required style="accent-color:{{ color }};width:18px;height:18px;">
-                        <span style="font-size:14px;font-weight:700;color:#fff;">{{ emoji }} {{ op }}</span>
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #1a1200;border-radius:12px;padding:14px 16px;cursor:pointer;">
+                        <input type="radio" name="mode_paiement" value="MTN MoMo" required style="accent-color:#ffcc00;width:18px;height:18px;">
+                        <span style="font-size:14px;font-weight:700;color:#fff;">🟡 MTN MoMo</span>
                     </label>
-                    {% endfor %}
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #1a2a3a;border-radius:12px;padding:14px 16px;cursor:pointer;">
+                        <input type="radio" name="mode_paiement" value="Moov Money" style="accent-color:#0066cc;width:18px;height:18px;">
+                        <span style="font-size:14px;font-weight:700;color:#fff;">🔵 Moov Money</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #2a1a0a;border-radius:12px;padding:14px 16px;cursor:pointer;">
+                        <input type="radio" name="mode_paiement" value="Celtiis Cash" style="accent-color:#ff6600;width:18px;height:18px;">
+                        <span style="font-size:14px;font-weight:700;color:#fff;">🟠 Celtiis Cash</span>
+                    </label>
                 </div>
             </div>
             <div>
