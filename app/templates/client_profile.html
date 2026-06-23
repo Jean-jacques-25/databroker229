@@ -9,7 +9,7 @@
     <div class="card-dark" style="padding:28px;">
         <form method="POST" action="/client/profile" style="display:flex;flex-direction:column;gap:16px;">
             {% for label, name, val, ph in [
-                ('Nom du responsable', 'fullname', client.fullname, 'Jean-Jacques Agan'),
+                ('Nom du responsable', 'fullname', client.fullname, 'Ex: Kofi Mensah'),
                 ('Nom de l\'organisation', 'organisation', client.organisation or '', 'ex: UNICEF Bénin'),
                 ('Secteur d\'activité', 'secteur', client.secteur or '', 'ex: ONG, Microfinance, Agro...'),
                 ('NIF / RCCM', 'nif_rccm', client.nif_rccm or '', 'ex: NIF-123456'),
