@@ -272,20 +272,55 @@ def client_dashboard():
         flash("Mission créée ! En attente de validation par l'équipe DataBroker229.", "success")
         return redirect(url_for('main.client_dashboard'))
 
-    client     = User.query.get_or_404(session['user_id'])
-    missions   = Mission.query.filter_by(client_id=session['user_id']).order_by(Mission.created_at.desc()).all()
-    data_count = sum(m.points_collectes for m in missions)
-    notifs     = Notification.query.filter_by(user_id=session['user_id'], is_read=False).order_by(Notification.created_at.desc()).all()
-    budget_mois  = sum(m.price for m in missions if m.payment_status == 'Paid')
-    missions_actives   = sum(1 for m in missions if m.status == 'Actif')
-    missions_attente   = sum(1 for m in missions if m.status == 'En attente')
-    # S'assurer que champs_requis n'est jamais None
+    client   = User.query.get_or_404(session['user_id'])
+    missions = Mission.query.filter_by(client_id=session['user_id']).order_by(Mission.created_at.desc()).all()
+    notifs   = Notification.query.filter_by(user_id=session['user_id'], is_read=False).order_by(Notification.created_at.desc()).all()
+
+    # Calculer toutes les stats en Python pour éviter les lazy loads dans le template
+    missions_data = []
+    total_points  = 0
+    budget_mois   = 0
+    missions_actives = 0
+    missions_attente = 0
+
     for m in missions:
-        if not m.champs_requis:
-            m.champs_requis = 'nom_boutique,observations'
-    return render_template('client_dashboard.html', missions=missions, data_count=data_count,
-                           client=client, notifs=notifs, budget_mois=budget_mois,
-                           missions_actives=missions_actives, missions_attente=missions_attente)
+        approved = sum(1 for s in m.submissions if s.status == 'Approved')
+        pending  = sum(1 for s in m.submissions if s.status == 'Pending')
+        rejected = sum(1 for s in m.submissions if s.status == 'Rejected')
+        quantite = m.quantite or 1
+        progression = min(100, round((approved / quantite) * 100))
+        total_points += approved
+
+        if m.payment_status == 'Paid':
+            budget_mois += m.price
+        if m.status == 'Actif':
+            missions_actives += 1
+        if m.status == 'En attente':
+            missions_attente += 1
+
+        missions_data.append({
+            'id':             m.id,
+            'title':          m.title,
+            'organisation':   m.organisation or '',
+            'type_donnees':   m.type_donnees or '',
+            'status':         m.status,
+            'payment_status': m.payment_status,
+            'price':          m.price,
+            'quantite':       quantite,
+            'points_collectes': approved,
+            'progression':    progression,
+            'champs_requis':  m.champs_requis or 'nom_boutique,observations',
+            'is_suspended':   m.is_suspended,
+        })
+
+    return render_template('client_dashboard.html',
+        missions=missions_data,
+        data_count=total_points,
+        client=client,
+        notifs=notifs,
+        budget_mois=budget_mois,
+        missions_actives=missions_actives,
+        missions_attente=missions_attente)
 
 
 

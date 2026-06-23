@@ -198,10 +198,10 @@
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                     {% if mission.payment_status != 'Paid' %}
-                    <button onclick="ouvrirPaiement({{ mission.id }}, {{ mission.price }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ mission.price }} FCFA</button>
+                    <button onclick="ouvrirPaiement({{ mission['id'] }}, {{ mission['price'] }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ mission.price }} FCFA</button>
                     {% endif %}
-                    <a href="/client/mission/{{ mission.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
-                    <a href="{{ url_for('main.client_export_csv', mission_id=mission.id) }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
+                    <a href="/client/mission/{{ mission['id'] }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
+                    <a href="{{ url_for('main.client_export_csv', mission_id=mission['id']) }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
                 </div>
             </div>
             {% else %}
