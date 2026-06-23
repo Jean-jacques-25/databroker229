@@ -276,9 +276,16 @@ def client_dashboard():
     missions   = Mission.query.filter_by(client_id=session['user_id']).order_by(Mission.created_at.desc()).all()
     data_count = sum(m.points_collectes for m in missions)
     notifs     = Notification.query.filter_by(user_id=session['user_id'], is_read=False).order_by(Notification.created_at.desc()).all()
-    budget_mois = sum(m.price for m in missions if m.payment_status == 'Paid')
+    budget_mois  = sum(m.price for m in missions if m.payment_status == 'Paid')
+    missions_actives   = sum(1 for m in missions if m.status == 'Actif')
+    missions_attente   = sum(1 for m in missions if m.status == 'En attente')
+    # S'assurer que champs_requis n'est jamais None
+    for m in missions:
+        if not m.champs_requis:
+            m.champs_requis = 'nom_boutique,observations'
     return render_template('client_dashboard.html', missions=missions, data_count=data_count,
-                           client=client, notifs=notifs, budget_mois=budget_mois)
+                           client=client, notifs=notifs, budget_mois=budget_mois,
+                           missions_actives=missions_actives, missions_attente=missions_attente)
 
 
 
