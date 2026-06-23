@@ -470,19 +470,31 @@ def api_mission_points(mission_id):
 @main.route('/setup-admin-db229secret')
 def setup_admin():
     try:
-        existing = db.session.execute(
-            db.select(User).where(User.email == "admin@databroker229.com")
-        ).scalar_one_or_none()
-        if existing:
-            return "<h2 style='font-family:monospace;padding:40px;color:green'>✅ Admin existe déjà. Connectez-vous sur /login</h2>"
+        # Recréer toutes les tables avec le nouveau schéma
+        db.drop_all()
+        db.create_all()
+
+        # Créer le compte admin
         admin = User(
-            fullname="Admin DataBroker", email="admin@databroker229.com",
-            phone="00000000", password=generate_password_hash("admin229"),
-            role="admin", location="Cotonou", wallet_balance=0
+            fullname="Admin DataBroker",
+            email="admin@databroker229.com",
+            phone="00000000",
+            password=generate_password_hash("admin229"),
+            role="admin",
+            location="Cotonou",
+            wallet_balance=0
         )
         db.session.add(admin)
         db.session.commit()
-        return "<h2 style='font-family:monospace;padding:40px;color:green'>✅ Compte admin créé ! Email: admin@databroker229.com / MDP: admin229</h2>"
+        return """
+        <div style='font-family:monospace;padding:40px;background:#0a0a0a;color:#fff;min-height:100vh;'>
+            <h2 style='color:#10b981;'>✅ Base de données réinitialisée avec succès !</h2>
+            <p style='color:#888;margin-top:16px;'>Toutes les tables ont été recréées avec le nouveau schéma.</p>
+            <p style='margin-top:12px;'>Email : <strong style='color:#f59e0b;'>admin@databroker229.com</strong></p>
+            <p>Mot de passe : <strong style='color:#f59e0b;'>admin229</strong></p>
+            <a href='/login' style='display:inline-block;margin-top:24px;background:#f59e0b;color:#000;padding:12px 24px;border-radius:100px;text-decoration:none;font-weight:800;'>→ Se connecter</a>
+        </div>
+        """
     except Exception as e:
         db.session.rollback()
-        return f"<h2 style='font-family:monospace;padding:40px;color:red'>❌ Erreur : {str(e)}</h2>"
+        return f"<div style='font-family:monospace;padding:40px;color:red;'>❌ Erreur : {str(e)}</div>"
