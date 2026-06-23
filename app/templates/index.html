@@ -2,81 +2,203 @@
 {% block content %}
 
 <!-- HERO -->
-<section style="padding:100px 16px 80px; text-align:center; position:relative; overflow:hidden;">
+<section style="padding:100px 16px 80px;text-align:center;position:relative;overflow:hidden;">
     <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.07) 0%, transparent 70%);pointer-events:none;"></div>
-    <div style="max-width:720px; margin:0 auto; position:relative;">
+    <div style="max-width:720px;margin:0 auto;position:relative;">
         <span style="display:inline-flex;align-items:center;gap:8px;background:#111;border:1px solid #222;color:#f59e0b;font-size:12px;font-weight:700;padding:6px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;margin-bottom:28px;">
             <i class="fa-solid fa-map-location-dot"></i> Crowdsourcing de données · Bénin
         </span>
         <h1 style="font-size:clamp(36px,8vw,68px);font-weight:900;line-height:1.08;letter-spacing:-2px;margin-bottom:24px;color:#fff;">
             Collectez des données<br><span style="color:#f59e0b;">terrain fiables</span><br>au Bénin.
         </h1>
-        <p style="font-size:17px;color:#666;line-height:1.7;max-width:520px;margin:0 auto 40px;">
+        <p style="font-size:17px;color:#888;line-height:1.7;max-width:520px;margin:0 auto 40px;">
             Une plateforme reliant des agents collecteurs motivés aux organisations qui ont besoin de données terrain vérifiées en temps réel.
         </p>
         <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-            <a href="{{ url_for('main.login') }}" class="btn-primary" style="font-size:15px;">
-                Commencer maintenant →
-            </a>
-            <a href="{{ url_for('main.register') }}" class="btn-outline" style="font-size:15px;">
-                Devenir agent collecteur
-            </a>
+            <a href="{{ url_for('main.login') }}" class="btn-primary" style="font-size:15px;">Commencer maintenant →</a>
+            <a href="{{ url_for('main.register') }}" class="btn-outline" style="font-size:15px;">Devenir agent collecteur</a>
         </div>
     </div>
 </section>
 
-<!-- STATS -->
+<!-- COMPTEURS ANIMÉS -->
 <section style="padding:0 16px 80px;">
     <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;">
         <div class="card-dark" style="padding:28px;text-align:center;">
-            <div style="font-size:36px;font-weight:900;color:#f59e0b;line-height:1;">300+</div>
+            <div class="counter" data-target="300" style="font-size:40px;font-weight:900;color:#f59e0b;line-height:1;">0</div>
+            <div style="font-size:11px;color:#f59e0b;font-weight:700;margin-top:2px;">+</div>
             <div style="font-size:12px;color:#888;margin-top:6px;font-weight:600;">Commerces cartographiés</div>
         </div>
         <div class="card-dark" style="padding:28px;text-align:center;">
-            <div style="font-size:36px;font-weight:900;color:#f59e0b;line-height:1;">48h</div>
+            <div class="counter" data-target="48" style="font-size:40px;font-weight:900;color:#f59e0b;line-height:1;">0</div>
+            <div style="font-size:11px;color:#f59e0b;font-weight:700;margin-top:2px;">h</div>
             <div style="font-size:12px;color:#888;margin-top:6px;font-weight:600;">Délai moyen de livraison</div>
         </div>
         <div class="card-dark" style="padding:28px;text-align:center;">
-            <div style="font-size:36px;font-weight:900;color:#f59e0b;line-height:1;">100%</div>
-            <div style="font-size:12px;color:#888;margin-top:6px;font-weight:600;">GPS certifié sur terrain</div>
+            <div class="counter" data-target="100" style="font-size:40px;font-weight:900;color:#f59e0b;line-height:1;">0</div>
+            <div style="font-size:11px;color:#f59e0b;font-weight:700;margin-top:2px;">%</div>
+            <div style="font-size:12px;color:#888;margin-top:6px;font-weight:600;">GPS certifié terrain</div>
         </div>
         <div class="card-dark" style="padding:28px;text-align:center;">
-            <div style="font-size:36px;font-weight:900;color:#10b981;line-height:1;">FCFA</div>
-            <div style="font-size:12px;color:#888;margin-top:6px;font-weight:600;">Paiement Mobile Money</div>
+            <div class="counter" data-target="50" style="font-size:40px;font-weight:900;color:#10b981;line-height:1;">0</div>
+            <div style="font-size:11px;color:#10b981;font-weight:700;margin-top:2px;">+</div>
+            <div style="font-size:12px;color:#888;margin-top:6px;font-weight:600;">Agents actifs au Bénin</div>
         </div>
     </div>
 </section>
 
-<!-- COMMENT ÇA MARCHE -->
-<section style="padding:80px 16px;" id="how-it-works">
+<!-- BANDEAU CONFIANCE -->
+<section style="padding:32px 16px;background:#080808;border-top:1px solid #111;border-bottom:1px solid #111;overflow:hidden;">
+    <div style="text-align:center;margin-bottom:20px;">
+        <span style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:2px;">Secteurs qui nous font confiance</span>
+    </div>
+    <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;align-items:center;">
+        {% for secteur in ['🏦 Microfinance', '🌾 Agriculture', '🏥 Santé publique', '📦 Distribution', '🏛️ ONG & Institutions', '📊 Cabinets d\'études'] %}
+        <span style="font-size:13px;font-weight:700;color:#444;white-space:nowrap;padding:8px 16px;background:#111;border:1px solid #1a1a1a;border-radius:100px;">{{ secteur }}</span>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- DOUBLE CTA — ENTREPRISES VS AGENTS -->
+<section style="padding:80px 16px;">
     <div style="max-width:900px;margin:0 auto;">
-        <div style="text-align:center;margin-bottom:56px;">
-            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Comment ça marche ?</h2>
-            <p style="color:#888;margin-top:12px;font-size:15px;">Un processus rigoureux pour des données irréprochables.</p>
+        <div style="text-align:center;margin-bottom:48px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">La plateforme faite pour vous</h2>
+            <p style="color:#888;margin-top:12px;font-size:15px;">Que vous soyez une entreprise ou un individu, DataBroker229 a une solution.</p>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;">
-            {% for step in [
-                ('01', 'Création', 'Une entreprise publie sa mission ciblée avec cahier des charges.', '📋'),
-                ('02', 'Acceptation', 'Les agents terrain qualifiés acceptent la mission disponible.', '✋'),
-                ('03', 'Collecte', 'Collecte sur le terrain avec GPS + photo horodatée en direct.', '📍'),
-                ('04', 'Validation', "L'admin contrôle la conformité et la qualité des données.", '🔍'),
-                ('05', 'Paiement', "L'agent reçoit ses gains instantanément sur son portefeuille.", '💰')
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+
+            <!-- ENTREPRISES -->
+            <div class="card-dark" style="padding:36px;border-color:#f59e0b22;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:0.04;">🏢</div>
+                <div style="width:52px;height:52px;background:linear-gradient(135deg,#f59e0b22,#f59e0b11);border:1px solid #f59e0b33;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px;">🏢</div>
+                <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:12px;">Vous êtes une Entreprise ?</h3>
+                <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:24px;">Accédez à des données terrain fiables, géolocalisées et vérifiées sur tout le Bénin.</p>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+                    {% for avantage in ['✅ Données GPS certifiées', '✅ Livraison en 48h', '✅ Photos géolocalisées', '✅ Export CSV / PDF', '✅ Rapport structuré'] %}
+                    <div style="font-size:13px;color:#ccc;font-weight:600;">{{ avantage }}</div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('main.register') }}" class="btn-primary" style="display:block;text-align:center;font-size:14px;padding:14px;">Commander des données →</a>
+            </div>
+
+            <!-- AGENTS -->
+            <div class="card-dark" style="padding:36px;border-color:#10b98122;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:0.04;">🧑‍💼</div>
+                <div style="width:52px;height:52px;background:linear-gradient(135deg,#10b98122,#10b98111);border:1px solid #10b98133;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px;">🧑‍💼</div>
+                <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:12px;">Vous voulez gagner de l'argent ?</h3>
+                <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:24px;">Devenez agent terrain et gagnez de l'argent en collectant des données près de chez vous.</p>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+                    {% for avantage in ['💰 Paiement par mission accomplie', '📱 Tout depuis votre téléphone', '🗺️ Missions près de chez vous', '⭐ Montez en niveau et gagnez plus', '💸 Retrait via MTN / Moov / Celtiis'] %}
+                    <div style="font-size:13px;color:#ccc;font-weight:600;">{{ avantage }}</div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('main.register') }}" style="display:block;text-align:center;font-size:14px;padding:14px;background:transparent;color:#10b981;border:2px solid #10b981;border-radius:100px;font-weight:800;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='#0a0a0a'" onmouseout="this.style.background='transparent';this.style.color='#10b981'">Devenir agent maintenant →</a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- MISSION URGENTE (motivation agents) -->
+<section style="padding:0 16px 80px;">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="background:linear-gradient(135deg,#1a1200,#0a0a0a);border:1px solid #f59e0b33;border-radius:20px;padding:28px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <div style="width:12px;height:12px;background:#10b981;border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;"></div>
+                <div>
+                    <div style="font-size:11px;color:#f59e0b;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🔥 Mission disponible maintenant</div>
+                    <div style="font-size:18px;font-weight:900;color:#fff;">Audit commerces — Cotonou & Calavi</div>
+                    <div style="font-size:13px;color:#888;margin-top:4px;">GPS + Photo obligatoire · Paiement immédiat après validation</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                <div style="text-align:center;">
+                    <div style="font-size:28px;font-weight:900;color:#10b981;">500 FCFA</div>
+                    <div style="font-size:11px;color:#888;">par point collecté</div>
+                </div>
+                <a href="{{ url_for('main.register') }}" class="btn-primary" style="font-size:14px;padding:12px 22px;white-space:nowrap;">Postuler →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CARTE INTERACTIVE -->
+<section style="padding:0 16px 80px;" id="carte">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:36px;">
+            <h2 style="font-size:clamp(24px,5vw,38px);font-weight:900;color:#fff;letter-spacing:-1px;">📍 Nos zones de couverture</h2>
+            <p style="color:#888;margin-top:12px;font-size:14px;">DataBroker229 opère sur tout le territoire béninois.</p>
+        </div>
+        <div class="card-dark" style="padding:20px;overflow:hidden;">
+            <div id="map-home" style="height:320px;border-radius:14px;border:1px solid #1a1a1a;"></div>
+            <div style="display:flex;gap:20px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#888;"><span style="width:10px;height:10px;background:#f59e0b;border-radius:50%;display:inline-block;"></span>Zone active</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#888;"><span style="width:10px;height:10px;background:#10b981;border-radius:50%;display:inline-block;"></span>Données collectées</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- POURQUOI NOUS CHOISIR -->
+<section style="padding:80px 16px;background:#080808;">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:48px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Pourquoi choisir DataBroker229 ?</h2>
+            <p style="color:#888;margin-top:12px;font-size:15px;">Des garanties concrètes pour vos données terrain.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+            {% for icon, titre, desc, color in [
+                ('✅', 'Données certifiées GPS', 'Chaque point collecté est accompagné de coordonnées GPS précises et vérifiées automatiquement.', '#10b981'),
+                ('⚡', 'Livraison en 48h', 'Nos agents terrain sont réactifs. Vos données sont collectées et livrées en moins de 48 heures.', '#f59e0b'),
+                ('🔒', 'Agents vérifiés', 'Tous nos agents passent par un processus de validation et ont un score de fiabilité affiché.', '#3b82f6'),
+                ('📊', 'Données structurées', 'Recevez vos données proprement organisées en CSV, Excel ou PDF selon vos besoins.', '#8b5cf6'),
+                ('🛡️', 'Anti-fraude intégré', 'Notre système détecte automatiquement les doublons GPS pour garantir l\'intégrité des données.', '#ef4444'),
+                ('💬', 'Support WhatsApp', 'Notre équipe est disponible 7j/7 sur WhatsApp pour répondre à toutes vos questions.', '#25d366')
             ] %}
-            <div class="card-dark" style="padding:24px 20px;text-align:center;position:relative;">
-                <div style="font-size:10px;font-weight:900;color:#333;letter-spacing:2px;margin-bottom:12px;">{{ step[0] }}</div>
-                <div style="font-size:28px;margin-bottom:12px;">{{ step[3] }}</div>
-                <h3 style="font-weight:800;color:#fff;font-size:14px;margin-bottom:8px;">{{ step[1] }}</h3>
-                <p style="font-size:12px;color:#888;line-height:1.6;">{{ step[2] }}</p>
-                {% if not loop.last %}
-                <div style="display:none;" class="md:block" style="position:absolute;right:-12px;top:50%;color:#333;font-size:18px;">→</div>
-                {% endif %}
+            <div class="card-dark" style="padding:28px;display:flex;gap:16px;align-items:flex-start;">
+                <div style="width:44px;height:44px;background:{{ color }}15;border:1px solid {{ color }}33;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">{{ icon }}</div>
+                <div>
+                    <h3 style="font-weight:800;color:#fff;font-size:14px;margin-bottom:6px;">{{ titre }}</h3>
+                    <p style="font-size:12px;color:#888;line-height:1.6;">{{ desc }}</p>
+                </div>
             </div>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- SERVICES -->
+<!-- COMMENT ÇA MARCHE — VERSION ANIMÉE -->
+<section style="padding:80px 16px;" id="how-it-works">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:56px;">
+            <h2 style="font-size:clamp(28px,5vw,42px);font-weight:900;color:#fff;letter-spacing:-1px;">Comment ça marche ?</h2>
+            <p style="color:#888;margin-top:12px;font-size:15px;">Un processus rigoureux pour des données irréprochables.</p>
+        </div>
+        <div style="position:relative;">
+            <!-- Ligne de connexion desktop -->
+            <div style="position:absolute;top:32px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,#f59e0b,#10b981);opacity:0.3;display:none;" class="step-line"></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:20px;">
+                {% for num, icon, titre, desc, color in [
+                    ('01','📋','Création','L\'entreprise publie sa mission avec cahier des charges.','#f59e0b'),
+                    ('02','✋','Acceptation','Les agents qualifiés acceptent la mission disponible.','#f59e0b'),
+                    ('03','📍','Collecte GPS','Collecte terrain avec GPS + photo en temps réel.','#10b981'),
+                    ('04','🔍','Validation','L\'admin vérifie la conformité et qualité des données.','#3b82f6'),
+                    ('05','💰','Paiement','L\'agent reçoit ses gains instantanément.','#10b981')
+                ] %}
+                <div style="text-align:center;padding:24px 16px;position:relative;">
+                    <div style="width:56px;height:56px;background:{{ color }}15;border:2px solid {{ color }}44;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 14px;transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">{{ icon }}</div>
+                    <div style="font-size:10px;font-weight:900;color:{{ color }};letter-spacing:2px;margin-bottom:6px;">{{ num }}</div>
+                    <h3 style="font-weight:800;color:#fff;font-size:13px;margin-bottom:6px;">{{ titre }}</h3>
+                    <p style="font-size:11px;color:#888;line-height:1.6;">{{ desc }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NOS SERVICES -->
 <section style="padding:80px 16px;background:#080808;" id="services">
     <div style="max-width:900px;margin:0 auto;">
         <div style="text-align:center;margin-bottom:56px;">
@@ -143,7 +265,15 @@
             </div>
             <div class="card-dark" style="padding:24px 28px;">
                 <h4 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px;">Comment les paiements fonctionnent-ils ?</h4>
-                <p style="font-size:13px;color:#888;line-height:1.7;">Une fois la mission validée par l'administrateur, vos gains sont instantanément versés sur votre portefeuille virtuel. Retrait via Mobile Money (MTN / Moov) ou virement bancaire.</p>
+                <p style="font-size:13px;color:#888;line-height:1.7;">Une fois la mission validée, vos gains sont versés sur votre portefeuille virtuel. Retrait via Mobile Money (MTN / Moov / Celtiis).</p>
+            </div>
+            <div class="card-dark" style="padding:24px 28px;">
+                <h4 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px;">Quelles zones géographiques couvrez-vous ?</h4>
+                <p style="font-size:13px;color:#888;line-height:1.7;">Nous couvrons actuellement Cotonou, Abomey-Calavi, Porto-Novo, Parakou, Bohicon et Natitingou. D'autres villes s'ajouteront bientôt.</p>
+            </div>
+            <div class="card-dark" style="padding:24px 28px;">
+                <h4 style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px;">Comment garantissez-vous la qualité des données ?</h4>
+                <p style="font-size:13px;color:#888;line-height:1.7;">Chaque collecte est vérifiée manuellement par notre équipe admin avant validation. Notre système anti-fraude GPS détecte automatiquement les doublons.</p>
             </div>
         </div>
     </div>
@@ -152,9 +282,7 @@
 <!-- CTA FINAL -->
 <section style="padding:100px 16px;text-align:center;" id="contact">
     <div style="max-width:600px;margin:0 auto;">
-        <h2 style="font-size:clamp(28px,5vw,48px);font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:16px;">
-            Prêt à démarrer ?
-        </h2>
+        <h2 style="font-size:clamp(28px,5vw,48px);font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:16px;">Prêt à démarrer ?</h2>
         <p style="color:#888;font-size:16px;margin-bottom:40px;">Rejoignez DataBroker229 aujourd'hui en tant que client ou agent.</p>
         <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:48px;">
             <a href="{{ url_for('main.register') }}" class="btn-primary" style="font-size:15px;">Créer un compte →</a>
@@ -176,5 +304,67 @@
         </div>
     </div>
 </section>
+
+<!-- SCRIPTS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Compteurs animés
+function animerCompteurs() {
+    document.querySelectorAll('.counter').forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'));
+        const duration = 1800;
+        const step = target / (duration / 16);
+        let current = 0;
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(timer); }
+            el.textContent = Math.floor(current);
+        }, 16);
+    });
+}
+
+// Observer pour déclencher quand visible
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) { animerCompteurs(); observer.disconnect(); }
+    });
+}, { threshold: 0.3 });
+
+const statsSection = document.querySelector('.counter');
+if (statsSection) observer.observe(statsSection.closest('section'));
+
+// Carte Leaflet page d'accueil
+document.addEventListener('DOMContentLoaded', function() {
+    var mapHome = L.map('map-home', { zoomControl: false, scrollWheelZoom: false }).setView([6.3703, 2.4406], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(mapHome);
+
+    // Points de couverture active au Bénin
+    var zones = [
+        { lat: 6.3703, lng: 2.4406, nom: 'Cotonou', actif: true },
+        { lat: 6.4969, lng: 2.6289, nom: 'Porto-Novo', actif: true },
+        { lat: 6.4483, lng: 2.3422, nom: 'Abomey-Calavi', actif: true },
+        { lat: 9.3370, lng: 2.6280, nom: 'Parakou', actif: true },
+        { lat: 7.1847, lng: 1.9970, nom: 'Bohicon', actif: true },
+        { lat: 10.3029, lng: 1.3838, nom: 'Natitingou', actif: false },
+        { lat: 7.6666, lng: 1.6167, nom: 'Abomey', actif: false }
+    ];
+
+    zones.forEach(function(z) {
+        var color = z.actif ? '#f59e0b' : '#333';
+        L.circleMarker([z.lat, z.lng], {
+            radius: z.actif ? 10 : 6,
+            fillColor: color,
+            color: '#0a0a0a',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: z.actif ? 0.9 : 0.5
+        }).addTo(mapHome).bindPopup('<b>' + z.nom + '</b><br>' + (z.actif ? '✅ Zone active' : '🔜 Bientôt disponible'));
+    });
+});
+</script>
 
 {% endblock %}
