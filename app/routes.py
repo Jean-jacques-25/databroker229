@@ -555,11 +555,20 @@ def api_mission_points(mission_id):
 @main.route('/setup-admin-db229secret')
 def setup_admin():
     try:
-        # Recréer toutes les tables avec le nouveau schéma
-        db.drop_all()
+        # Créer uniquement les tables manquantes — JAMAIS drop_all
         db.create_all()
 
-        # Créer le compte admin
+        # Créer admin seulement s'il n'existe pas
+        existing = User.query.filter(User.email == "admin@databroker229.com").first()
+        if existing:
+            return """
+            <div style='font-family:monospace;padding:40px;background:#0a0a0a;color:#fff;min-height:100vh;'>
+                <h2 style='color:#10b981;'>✅ Base de données OK — Admin déjà existant</h2>
+                <p style='color:#888;margin-top:12px;'>Tous les comptes utilisateurs sont préservés.</p>
+                <a href='/login' style='display:inline-block;margin-top:24px;background:#f59e0b;color:#000;padding:12px 24px;border-radius:100px;text-decoration:none;font-weight:800;'>→ Se connecter</a>
+            </div>
+            """
+
         admin = User(
             fullname="Admin DataBroker",
             email="admin@databroker229.com",
@@ -573,8 +582,8 @@ def setup_admin():
         db.session.commit()
         return """
         <div style='font-family:monospace;padding:40px;background:#0a0a0a;color:#fff;min-height:100vh;'>
-            <h2 style='color:#10b981;'>✅ Base de données réinitialisée avec succès !</h2>
-            <p style='color:#888;margin-top:16px;'>Toutes les tables ont été recréées avec le nouveau schéma.</p>
+            <h2 style='color:#10b981;'>✅ Admin créé avec succès !</h2>
+            <p style='color:#888;margin-top:12px;'>Les comptes existants sont préservés.</p>
             <p style='margin-top:12px;'>Email : <strong style='color:#f59e0b;'>admin@databroker229.com</strong></p>
             <p>Mot de passe : <strong style='color:#f59e0b;'>admin229</strong></p>
             <a href='/login' style='display:inline-block;margin-top:24px;background:#f59e0b;color:#000;padding:12px 24px;border-radius:100px;text-decoration:none;font-weight:800;'>→ Se connecter</a>
@@ -582,4 +591,4 @@ def setup_admin():
         """
     except Exception as e:
         db.session.rollback()
-        return f"<div style='font-family:monospace;padding:40px;color:red;'>❌ Erreur : {str(e)}</div>"
+        return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
