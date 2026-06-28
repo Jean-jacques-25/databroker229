@@ -17,6 +17,12 @@ def notif(user_id, message, type='info'):
 def index():
     return render_template('index.html')
 
+
+# ─── VÉRIFICATION GOOGLE SEARCH CONSOLE ──────────────────────
+@main.route('/googleb745c890fd4fea44.html')
+def google_verify():
+    return 'google-site-verification: b745c890fd4fea44'
+
 # ─── INSCRIPTION ──────────────────────────────────────────────
 @main.route('/register', methods=['GET', 'POST'])
 def register():
