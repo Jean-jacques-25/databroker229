@@ -12,6 +12,35 @@ def notif(user_id, message, type='info'):
     n = Notification(user_id=user_id, message=message, type=type)
     db.session.add(n)
 
+
+# ─── SEO : SITEMAP + ROBOTS.TXT ──────────────────────────────
+@main.route('/sitemap.xml')
+def sitemap():
+    from flask import Response
+    import datetime
+    base = "https://databroker229-kdw5.onrender.com"
+    today = datetime.date.today().isoformat()
+    pages = [
+        ("", "1.0", "weekly"),
+        ("/login", "0.8", "monthly"),
+        ("/register", "0.8", "monthly"),
+        ("/about", "0.7", "monthly"),
+        ("/pricing", "0.7", "monthly"),
+        ("/contact", "0.6", "monthly"),
+    ]
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for path, priority, freq in pages:
+        xml.append(f"  <url><loc>{base}{path}</loc><lastmod>{today}</lastmod><changefreq>{freq}</changefreq><priority>{priority}</priority></url>")
+    xml.append('</urlset>')
+    return Response("\n".join(xml), mimetype="application/xml")
+
+@main.route('/robots.txt')
+def robots():
+    from flask import Response
+    txt = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /setup-admin-db229secret\nSitemap: https://databroker229-kdw5.onrender.com/sitemap.xml"
+    return Response(txt, mimetype="text/plain")
+
 # ─── PAGE D'ACCUEIL ───────────────────────────────────────────
 @main.route('/')
 def index():
