@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import text
 import os
 
 db = SQLAlchemy()
@@ -12,7 +11,6 @@ def create_app():
 
     database_url = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
 
-    # Render donne parfois postgres:// — SQLAlchemy exige postgresql://
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
@@ -30,15 +28,5 @@ def create_app():
 
     app.register_blueprint(main)
     app.register_blueprint(admin)
-
-    with app.app_context():
-        db.create_all()
-        # Ajouter les nouvelles colonnes sans supprimer les donnees existantes
-        try:
-            with db.engine.connect() as conn:
-                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS prix_agent INTEGER DEFAULT 500"))
-                conn.commit()
-        except Exception:
-            pass
 
     return app
