@@ -18,7 +18,7 @@ def notif(user_id, message, type='info'):
 def sitemap():
     from flask import Response
     import datetime
-    base = "https://databroker229-kdw5.onrender.com"
+    base = "https://databroker229-1edb.onrender.com"
     today = datetime.date.today().isoformat()
     pages = [
         ("", "1.0", "weekly"),
@@ -38,7 +38,7 @@ def sitemap():
 @main.route('/robots.txt')
 def robots():
     from flask import Response
-    txt = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /setup-admin-db229secret\nSitemap: https://databroker229-kdw5.onrender.com/sitemap.xml"
+    txt = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /setup-admin-db229secret\nSitemap: https://databroker229-1edb.onrender.com/sitemap.xml"
     return Response(txt, mimetype="text/plain")
 
 # ─── PAGE D'ACCUEIL ───────────────────────────────────────────
@@ -639,5 +639,6 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
