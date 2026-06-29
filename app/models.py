@@ -71,6 +71,7 @@ class Mission(db.Model):
     zone             = db.Column(db.String(50))
     quantite         = db.Column(db.Integer, default=1)
     difficulte       = db.Column(db.Integer, default=500)
+    prix_agent       = db.Column(db.Integer, default=500)  # gain net par collecte pour l'agent
     format_livraison = db.Column(db.String(20))
     photos_requises  = db.Column(db.String(5), default='non')
     champs_requis    = db.Column(db.String(300), default='nom_boutique,observations')
