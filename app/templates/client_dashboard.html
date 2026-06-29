@@ -91,14 +91,18 @@
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Zone</label>
-                    <select id="zone" name="zone" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                    <select id="zone" name="zone" onchange="toggleZoneLibre(this)" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="1.2">Cotonou</option>
                         <option value="1.1">Porto-Novo</option>
                         <option value="1.5">Parakou</option>
                         <option value="1.0">Abomey-Calavi</option>
                         <option value="1.3">Bohicon</option>
                         <option value="1.6">Natitingou</option>
+                        <option value="autre">✏️ Autre ville...</option>
                     </select>
+                    <input type="text" id="zone_libre" name="zone_libre" placeholder="Écrivez votre ville ou zone..." 
+                        style="display:none;margin-top:8px;width:100%;background:#0d0d0d;border:1px solid #f59e0b;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#f59e0b'">
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Points *</label>
@@ -272,10 +276,23 @@
 </div>
 
 <script>
+function toggleZoneLibre(sel) {
+    var champ = document.getElementById('zone_libre');
+    if (sel.value === 'autre') {
+        champ.style.display = 'block';
+        champ.required = true;
+    } else {
+        champ.style.display = 'none';
+        champ.required = false;
+        champ.value = '';
+    }
+}
+
 function calculerPrix() {
     var qte = parseInt(document.getElementById('quantite').value);
     var diff = parseInt(document.getElementById('difficulte').value);
-    var zone = parseFloat(document.getElementById('zone').value);
+    var zoneVal = document.getElementById('zone').value;
+    var zone = zoneVal === 'autre' ? 1.3 : parseFloat(zoneVal); // zone autre = coefficient 1.3
     if (!qte || qte <= 0) { alert("Entrez un nombre de points."); return; }
     var total = Math.round(qte * diff * zone * 1.4);
     document.getElementById('prixEstime').innerText = total.toLocaleString('fr-FR') + ' FCFA';
