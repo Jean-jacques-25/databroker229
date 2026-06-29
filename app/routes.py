@@ -33,12 +33,17 @@ def sitemap():
     for path, priority, freq in pages:
         xml.append(f"  <url><loc>{base}{path}</loc><lastmod>{today}</lastmod><changefreq>{freq}</changefreq><priority>{priority}</priority></url>")
     xml.append('</urlset>')
-    return Response("\n".join(xml), mimetype="application/xml")
+    return Response("
+".join(xml), mimetype="application/xml")
 
 @main.route('/robots.txt')
 def robots():
     from flask import Response
-    txt = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /setup-admin-db229secret\nSitemap: https://databroker229-kdw5.onrender.com/sitemap.xml"
+    txt = "User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /setup-admin-db229secret
+Sitemap: https://databroker229-kdw5.onrender.com/sitemap.xml"
     return Response(txt, mimetype="text/plain")
 
 # ─── PAGE D'ACCUEIL ───────────────────────────────────────────
@@ -304,7 +309,7 @@ def client_dashboard():
         db.session.add(mission)
         db.session.commit()
         notif(session['user_id'], f"Mission \"{mission.title}\" créée. En attente de validation.", 'info')
-        flash("Mission créée ! En attente de validation par l'équipe DataBroker229.", "success")
+        flash("Mission créée ! En attente de validation par l'équipe LaCentraleDesDonnées229.", "success")
         return redirect(url_for('main.client_dashboard'))
 
     client   = User.query.get_or_404(session['user_id'])
