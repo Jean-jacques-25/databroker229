@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy import text
 import os
 
 db = SQLAlchemy()
@@ -32,9 +33,11 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        # Ajouter les colonnes manquantes sans supprimer les données
+        # Ajouter les nouvelles colonnes sans supprimer les donnees existantes
         try:
-            db.engine.execute("ALTER TABLE missions ADD COLUMN IF NOT EXISTS prix_agent INTEGER DEFAULT 500")
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS prix_agent INTEGER DEFAULT 500"))
+                conn.commit()
         except Exception:
             pass
 
