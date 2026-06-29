@@ -309,7 +309,7 @@ def client_dashboard():
         db.session.add(mission)
         db.session.commit()
         notif(session['user_id'], f"Mission \"{mission.title}\" créée. En attente de validation.", 'info')
-        flash("Mission créée ! En attente de validation par l'équipe LaCentraleDesDonnées229.", "success")
+        flash("Mission créée ! En attente de validation par l'équipe LaCentraleDesDonnees229.", "success")
         return redirect(url_for('main.client_dashboard'))
 
     client   = User.query.get_or_404(session['user_id'])
