@@ -63,7 +63,7 @@
                 <div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                         <span style="background:#1a1a1a;color:#888;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;text-transform:uppercase;">{{ mission.type_donnees or mission.difficulty }}</span>
-                        <span style="color:#10b981;font-size:16px;font-weight:900;">+{{ mission.price }} FCFA</span>
+                        <span style="color:#10b981;font-size:16px;font-weight:900;">+{{ mission.prix_agent or mission.difficulte }} FCFA / collecte</span>
                     </div>
                     <h3 style="font-weight:800;color:#fff;font-size:14px;margin-bottom:6px;">{{ mission.title }}</h3>
                     <p style="font-size:12px;color:#888;line-height:1.6;">{{ mission.description[:100] }}{% if mission.description|length > 100 %}...{% endif %}</p>
@@ -120,7 +120,7 @@
                                 {% endif %}
                             </td>
                             <td style="padding:14px 18px;font-size:13px;font-weight:900;color:{% if sub.status == 'Approved' %}#10b981{% else %}#333{% endif %};">
-                                {% if sub.status == 'Approved' %}+{{ sub.mission.price }} FCFA{% else %}—{% endif %}
+                                {% if sub.status == 'Approved' %}+{{ sub.mission.prix_agent or sub.mission.difficulte }} FCFA{% else %}—{% endif %}
                             </td>
                         </tr>
                         {% else %}
