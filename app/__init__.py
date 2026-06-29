@@ -32,5 +32,10 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        # Ajouter les colonnes manquantes sans supprimer les données
+        try:
+            db.engine.execute("ALTER TABLE missions ADD COLUMN IF NOT EXISTS prix_agent INTEGER DEFAULT 500")
+        except Exception:
+            pass
 
     return app
