@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: lacentraledesdonnees229
+    env: python
+    buildCommand: "pip install -r requirements.txt && flask db upgrade"
+    startCommand: "gunicorn run:app"
+    envVars:
+      - key: FLASK_APP
+        value: run.py
+      - key: FLASK_ENV
+        value: production
