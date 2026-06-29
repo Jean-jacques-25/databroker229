@@ -273,7 +273,16 @@ def client_dashboard():
     if request.method == 'POST':
         quantite   = int(request.form.get('quantite', 1))
         difficulte = int(request.form.get('difficulte', 500))
-        zone_val   = request.form.get('zone', '1.2')
+        zone_raw   = request.form.get('zone', '1.2')
+        zone_libre = request.form.get('zone_libre', '').strip()
+        # Si le client a choisi "Autre ville", on prend sa saisie
+        if zone_raw == 'autre':
+            zone_val  = '1.3'  # coefficient moyen pour zone inconnue
+            zone_nom  = zone_libre if zone_libre else 'Autre zone'
+        else:
+            zone_val  = zone_raw
+            zone_noms = {'1.2':'Cotonou','1.1':'Porto-Novo','1.5':'Parakou','1.0':'Abomey-Calavi','1.3':'Bohicon','1.6':'Natitingou'}
+            zone_nom  = zone_noms.get(zone_val, zone_val)
         prix       = round(quantite * difficulte * float(zone_val) * 1.4)
         # Construire les champs requis selon les choix du client
         champs = request.form.getlist('champs_requis')
