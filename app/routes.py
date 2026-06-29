@@ -282,11 +282,13 @@ def client_dashboard():
         if request.form.get('photos', 'non') == 'oui' and 'photo' not in champs:
             champs.append('photo')
 
+        prix_agent = difficulte  # gain net par collecte pour l'agent
         mission = Mission(
             title            = request.form.get('title', '').strip(),
             description      = request.form.get('description', '').strip(),
             instructions     = '',
             price            = prix,
+            prix_agent       = prix_agent,
             difficulty       = 'Standard',
             organisation     = request.form.get('organisation', '').strip(),
             contact          = request.form.get('contact', '').strip(),
@@ -484,14 +486,15 @@ def admin_review(submission_id):
         action = request.form.get('action')
         if action == 'approve':
             sub.status = 'Approved'
-            agent.wallet_balance += mission.price
+            gain_agent = mission.prix_agent if mission.prix_agent else mission.difficulte
+            agent.wallet_balance += gain_agent
             tx = Transaction(user_id=agent.id, mission_id=mission.id,
-                             amount=mission.price, transaction_type='gain', status='Completed')
+                             amount=gain_agent, transaction_type='gain', status='Completed')
             db.session.add(tx)
-            notif(agent.id, f"✅ Collecte validée pour \"{mission.title}\" — +{mission.price} FCFA crédités !", 'success')
+            notif(agent.id, f"✅ Collecte validée pour \"{mission.title}\" — +{gain_agent} FCFA crédités !", 'success')
             if mission.client_id:
                 notif(mission.client_id, f"Nouvelle collecte validée pour votre mission \"{mission.title}\".", 'success')
-            flash(f"Collecte approuvée ! {mission.price} FCFA versés à {agent.fullname}.", "success")
+            flash(f"Collecte approuvée ! {gain_agent} FCFA versés à {agent.fullname}.", "success")
         elif action == 'reject':
             motif = request.form.get('motif_rejet', '').strip()
             sub.status      = 'Rejected'
@@ -627,4 +630,5 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
