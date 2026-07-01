@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
-from datetime import datetime
-import csv, io, math, os
+from datetime import datetime, timedelta
+import csv, io, math, os, json as json_module, urllib.request as urllib_req, base64, time
 
 main = Blueprint('main', __name__)
 ADMIN_SECRET_CODE = 'DB229ADMIN'
@@ -141,6 +141,89 @@ def haversine(lat1, lon1, lat2, lon2):
     return 2 * R * math.asin(math.sqrt(a))
 
 
+def analyser_collecte_ia(submission, mission):
+    """Analyse une collecte avec Claude AI et retourne un score de confiance 0-100."""
+    try:
+        prompt = f"""Tu es un système de validation de collecte de données terrain au Bénin.
+
+Analyse cette soumission et donne un score de confiance de 0 à 100.
+
+MISSION : {mission.title}
+DESCRIPTION : {mission.description}
+ZONE : {mission.zone}
+
+DONNÉES SOUMISES :
+- Nom commerce : {submission.shop_name or 'Non renseigné'}
+- Adresse : {submission.shop_address or 'Non renseignée'}
+- Téléphone : {submission.shop_phone or 'Non renseigné'}
+- Observations : {submission.observations or 'Aucune'}
+- GPS : lat={submission.latitude}, lng={submission.longitude}
+- Photo : {'Oui' if submission.photo_path else 'Non'}
+
+Critères d'évaluation :
+1. Le nom du commerce est-il plausible ? (pas "aaa", "test", "xxx")
+2. Les observations sont-elles pertinentes par rapport à la mission ?
+3. Les coordonnées GPS sont-elles au Bénin ? (latitude 6-13, longitude 1-4)
+4. Les données sont-elles cohérentes entre elles ?
+
+Réponds UNIQUEMENT en JSON sans aucun texte avant ou après :
+{{"score": 85, "decision": "Approuver", "raison": "Données cohérentes et complètes"}}
+
+decision doit être exactement : "Approuver", "Vérifier" ou "Rejeter"
+score entre 0 et 100"""
+
+        payload = json_module.dumps({
+            "model": "claude-sonnet-4-6",
+            "max_tokens": 200,
+            "messages": [{"role": "user", "content": prompt}]
+        }).encode('utf-8')
+
+        req = urllib_req.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=payload,
+            method="POST"
+        )
+        req.add_header("Content-Type", "application/json")
+        req.add_header("x-api-key", os.environ.get("ANTHROPIC_API_KEY", ""))
+        req.add_header("anthropic-version", "2023-06-01")
+
+        with urllib_req.urlopen(req, timeout=15) as r:
+            resp = json_module.loads(r.read().decode('utf-8'))
+            text = resp['content'][0]['text'].strip()
+            # Nettoyer et parser le JSON
+            text = text.replace('```json', '').replace('```', '').strip()
+            result = json_module.loads(text)
+            return {
+                'score': int(result.get('score', 50)),
+                'decision': result.get('decision', 'Vérifier'),
+                'raison': result.get('raison', 'Analyse IA indisponible')
+            }
+    except Exception as e:
+        # En cas d'erreur IA, retourner score neutre
+        return {'score': 50, 'decision': 'Vérifier', 'raison': f'Analyse manuelle requise'}
+
+
+def anti_fraude_vitesse(agent_id, lat, lng):
+    """Vérifie qu'un agent ne s'est pas téléporté entre deux collectes."""
+    derniere = Submission.query.filter_by(user_id=agent_id).filter(
+        Submission.latitude.isnot(None)
+    ).order_by(Submission.submitted_at.desc()).first()
+
+    if not derniere or not derniere.latitude:
+        return True, None
+
+    distance = haversine(lat, lng, derniere.latitude, derniere.longitude)
+    delta_temps = (datetime.utcnow() - derniere.submitted_at).total_seconds()
+
+    # Vitesse max humaine réaliste = 120 km/h (moto/voiture)
+    if delta_temps > 0:
+        vitesse_kmh = (distance / 1000) / (delta_temps / 3600)
+        if vitesse_kmh > 120 and distance > 500:
+            return False, f"Déplacement suspect : {int(distance)}m en {int(delta_temps)}s ({int(vitesse_kmh)} km/h)"
+
+    return True, None
+
+
 @main.route('/agent/submit/<int:mission_id>', methods=['GET', 'POST'])
 def agent_submit(mission_id):
     if session.get('user_role') != 'agent':
@@ -169,7 +252,15 @@ def agent_submit(mission_id):
             flash("Une photo est obligatoire pour cette mission.", "error")
             return render_template('agent_submit.html', mission=mission)
 
-        # Anti-fraude GPS — vérifier doublons (distance < 50m pour même mission)
+        # Anti-fraude 1 : Vitesse impossible entre collectes
+        vitesse_ok, motif_vitesse = anti_fraude_vitesse(session['user_id'], lat, lng)
+        if not vitesse_ok:
+            notif(session['user_id'], f"⚠️ Collecte bloquée — {motif_vitesse}", 'warning')
+            db.session.rollback()
+            flash(f"⚠️ Collecte bloquée : {motif_vitesse}", "error")
+            return redirect(url_for('main.agent_dashboard'))
+
+        # Anti-fraude 2 : Doublon même agent (50m)
         subs_existantes = Submission.query.filter_by(
             user_id=session['user_id'],
             mission_id=mission_id
@@ -181,8 +272,23 @@ def agent_submit(mission_id):
             dist = haversine(lat, lng, s.latitude, s.longitude)
             if dist < 50:
                 statut_auto = 'Rejected'
-                motif_auto  = f"Doublon GPS détecté — point déjà collecté à {int(dist)}m de cette position."
+                motif_auto  = f"Doublon GPS — vous avez déjà collecté ce point à {int(dist)}m."
                 break
+
+        # Anti-fraude 3 : Doublon inter-agents (même boutique, même mission, rayon 30m)
+        if statut_auto == 'Pending':
+            autres_subs = Submission.query.filter(
+                Submission.mission_id == mission_id,
+                Submission.user_id != session['user_id'],
+                Submission.status != 'Rejected',
+                Submission.latitude.isnot(None)
+            ).all()
+            for s in autres_subs:
+                dist = haversine(lat, lng, s.latitude, s.longitude)
+                if dist < 30:
+                    statut_auto = 'Rejected'
+                    motif_auto  = f"Ce point a déjà été collecté par un autre agent à {int(dist)}m. Cherchez un autre commerce."
+                    break
 
         sub = Submission(
             user_id        = session['user_id'],
@@ -199,6 +305,27 @@ def agent_submit(mission_id):
             motif_rejet    = motif_auto
         )
         db.session.add(sub)
+        db.session.flush()  # Pour avoir sub.id
+
+        # Analyse IA en arrière-plan si pas déjà rejeté
+        if statut_auto == 'Pending':
+            ia_result = analyser_collecte_ia(sub, mission)
+            ia_score    = ia_result['score']
+            ia_decision = ia_result['decision']
+            ia_raison   = ia_result['raison']
+            # Stocker le résultat IA dans data_submitted
+            sub.data_submitted = json_module.dumps({
+                'observations': request.form.get('observations', ''),
+                'ia_score': ia_score,
+                'ia_decision': ia_decision,
+                'ia_raison': ia_raison
+            })
+            # Si IA très confiant rejet (score < 20) → rejeter automatiquement
+            if ia_score < 20:
+                sub.status      = 'Rejected'
+                sub.motif_rejet = f"IA : {ia_raison} (score: {ia_score}/100)"
+                statut_auto     = 'Rejected'
+                motif_auto      = sub.motif_rejet
 
         agent = User.query.get(session['user_id'])
         agent.total_missions += 1
@@ -585,6 +712,110 @@ def admin_export_agents():
     output.seek(0)
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=agents_databroker229.csv"})
+
+# ── KEEP-ALIVE (empêche Render de s'endormir) ─────────────────
+@main.route('/ping')
+def ping():
+    return jsonify({'status': 'ok', 'time': datetime.utcnow().isoformat()})
+
+# ── PAGE LÉGALE ────────────────────────────────────────────────
+@main.route('/legal')
+def legal():
+    return render_template('legal.html')
+
+# ── PDF RAPPORT MISSION ─────────────────────────────────────────
+@main.route('/client/rapport/<int:mission_id>')
+def client_rapport_pdf(mission_id):
+    if session.get('user_role') not in ['client', 'admin']:
+        return redirect(url_for('main.login'))
+    mission = Mission.query.get_or_404(mission_id)
+    submissions = Submission.query.filter_by(mission_id=mission_id, status='Approved').all()
+
+    # Générer PDF avec reportlab
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import cm
+        import io as io_module
+
+        buffer = io_module.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4,
+                                rightMargin=2*cm, leftMargin=2*cm,
+                                topMargin=2*cm, bottomMargin=2*cm)
+        styles = getSampleStyleSheet()
+        story = []
+
+        # Titre
+        title_style = ParagraphStyle('title', parent=styles['Title'],
+                                      fontSize=18, textColor=colors.HexColor('#0a1628'),
+                                      spaceAfter=6)
+        story.append(Paragraph("LaCentraleDesDonnées229", title_style))
+        story.append(Paragraph(f"Rapport de Mission — {mission.title}", styles['Heading2']))
+        story.append(Spacer(1, 0.5*cm))
+
+        # Infos mission
+        info_data = [
+            ['Organisation', mission.organisation or '—'],
+            ['Zone', mission.zone or '—'],
+            ['Type de données', mission.type_donnees or '—'],
+            ['Points demandés', str(mission.quantite)],
+            ['Points collectés', str(len(submissions))],
+            ['Progression', f"{min(100, round(len(submissions)/max(mission.quantite,1)*100))}%"],
+            ['Date de création', mission.created_at.strftime('%d/%m/%Y') if mission.created_at else '—'],
+        ]
+        info_table = Table(info_data, colWidths=[5*cm, 11*cm])
+        info_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#f59e0b')),
+            ('TEXTCOLOR', (0,0), (0,-1), colors.white),
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+            ('FONTSIZE', (0,0), (-1,-1), 10),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('PADDING', (0,0), (-1,-1), 6),
+        ]))
+        story.append(info_table)
+        story.append(Spacer(1, 0.8*cm))
+
+        # Tableau des collectes
+        story.append(Paragraph("Données collectées", styles['Heading3']))
+        story.append(Spacer(1, 0.3*cm))
+
+        if submissions:
+            headers = ['#', 'Commerce', 'Adresse', 'Observations', 'GPS', 'Date']
+            data = [headers]
+            for i, s in enumerate(submissions, 1):
+                gps = f"{s.latitude:.4f},{s.longitude:.4f}" if s.latitude else '—'
+                date = s.submitted_at.strftime('%d/%m/%Y') if s.submitted_at else '—'
+                obs = (s.observations or '—')[:50]
+                data.append([str(i), s.shop_name or '—', s.shop_address or '—', obs, gps, date])
+
+            col_widths = [1*cm, 4*cm, 4*cm, 4*cm, 3*cm, 2.5*cm]
+            table = Table(data, colWidths=col_widths)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0a1628')),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0,0), (-1,-1), 8),
+                ('GRID', (0,0), (-1,-1), 0.3, colors.grey),
+                ('PADDING', (0,0), (-1,-1), 4),
+                ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f8f8f8')]),
+            ]))
+            story.append(table)
+        else:
+            story.append(Paragraph("Aucune collecte validée pour le moment.", styles['Normal']))
+
+        story.append(Spacer(1, 1*cm))
+        story.append(Paragraph(f"Rapport généré le {datetime.utcnow().strftime('%d/%m/%Y à %H:%M')} UTC — LaCentraleDesDonnées229",
+                               ParagraphStyle('footer', fontSize=8, textColor=colors.grey)))
+
+        doc.build(story)
+        buffer.seek(0)
+        return Response(buffer.getvalue(), mimetype='application/pdf',
+                       headers={"Content-Disposition": f"attachment;filename=rapport_mission_{mission_id}.pdf"})
+
+    except ImportError:
+        return "ReportLab non installé. Ajoutez reportlab dans requirements.txt.", 500
 
 # ── API ────────────────────────────────────────────────────────
 @main.route('/api/points-collecte')
