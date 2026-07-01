@@ -329,6 +329,12 @@ document.addEventListener('click', function(e) {
 });
 </script>
 
+    <!-- Keep-alive : ping toutes les 10 min pour empêcher Render de s'endormir -->
+    <script>
+    setInterval(function() {
+        fetch('/ping').catch(function() {});
+    }, 600000); // 10 minutes
+    </script>
 </body>
 </html>
 
