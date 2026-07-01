@@ -6,3 +6,5 @@ werkzeug
 gunicorn
 psycopg2-binary
 alembic
+reportlab
+requests
