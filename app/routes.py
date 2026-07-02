@@ -1146,6 +1146,112 @@ def server_error(e):
 def ping():
     return jsonify({'status': 'ok', 'time': datetime.utcnow().isoformat()})
 
+
+@main.route('/admin/backup-db', methods=['GET'])
+def backup_db():
+    """Backup automatique de toutes les donnees vers GitHub."""
+    # Securiser : seulement admin ou appel interne
+    auth = request.headers.get('X-Backup-Token', '')
+    if auth != os.environ.get('BACKUP_TOKEN', 'backup-jja2026') and session.get('user_role') != 'admin':
+        return jsonify({'error': 'Non autorise'}), 403
+
+    try:
+        from datetime import datetime as dt
+
+        # Collecter toutes les donnees
+        users = User.query.all()
+        missions = Mission.query.all()
+        submissions = Submission.query.all()
+        transactions = Transaction.query.all()
+        retraits = Retrait.query.all()
+
+        backup_data = {
+            'backup_date': dt.utcnow().isoformat(),
+            'stats': {
+                'users': len(users),
+                'missions': len(missions),
+                'submissions': len(submissions),
+                'transactions': len(transactions),
+                'retraits': len(retraits)
+            },
+            'users': [{
+                'id': u.id, 'fullname': u.fullname, 'email': u.email,
+                'phone': u.phone, 'role': u.role, 'location': u.location,
+                'wallet_balance': u.wallet_balance, 'niveau': u.niveau,
+                'total_missions': u.total_missions, 'is_suspended': u.is_suspended,
+                'created_at': u.created_at.isoformat() if u.created_at else None
+            } for u in users],
+            'missions': [{
+                'id': m.id, 'title': m.title, 'description': m.description,
+                'price': m.price, 'difficulty': m.difficulty,
+                'status': m.status, 'payment_status': m.payment_status,
+                'client_id': m.client_id, 'zone': m.zone,
+                'quantite': m.quantite, 'difficulte': m.difficulte,
+                'prix_agent': m.prix_agent, 'type_donnees': m.type_donnees,
+                'created_at': m.created_at.isoformat() if m.created_at else None
+            } for m in missions],
+            'submissions': [{
+                'id': s.id, 'user_id': s.user_id, 'mission_id': s.mission_id,
+                'shop_name': s.shop_name, 'shop_address': s.shop_address,
+                'observations': s.observations, 'status': s.status,
+                'latitude': s.latitude, 'longitude': s.longitude,
+                'submitted_at': s.submitted_at.isoformat() if s.submitted_at else None
+            } for s in submissions],
+            'transactions': [{
+                'id': t.id, 'user_id': t.user_id, 'mission_id': t.mission_id,
+                'amount': t.amount, 'transaction_type': t.transaction_type,
+                'status': t.status,
+                'created_at': t.created_at.isoformat() if t.created_at else None
+            } for t in transactions],
+            'retraits': [{
+                'id': r.id, 'agent_id': r.agent_id, 'montant': r.montant,
+                'mode_paiement': r.mode_paiement, 'numero_mobile': r.numero_mobile,
+                'status': r.status,
+                'created_at': r.created_at.isoformat() if r.created_at else None
+            } for r in retraits]
+        }
+
+        backup_json = json_module.dumps(backup_data, ensure_ascii=False, indent=2)
+
+        # Sauvegarder sur GitHub dans le dossier backups/
+        gh_token = os.environ.get('GITHUB_TOKEN', '')
+        if gh_token:
+            filename = f"backups/backup_{dt.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+            b64_content = base64.b64encode(backup_json.encode('utf-8')).decode('utf-8')
+
+            # Verifier si fichier existe
+            check_url = f"https://api.github.com/repos/Jean-jacques-25/databroker229/contents/{filename}"
+            req_check = urllib_req.Request(check_url)
+            req_check.add_header("Authorization", f"token {gh_token}")
+            try:
+                with urllib_req.urlopen(req_check) as r_check:
+                    old_sha = json_module.load(r_check).get('sha', '')
+            except:
+                old_sha = ''
+
+            payload_gh = {"message": f"Backup auto {dt.utcnow().strftime('%Y-%m-%d %H:%M')}", "content": b64_content}
+            if old_sha:
+                payload_gh["sha"] = old_sha
+
+            req_gh = urllib_req.Request(check_url, data=json_module.dumps(payload_gh).encode(), method="PUT")
+            req_gh.add_header("Authorization", f"token {gh_token}")
+            req_gh.add_header("Content-Type", "application/json")
+            with urllib_req.urlopen(req_gh) as r_gh:
+                resp_gh = json_module.load(r_gh)
+                github_ok = "content" in resp_gh
+        else:
+            github_ok = False
+
+        return jsonify({
+            'status': 'ok',
+            'date': dt.utcnow().isoformat(),
+            'stats': backup_data['stats'],
+            'github_saved': github_ok
+        })
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 # ── PAGE LÉGALE ────────────────────────────────────────────────
 @main.route('/legal')
 def legal():
