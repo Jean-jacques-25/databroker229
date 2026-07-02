@@ -9,3 +9,5 @@ services:
         value: run.py
       - key: FLASK_ENV
         value: production
+      - key: BACKUP_TOKEN
+        value: backup-jja2026
