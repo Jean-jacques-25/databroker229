@@ -223,10 +223,47 @@ def haversine(lat1, lon1, lat2, lon2):
     return 2 * R * math.asin(math.sqrt(a))
 
 
+def analyser_photo_ia(photo_path):
+    """Verifie si une photo contient un vrai commerce (pas selfie, paysage, photo floue)."""
+    if not photo_path:
+        return True, 100  # Pas de photo = pas de verification
+    try:
+        full_path = os.path.join('app', 'static', 'uploads', photo_path)
+        if not os.path.exists(full_path):
+            return True, 80
+        with open(full_path, 'rb') as f:
+            img_b64 = base64.b64encode(f.read()).decode('utf-8')
+        prompt_photo = """Analyse cette photo soumise par un agent terrain au Benin.
+Est-ce que cette photo montre un vrai commerce, boutique, marche ou point de vente ?
+Reponds UNIQUEMENT en JSON : {"ok": true, "score": 85, "raison": "Photo claire d'une boutique"}
+score = 0-100 (confiance que c'est un vrai commerce)
+ok = false si : selfie, photo floue, image aleatoire, screenshot, nature sans commerce"""
+
+        payload = json_module.dumps({
+            "model": "mistralai/mistral-7b-instruct:free",
+            "max_tokens": 100,
+            "messages": [{"role": "user", "content": [
+                {"type": "text", "text": prompt_photo},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+            ]}]
+        }).encode('utf-8')
+        req_ia = urllib_req.Request("https://openrouter.ai/api/v1/chat/completions", data=payload, method="POST")
+        req_ia.add_header("Authorization", f"Bearer {os.environ.get('OPENROUTER_API_KEY', '')}")
+        req_ia.add_header("Content-Type", "application/json")
+        with urllib_req.urlopen(req_ia, timeout=10) as r_ia:
+            resp = json_module.loads(r_ia.read().decode('utf-8'))
+            text = resp['choices'][0]['message']['content'].strip()
+            text = text.replace('```json','').replace('```','').strip()
+            result = json_module.loads(text)
+            return result.get('ok', True), result.get('score', 70)
+    except Exception:
+        return True, 70  # En cas d erreur, ne pas bloquer
+
+
 def analyser_collecte_ia(submission, mission):
     """Analyse une collecte avec Claude AI et retourne un score de confiance 0-100."""
     try:
-        prompt = f"""Tu es un système de validation de collecte de données terrain au Bénin.
+        prompt = f"""Tu es un systeme de validation de collecte de donnees terrain au Benin.
 
 Analyse cette soumission et donne un score de confiance de 0 à 100.
 
@@ -390,8 +427,18 @@ def agent_submit(mission_id):
         db.session.add(sub)
         db.session.flush()  # Pour avoir sub.id
 
-        # Analyse IA en arrière-plan si pas déjà rejeté
+        # Analyse IA en arriere-plan si pas deja rejete
         if statut_auto == 'Pending':
+            # Verifier la photo en premier
+            if photo_path:
+                photo_ok, photo_score = analyser_photo_ia(photo_path)
+                if not photo_ok or photo_score < 30:
+                    sub.status      = 'Rejected'
+                    sub.motif_rejet = f"Photo invalide detectee par IA (score: {photo_score}/100). Soumettez une vraie photo de commerce."
+                    db.session.commit()
+                    notif(session['user_id'], "Photo rejetee par IA. Assurez-vous de prendre une vraie photo du commerce.", 'error')
+                    flash("Votre photo a ete rejetee. Soumettez une photo claire d'un commerce.", "error")
+                    return redirect(url_for('main.agent_dashboard'))
             ia_result = analyser_collecte_ia(sub, mission)
             ia_score    = ia_result['score']
             ia_decision = ia_result['decision']
