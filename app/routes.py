@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db
+from app import db, mail
 from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
+from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta
 import csv, io, math, os, json as json_module, urllib.request as urllib_req, base64, time
 
@@ -130,6 +131,85 @@ def agent_dashboard():
     retraits = Retrait.query.filter_by(agent_id=agent.id).order_by(Retrait.created_at.desc()).limit(5).all()
     return render_template('agent_dashboard.html', agent=agent, missions=missions,
                            history=history, notifs=notifs, retraits=retraits)
+
+def send_email(to, subject, body_html):
+    """Envoyer un email HTML via Gmail."""
+    try:
+        msg = MailMessage(
+            subject=subject,
+            recipients=[to],
+            html=body_html
+        )
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Erreur email: {e}")
+        return False
+
+
+def email_bienvenue(user):
+    """Email de bienvenue après inscription."""
+    role_fr = "agent terrain" if user.role == 'agent' else "client entreprise"
+    body = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:32px;border-radius:16px;">
+        <h1 style="color:#f59e0b;font-size:24px;">🎉 Bienvenue sur LaCentraleDesDonnées229 !</h1>
+        <p style="color:#aaa;font-size:15px;">Bonjour <strong style="color:#fff;">{user.fullname}</strong>,</p>
+        <p style="color:#aaa;font-size:15px;">Votre compte <strong style="color:#f59e0b;">{role_fr}</strong> a été créé avec succès.</p>
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:20px;margin:20px 0;">
+            <p style="color:#888;font-size:13px;margin:0;">📧 Email : <strong style="color:#fff;">{user.email}</strong></p>
+            <p style="color:#888;font-size:13px;margin:8px 0 0;">📱 Téléphone : <strong style="color:#fff;">{user.phone}</strong></p>
+        </div>
+        <a href="https://databroker229-1edb.onrender.com/login"
+           style="display:inline-block;background:#f59e0b;color:#000;font-weight:800;padding:14px 28px;border-radius:100px;text-decoration:none;font-size:15px;">
+            Se connecter →
+        </a>
+        <p style="color:#888;font-size:12px;margin-top:24px;">LaCentraleDesDonnées229 — Votre terrain. Notre technologie.<br>contact@lacentraledesdonnees229.com</p>
+    </div>
+    """
+    send_email(user.email, "Bienvenue sur LaCentraleDesDonnées229 !", body)
+
+
+def email_mission_active(mission, client):
+    """Email au client quand sa mission est activée."""
+    body = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:32px;border-radius:16px;">
+        <h1 style="color:#10b981;font-size:22px;">✅ Votre mission est maintenant active !</h1>
+        <p style="color:#aaa;">Bonjour <strong style="color:#fff;">{client.fullname}</strong>,</p>
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:20px;margin:20px 0;">
+            <p style="color:#888;font-size:13px;margin:0;">📋 Mission : <strong style="color:#fff;">{mission.title}</strong></p>
+            <p style="color:#888;font-size:13px;margin:8px 0 0;">📍 Zone : <strong style="color:#fff;">{mission.zone or '—'}</strong></p>
+            <p style="color:#888;font-size:13px;margin:8px 0 0;">🎯 Points de collecte : <strong style="color:#fff;">{mission.quantite}</strong></p>
+            <p style="color:#888;font-size:13px;margin:8px 0 0;">💰 Montant payé : <strong style="color:#f59e0b;">{mission.price:,} FCFA</strong></p>
+        </div>
+        <p style="color:#aaa;font-size:14px;">Nos agents terrain sont maintenant mobilisés. Vous serez notifié à chaque collecte validée.</p>
+        <a href="https://databroker229-1edb.onrender.com/client/dashboard"
+           style="display:inline-block;background:#10b981;color:#fff;font-weight:800;padding:14px 28px;border-radius:100px;text-decoration:none;font-size:15px;">
+            Suivre ma mission →
+        </a>
+        <p style="color:#888;font-size:12px;margin-top:24px;">LaCentraleDesDonnées229 — contact@lacentraledesdonnees229.com</p>
+    </div>
+    """
+    send_email(client.email, f"Mission activée : {mission.title}", body)
+
+
+def email_reset_password(user, token_reset):
+    """Email de réinitialisation mot de passe."""
+    lien = f"https://databroker229-1edb.onrender.com/reset-password/{token_reset}"
+    body = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:32px;border-radius:16px;">
+        <h1 style="color:#f59e0b;font-size:22px;">🔑 Réinitialisation de mot de passe</h1>
+        <p style="color:#aaa;">Bonjour <strong style="color:#fff;">{user.fullname}</strong>,</p>
+        <p style="color:#aaa;font-size:14px;">Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>
+        <a href="{lien}"
+           style="display:inline-block;background:#f59e0b;color:#000;font-weight:800;padding:14px 28px;border-radius:100px;text-decoration:none;font-size:15px;margin:20px 0;">
+            Réinitialiser mon mot de passe →
+        </a>
+        <p style="color:#888;font-size:12px;">Ce lien expire dans <strong>30 minutes</strong>. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+        <p style="color:#888;font-size:12px;margin-top:24px;">LaCentraleDesDonnées229 — contact@lacentraledesdonnees229.com</p>
+    </div>
+    """
+    send_email(user.email, "Réinitialisation de votre mot de passe", body)
+
 
 def haversine(lat1, lon1, lat2, lon2):
     """Distance en mètres entre deux points GPS."""
@@ -540,6 +620,13 @@ def client_payer_mission(mission_id):
           f"💳 Paiement de {mission.price} FCFA via {mode} confirmé. Mission \"{mission.title}\" maintenant active !",
           'success')
     db.session.commit()
+    # Email au client
+    try:
+        client_user = User.query.get(session['user_id'])
+        if client_user:
+            email_mission_active(mission, client_user)
+    except Exception:
+        pass
     flash(f"✅ Paiement confirmé via {mode} ! Votre mission est maintenant active.", "success")
     return redirect(url_for('main.client_recu_pdf', mission_id=mission.id))
 
@@ -848,6 +935,47 @@ def api_save_draft():
     # Stocker dans la session temporairement
     session[f"draft_{data.get('mission_id')}"] = data
     return jsonify({'ok': True})
+
+# ── MOT DE PASSE OUBLIÉ ───────────────────────────────────────
+@main.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        user  = User.query.filter_by(email=email).first()
+        if user:
+            import secrets
+            token_reset = secrets.token_urlsafe(32)
+            # Stocker le token dans la session (simple, sans table dédiée)
+            from flask import current_app
+            current_app.config[f'reset_{token_reset}'] = {'user_id': user.id, 'exp': datetime.utcnow().timestamp() + 1800}
+            email_reset_password(user, token_reset)
+        # Toujours afficher ce message (sécurité)
+        flash("Si cet email existe, un lien de réinitialisation a été envoyé.", "success")
+        return redirect(url_for('main.login'))
+    return render_template('forgot_password.html')
+
+@main.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    from flask import current_app
+    data = current_app.config.get(f'reset_{token}')
+    if not data or datetime.utcnow().timestamp() > data['exp']:
+        flash("Lien expiré ou invalide.", "error")
+        return redirect(url_for('main.forgot_password'))
+    user = User.query.get(data['user_id'])
+    if not user:
+        flash("Utilisateur introuvable.", "error")
+        return redirect(url_for('main.forgot_password'))
+    if request.method == 'POST':
+        new_password = request.form.get('password', '')
+        if len(new_password) < 6:
+            flash("Le mot de passe doit faire au moins 6 caractères.", "error")
+            return render_template('reset_password.html', token=token)
+        user.password = generate_password_hash(new_password)
+        db.session.commit()
+        del current_app.config[f'reset_{token}']
+        flash("Mot de passe modifié avec succès !", "success")
+        return redirect(url_for('main.login'))
+    return render_template('reset_password.html', token=token)
 
 # ── KEEP-ALIVE (empêche Render de s'endormir) ─────────────────
 @main.route('/ping')
