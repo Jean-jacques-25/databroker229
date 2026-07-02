@@ -1098,6 +1098,39 @@ def reset_password(token):
         return redirect(url_for('main.login'))
     return render_template('reset_password.html', token=token)
 
+# ── ANALYTIQUES CLIENT ────────────────────────────────────────
+@main.route('/client/analytiques/<int:mission_id>')
+def client_analytiques(mission_id):
+    if session.get('user_role') not in ['client', 'admin']:
+        return redirect(url_for('main.login'))
+    mission = Mission.query.get_or_404(mission_id)
+    subs_all      = Submission.query.filter_by(mission_id=mission_id).all()
+    approved      = [s for s in subs_all if s.status == 'Approved']
+    pending       = [s for s in subs_all if s.status == 'Pending']
+    rejected      = [s for s in subs_all if s.status == 'Rejected']
+    progression   = min(100, round(len(approved) / max(mission.quantite, 1) * 100))
+    # Collectes par jour (7 derniers jours)
+    jours_labels = []
+    jours_data   = []
+    for i in range(6, -1, -1):
+        day = datetime.utcnow() - timedelta(days=i)
+        label = day.strftime('%d/%m')
+        count = sum(1 for s in approved if s.submitted_at and s.submitted_at.date() == day.date())
+        jours_labels.append(label)
+        jours_data.append(count)
+    # Points GPS
+    points_gps = [{'lat': s.latitude, 'lng': s.longitude, 'name': s.shop_name}
+                  for s in approved if s.latitude and s.longitude]
+    return render_template('client_analytics.html',
+        mission=mission,
+        approved_count=len(approved),
+        pending_count=len(pending),
+        rejected_count=len(rejected),
+        progression=progression,
+        jours_labels=jours_labels,
+        jours_data=jours_data,
+        points_gps=points_gps)
+
 # ── ERREURS ───────────────────────────────────────────────────────
 from flask import render_template as rt
 @main.app_errorhandler(404)
