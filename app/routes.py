@@ -696,12 +696,17 @@ def admin_dashboard():
         count = Submission.query.filter(db.func.date(Submission.submitted_at) == d).count()
         activite.append({'date': d.strftime('%d/%m'), 'count': count})
 
+    missions_paid = Mission.query.filter_by(payment_status='Paid').all()
+    revenus_total = sum(m.price for m in missions_paid)
+    dues_agents   = sum(a.wallet_balance for a in User.query.filter_by(role='agent').all())
+
     return render_template('admin_dashboard.html',
         total_agents=total_agents, total_clients=total_clients,
         total_missions=total_missions, all_agents=all_agents,
         pending_submissions=pending_submissions, pending_payments=pending_payments,
         pending_retraits=pending_retraits, total_pending_pay=total_pending_pay,
-        collectes_today=collectes_today, activite=activite)
+        collectes_today=collectes_today, activite=activite,
+        missions_paid=missions_paid, revenus_total=revenus_total, dues_agents=dues_agents)
 
 @main.route('/admin/review/<int:submission_id>', methods=['GET', 'POST'])
 def admin_review(submission_id):
