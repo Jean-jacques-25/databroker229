@@ -223,7 +223,8 @@
                     <button onclick="ouvrirPaiement({{ m.id }}, {{ m.price }})" class="btn-primary" style="font-size:12px;padding:8px 16px;">💳 Payer {{ m.price }} FCFA</button>
                     {% endif %}
                     <a href="/client/mission/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
-                    <a href="/client/export/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ Export CSV</a>
+                    <a href="/client/export/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ CSV</a>
+                    <a href="/client/rapport/{{ m.id }}" style="font-size:12px;padding:8px 14px;background:#f59e0b;color:#000;font-weight:800;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">📄 PDF</a>
                 </div>
             </div>
             {% else %}
