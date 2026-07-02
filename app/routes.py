@@ -1051,6 +1051,16 @@ def reset_password(token):
         return redirect(url_for('main.login'))
     return render_template('reset_password.html', token=token)
 
+# ── ERREURS ───────────────────────────────────────────────────────
+from flask import render_template as rt
+@main.app_errorhandler(404)
+def page_not_found(e):
+    return rt('404.html'), 404
+
+@main.app_errorhandler(500)
+def server_error(e):
+    return rt('404.html'), 500
+
 # ── KEEP-ALIVE (empêche Render de s'endormir) ─────────────────
 @main.route('/ping')
 def ping():
