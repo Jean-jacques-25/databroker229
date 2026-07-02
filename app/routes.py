@@ -173,23 +173,24 @@ decision doit être exactement : "Approuver", "Vérifier" ou "Rejeter"
 score entre 0 et 100"""
 
         payload = json_module.dumps({
-            "model": "claude-sonnet-4-6",
+            "model": "mistralai/mistral-7b-instruct:free",
             "max_tokens": 200,
             "messages": [{"role": "user", "content": prompt}]
         }).encode('utf-8')
 
         req = urllib_req.Request(
-            "https://api.anthropic.com/v1/messages",
+            "https://openrouter.ai/api/v1/chat/completions",
             data=payload,
             method="POST"
         )
         req.add_header("Content-Type", "application/json")
-        req.add_header("x-api-key", os.environ.get("ANTHROPIC_API_KEY", ""))
-        req.add_header("anthropic-version", "2023-06-01")
+        req.add_header("Authorization", f"Bearer {os.environ.get('OPENROUTER_API_KEY', '')}")
+        req.add_header("HTTP-Referer", "https://databroker229-1edb.onrender.com")
+        req.add_header("X-Title", "LaCentraleDesDonnees229")
 
         with urllib_req.urlopen(req, timeout=15) as r:
             resp = json_module.loads(r.read().decode('utf-8'))
-            text = resp['content'][0]['text'].strip()
+            text = resp['choices'][0]['message']['content'].strip()
             # Nettoyer et parser le JSON
             text = text.replace('```json', '').replace('```', '').strip()
             result = json_module.loads(text)
