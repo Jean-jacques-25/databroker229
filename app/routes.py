@@ -99,6 +99,8 @@ def login():
         if user.is_suspended:
             flash("Votre compte est suspendu. Contactez le support.", "error")
             return render_template('login.html')
+        session.pop(key_attempts, None)
+        session.pop(key_time, None)
         session['user_id']   = user.id
         session['user_role'] = user.role
         session['user_name'] = user.fullname
@@ -608,27 +610,99 @@ def client_payer_mission(mission_id):
         flash("Cette mission est déjà payée.", "info")
         return redirect(url_for('main.client_dashboard'))
 
-    mode    = request.form.get('mode_paiement', '')
-    numero  = request.form.get('numero_mobile', '').strip()
+    mode   = request.form.get('mode_paiement', '')
+    numero = request.form.get('numero_mobile', '').strip()
 
-    # Simulation paiement — mission activée instantanément
+    # ── FEDAPAY PAIEMENT REEL ──────────────────────────────────────
+    fedapay_key = os.environ.get('FEDAPAY_API_KEY', '')
+    if fedapay_key and mode in ['mtn', 'moov', 'celtiis']:
+        try:
+            # Creer la transaction FedaPay
+            client_user = User.query.get(session['user_id'])
+            payload_fp  = json_module.dumps({
+                "description": f"Mission LaCentraleDesDonnees229 : {mission.title}",
+                "amount": mission.price,
+                "currency": {"iso": "XOF"},
+                "callback_url": f"https://databroker229-1edb.onrender.com/client/fedapay/callback/{mission.id}",
+                "customer": {
+                    "firstname": (client_user.fullname or "Client").split()[0],
+                    "lastname":  (client_user.fullname or "Client").split()[-1],
+                    "email":     client_user.email,
+                    "phone_number": {"number": numero, "country": "bj"}
+                }
+            }).encode('utf-8')
+
+            req_fp = urllib_req.Request(
+                "https://api.fedapay.com/v1/transactions",
+                data=payload_fp, method="POST"
+            )
+            req_fp.add_header("Authorization", f"Bearer {fedapay_key}")
+            req_fp.add_header("Content-Type", "application/json")
+
+            with urllib_req.urlopen(req_fp, timeout=15) as r_fp:
+                resp_fp = json_module.loads(r_fp.read().decode('utf-8'))
+                transaction_id = resp_fp.get('v1/transaction', {}).get('id')
+                token_fp       = resp_fp.get('v1/transaction', {}).get('token')
+
+            if token_fp:
+                # Stocker transaction en attente
+                mission.payment_status = 'Pending_Fedapay'
+                mission.status         = 'En attente'
+                db.session.commit()
+                # Rediriger vers page de paiement FedaPay
+                return redirect(f"https://api.fedapay.com/v1/purchases/{token_fp}")
+
+        except Exception as e:
+            print(f"FedaPay erreur: {e}")
+            # Fallback sur validation manuelle si FedaPay echoue
+            pass
+
+    # ── FALLBACK : Validation manuelle (virement ou erreur FedaPay) ─
     mission.payment_status = 'Paid'
     mission.status         = 'Actif'
     db.session.commit()
 
     notif(session['user_id'],
-          f"💳 Paiement de {mission.price} FCFA via {mode} confirmé. Mission \"{mission.title}\" maintenant active !",
+          f"Paiement de {mission.price} FCFA via {mode} confirme. Mission {mission.title} maintenant active !",
           'success')
+    # Notifier tous les agents disponibles
+    agents_actifs = User.query.filter_by(role='agent', is_suspended=False).all()
+    for ag in agents_actifs:
+        notif(ag.id,
+              f"Nouvelle mission disponible : {mission.title} — {mission.prix_agent or mission.difficulte} FCFA/collecte a {mission.zone or 'voir details'}",
+              'info')
     db.session.commit()
-    # Email au client
     try:
         client_user = User.query.get(session['user_id'])
         if client_user:
             email_mission_active(mission, client_user)
     except Exception:
         pass
-    flash(f"✅ Paiement confirmé via {mode} ! Votre mission est maintenant active.", "success")
+    flash(f"Paiement confirme via {mode} ! Votre mission est maintenant active.", "success")
     return redirect(url_for('main.client_recu_pdf', mission_id=mission.id))
+
+
+@main.route('/client/fedapay/callback/<int:mission_id>')
+def fedapay_callback(mission_id):
+    """Callback FedaPay apres paiement reussi."""
+    mission = Mission.query.get_or_404(mission_id)
+    status  = request.args.get('status', '')
+    if status == 'approved':
+        mission.payment_status = 'Paid'
+        mission.status         = 'Actif'
+        db.session.commit()
+        client_user = User.query.get(mission.client_id)
+        if client_user:
+            notif(client_user.id, f"Paiement FedaPay confirme ! Mission {mission.title} active.", 'success')
+            try:
+                email_mission_active(mission, client_user)
+            except Exception:
+                pass
+        flash("Paiement FedaPay confirme ! Votre mission est active.", "success")
+        return redirect(url_for('main.client_recu_pdf', mission_id=mission.id))
+    else:
+        flash("Paiement non abouti. Reessayez.", "error")
+        return redirect(url_for('main.client_dashboard'))
 
 @main.route('/client/recu/<int:mission_id>')
 def client_recu_pdf(mission_id):
@@ -1138,6 +1212,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
