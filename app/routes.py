@@ -321,8 +321,25 @@ def agent_submit(mission_id):
                 'ia_decision': ia_decision,
                 'ia_raison': ia_raison
             })
-            # Si IA très confiant rejet (score < 20) → rejeter automatiquement
-            if ia_score < 20:
+            # Auto-validation IA : score >= 80 → approuver automatiquement
+            if ia_score >= 80:
+                sub.status = 'Approved'
+                gain_agent = mission.prix_agent if mission.prix_agent else mission.difficulte
+                agent_obj  = User.query.get(session['user_id'])
+                if agent_obj:
+                    agent_obj.wallet_balance += gain_agent
+                    tx = Transaction(user_id=agent_obj.id, mission_id=mission.id,
+                                     amount=gain_agent, transaction_type='gain', status='Completed')
+                    db.session.add(tx)
+                notif(session['user_id'],
+                      f"✅ Collecte auto-validée par IA pour \"{mission.title}\" — +{gain_agent} FCFA crédités ! (Score IA: {ia_score}/100)", 'success')
+                # Notifier le client
+                if mission.client_id:
+                    notif(mission.client_id,
+                          f"📊 Nouvelle collecte validée pour \"{mission.title}\" ({ia_score}/100 IA)", 'success')
+                statut_auto = 'Approved'
+            # Auto-rejet IA : score < 20 → rejeter automatiquement
+            elif ia_score < 20:
                 sub.status      = 'Rejected'
                 sub.motif_rejet = f"IA : {ia_raison} (score: {ia_score}/100)"
                 statut_auto     = 'Rejected'
@@ -524,7 +541,81 @@ def client_payer_mission(mission_id):
           'success')
     db.session.commit()
     flash(f"✅ Paiement confirmé via {mode} ! Votre mission est maintenant active.", "success")
-    return redirect(url_for('main.client_dashboard'))
+    return redirect(url_for('main.client_recu_pdf', mission_id=mission.id))
+
+@main.route('/client/recu/<int:mission_id>')
+def client_recu_pdf(mission_id):
+    if session.get('user_role') not in ['client', 'admin']:
+        return redirect(url_for('main.login'))
+    mission = Mission.query.get_or_404(mission_id)
+    client  = User.query.get_or_404(mission.client_id)
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import cm
+        import io as io_module
+
+        buffer = io_module.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4,
+                                rightMargin=2*cm, leftMargin=2*cm,
+                                topMargin=2*cm, bottomMargin=2*cm)
+        styles = getSampleStyleSheet()
+        story  = []
+
+        # En-tête
+        title_style = ParagraphStyle('t', parent=styles['Title'], fontSize=20,
+                                      textColor=colors.HexColor('#0a1628'), spaceAfter=4)
+        sub_style   = ParagraphStyle('s', parent=styles['Normal'], fontSize=11,
+                                      textColor=colors.HexColor('#f59e0b'), spaceAfter=16)
+        story.append(Paragraph("LaCentraleDesDonnées229", title_style))
+        story.append(Paragraph("REÇU DE PAIEMENT OFFICIEL", sub_style))
+        story.append(Spacer(1, 0.5*cm))
+
+        # Infos reçu
+        ref = f"REC-{mission.id:05d}-{datetime.utcnow().strftime('%Y%m%d')}"
+        data = [
+            ['Référence', ref],
+            ['Date paiement', datetime.utcnow().strftime('%d/%m/%Y à %H:%M') + ' UTC'],
+            ['Client', client.fullname],
+            ['Organisation', mission.organisation or '—'],
+            ['Mission', mission.title],
+            ['Zone', mission.zone or '—'],
+            ['Points de collecte', str(mission.quantite)],
+            ['Mode de paiement', mode],
+            ['Statut', '✅ PAYÉ'],
+            ['MONTANT TOTAL', f"{mission.price:,} FCFA".replace(',', ' ')],
+        ]
+        t = Table(data, colWidths=[6*cm, 10*cm])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#0a1628')),
+            ('TEXTCOLOR', (0,0), (0,-1), colors.white),
+            ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#f59e0b')),
+            ('TEXTCOLOR', (0,-1), (-1,-1), colors.black),
+            ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 11),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('PADDING', (0,0), (-1,-1), 8),
+        ]))
+        story.append(t)
+        story.append(Spacer(1, 1*cm))
+        story.append(Paragraph(
+            "Ce reçu confirme que votre paiement a été reçu et que votre mission est maintenant active. "
+            "Vous serez notifié à chaque collecte validée.",
+            ParagraphStyle('note', fontSize=10, textColor=colors.grey, leading=16)))
+        story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph(
+            f"LaCentraleDesDonnées229 — contact@lacentraledesdonnees229.com — Cotonou, Bénin",
+            ParagraphStyle('footer', fontSize=8, textColor=colors.grey)))
+
+        doc.build(story)
+        buffer.seek(0)
+        return Response(buffer.getvalue(), mimetype='application/pdf',
+                       headers={"Content-Disposition": f"attachment;filename=recu_paiement_{ref}.pdf"})
+    except Exception as e:
+        flash("Reçu PDF indisponible temporairement.", "info")
+        return redirect(url_for('main.client_dashboard'))
 
 @main.route('/client/mission/<int:mission_id>')
 def client_mission_detail(mission_id):
@@ -714,6 +805,45 @@ def admin_export_agents():
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=agents_databroker229.csv"})
 
+# ── MESSAGE GROUPÉ ADMIN ──────────────────────────────────────
+@main.route('/admin/message-groupe', methods=['POST'])
+def admin_message_groupe():
+    if session.get('user_role') != 'admin':
+        return redirect(url_for('main.login'))
+    message  = request.form.get('message', '').strip()
+    cible    = request.form.get('cible', 'tous')
+    type_msg = request.form.get('type_msg', 'info')
+    if not message:
+        flash("Message vide.", "error")
+        return redirect(url_for('main.admin_dashboard'))
+    if cible == 'agents':
+        users = User.query.filter_by(role='agent', is_suspended=False).all()
+    elif cible == 'clients':
+        users = User.query.filter_by(role='client').all()
+    else:
+        users = User.query.filter(User.role.in_(['agent', 'client'])).all()
+    count = 0
+    for u in users:
+        notif(u.id, f"📢 {message}", type_msg)
+        count += 1
+    db.session.commit()
+    flash(f"Message envoyé à {count} utilisateur(s).", "success")
+    return redirect(url_for('main.admin_dashboard'))
+
+# ── BLOQUER PDF SI NON PAYÉ ────────────────────────────────────
+# (déjà géré dans client_rapport_pdf via mission.payment_status)
+
+# ── SAUVEGARDE FORMULAIRE AGENT (API) ─────────────────────────
+@main.route('/api/save-draft', methods=['POST'])
+def api_save_draft():
+    """Sauvegarde temporaire des données formulaire agent côté serveur."""
+    if not session.get('user_id'):
+        return jsonify({'ok': False}), 401
+    data = request.get_json()
+    # Stocker dans la session temporairement
+    session[f"draft_{data.get('mission_id')}"] = data
+    return jsonify({'ok': True})
+
 # ── KEEP-ALIVE (empêche Render de s'endormir) ─────────────────
 @main.route('/ping')
 def ping():
@@ -730,6 +860,10 @@ def client_rapport_pdf(mission_id):
     if session.get('user_role') not in ['client', 'admin']:
         return redirect(url_for('main.login'))
     mission = Mission.query.get_or_404(mission_id)
+    # Bloquer si non payé
+    if mission.payment_status != 'Paid' and session.get('user_role') != 'admin':
+        flash("⚠️ Le rapport PDF n'est disponible qu'après confirmation du paiement.", "error")
+        return redirect(url_for('main.client_dashboard'))
     submissions = Submission.query.filter_by(mission_id=mission_id, status='Approved').all()
 
     # Générer PDF avec reportlab
@@ -831,7 +965,7 @@ def api_mission_points(mission_id):
                      'nom': s.shop_name, 'adresse': s.shop_address} for s in subs if s.latitude])
 
 # ── ROUTE SECRÈTE ADMIN ────────────────────────────────────────
-@main.route('/setup-admin-db229secret')
+@main.route('/setup-admin-db229secret-jja2026')
 def setup_admin():
     try:
         # Créer uniquement les tables manquantes — JAMAIS drop_all
@@ -871,6 +1005,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
