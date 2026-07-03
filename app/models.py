@@ -166,3 +166,19 @@ class CollecteData(db.Model):
     longitude     = db.Column(db.Float, nullable=False)
     agent_id      = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
+class ApiKey(db.Model):
+    __tablename__ = 'api_keys'
+
+    id         = db.Column(db.Integer, primary_key=True)
+    client_id  = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    key        = db.Column(db.String(64), unique=True, nullable=False)
+    label      = db.Column(db.String(100), default='Cle API')
+    is_active  = db.Column(db.Boolean, default=True)
+    requests   = db.Column(db.Integer, default=0)
+    last_used  = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    client = db.relationship('User', backref=db.backref('api_keys', lazy=True))
