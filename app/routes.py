@@ -1132,6 +1132,210 @@ def client_analytiques(mission_id):
         jours_data=jours_data,
         points_gps=points_gps)
 
+
+# ══════════════════════════════════════════════════════════════════
+# API PUBLIQUE v1 — LaCentraleDesDonnees229
+# ══════════════════════════════════════════════════════════════════
+
+def require_api_key(f):
+    """Decorateur pour verifier la cle API."""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        from app.models import ApiKey
+        key = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+        if not key:
+            key = request.args.get('api_key', '')
+        if not key:
+            return jsonify({'error': 'Cle API manquante', 'doc': '/api/v1/docs'}), 401
+        api_key = ApiKey.query.filter_by(key=key, is_active=True).first()
+        if not api_key:
+            return jsonify({'error': 'Cle API invalide ou desactivee'}), 403
+        # Rate limiting : max 1000 requetes/jour
+        api_key.requests += 1
+        api_key.last_used = datetime.utcnow()
+        db.session.commit()
+        return f(api_key, *args, **kwargs)
+    return decorated
+
+
+@main.route('/api/v1/docs')
+def api_docs():
+    """Documentation de l API publique."""
+    docs = {
+        "api": "LaCentraleDesDonnees229 API v1",
+        "base_url": "https://databroker229-1edb.onrender.com/api/v1",
+        "auth": "Header: Authorization: Bearer VOTRE_CLE_API",
+        "endpoints": {
+            "GET /api/v1/missions": "Liste de vos missions",
+            "GET /api/v1/missions/{id}": "Detail d une mission",
+            "GET /api/v1/missions/{id}/collectes": "Collectes validees d une mission",
+            "GET /api/v1/missions/{id}/stats": "Statistiques d une mission",
+            "GET /api/v1/profil": "Votre profil client"
+        },
+        "formats": "JSON",
+        "contact": "contact@lacentraledesdonnees229.com"
+    }
+    return jsonify(docs)
+
+
+@main.route('/api/v1/missions')
+@require_api_key
+def api_missions(api_key):
+    """Liste toutes les missions du client."""
+    missions = Mission.query.filter_by(client_id=api_key.client_id).all()
+    return jsonify({
+        'total': len(missions),
+        'missions': [{
+            'id': m.id,
+            'titre': m.title,
+            'zone': m.zone,
+            'type': m.type_donnees,
+            'quantite': m.quantite,
+            'statut': m.status,
+            'paiement': m.payment_status,
+            'progression': min(100, round(
+                Submission.query.filter_by(mission_id=m.id, status='Approved').count()
+                / max(m.quantite, 1) * 100
+            )),
+            'created_at': m.created_at.isoformat() if m.created_at else None
+        } for m in missions]
+    })
+
+
+@main.route('/api/v1/missions/<int:mission_id>')
+@require_api_key
+def api_mission_detail(api_key, mission_id):
+    """Detail d une mission specifique."""
+    mission = Mission.query.filter_by(id=mission_id, client_id=api_key.client_id).first()
+    if not mission:
+        return jsonify({'error': 'Mission introuvable ou acces non autorise'}), 404
+    approved = Submission.query.filter_by(mission_id=mission_id, status='Approved').count()
+    return jsonify({
+        'id': mission.id,
+        'titre': mission.title,
+        'description': mission.description,
+        'zone': mission.zone,
+        'type': mission.type_donnees,
+        'quantite': mission.quantite,
+        'collectes_validees': approved,
+        'progression': min(100, round(approved / max(mission.quantite, 1) * 100)),
+        'statut': mission.status,
+        'paiement': mission.payment_status,
+        'format_livraison': mission.format_livraison,
+        'created_at': mission.created_at.isoformat() if mission.created_at else None
+    })
+
+
+@main.route('/api/v1/missions/<int:mission_id>/collectes')
+@require_api_key
+def api_mission_collectes(api_key, mission_id):
+    """Toutes les collectes validees d une mission."""
+    mission = Mission.query.filter_by(id=mission_id, client_id=api_key.client_id).first()
+    if not mission:
+        return jsonify({'error': 'Mission introuvable ou acces non autorise'}), 404
+    page     = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 50, type=int)
+    subs = Submission.query.filter_by(
+        mission_id=mission_id, status='Approved'
+    ).order_by(Submission.submitted_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return jsonify({
+        'mission_id': mission_id,
+        'total': subs.total,
+        'page': page,
+        'per_page': per_page,
+        'pages': subs.pages,
+        'collectes': [{
+            'id': s.id,
+            'commerce': s.shop_name,
+            'adresse': s.shop_address,
+            'telephone': s.shop_phone,
+            'observations': s.observations,
+            'latitude': s.latitude,
+            'longitude': s.longitude,
+            'photo': f"https://databroker229-1edb.onrender.com/static/uploads/{s.photo_path}" if s.photo_path else None,
+            'date': s.submitted_at.isoformat() if s.submitted_at else None
+        } for s in subs.items]
+    })
+
+
+@main.route('/api/v1/missions/<int:mission_id>/stats')
+@require_api_key
+def api_mission_stats(api_key, mission_id):
+    """Statistiques completes d une mission."""
+    mission = Mission.query.filter_by(id=mission_id, client_id=api_key.client_id).first()
+    if not mission:
+        return jsonify({'error': 'Mission introuvable'}), 404
+    from datetime import timedelta
+    approved  = Submission.query.filter_by(mission_id=mission_id, status='Approved').all()
+    pending   = Submission.query.filter_by(mission_id=mission_id, status='Pending').count()
+    rejected  = Submission.query.filter_by(mission_id=mission_id, status='Rejected').count()
+    # Collectes par jour (7 derniers jours)
+    par_jour = []
+    for i in range(6, -1, -1):
+        day = datetime.utcnow() - timedelta(days=i)
+        count = sum(1 for s in approved if s.submitted_at and s.submitted_at.date() == day.date())
+        par_jour.append({'date': day.strftime('%Y-%m-%d'), 'count': count})
+    return jsonify({
+        'mission_id': mission_id,
+        'titre': mission.title,
+        'progression': min(100, round(len(approved) / max(mission.quantite, 1) * 100)),
+        'collectes_validees': len(approved),
+        'collectes_en_attente': pending,
+        'collectes_rejetees': rejected,
+        'points_gps': [{'lat': s.latitude, 'lng': s.longitude} for s in approved if s.latitude],
+        'activite_7_jours': par_jour
+    })
+
+
+@main.route('/api/v1/profil')
+@require_api_key
+def api_profil(api_key):
+    """Profil du client authentifie."""
+    client = User.query.get(api_key.client_id)
+    if not client:
+        return jsonify({'error': 'Client introuvable'}), 404
+    return jsonify({
+        'id': client.id,
+        'nom': client.fullname,
+        'email': client.email,
+        'organisation': client.organisation,
+        'missions_total': Mission.query.filter_by(client_id=client.id).count(),
+        'cle_api_label': api_key.label,
+        'requetes_effectuees': api_key.requests,
+        'derniere_requete': api_key.last_used.isoformat() if api_key.last_used else None
+    })
+
+
+# ── GESTION CLES API (depuis dashboard client) ─────────────────
+@main.route('/client/api-keys', methods=['GET', 'POST'])
+def client_api_keys():
+    if session.get('user_role') not in ['client', 'admin']:
+        return redirect(url_for('main.login'))
+    from app.models import ApiKey
+    import secrets
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'create':
+            label  = request.form.get('label', 'Cle API').strip()
+            new_key = ApiKey(
+                client_id=session['user_id'],
+                key=secrets.token_hex(32),
+                label=label
+            )
+            db.session.add(new_key)
+            db.session.commit()
+            flash(f"Cle API creee : {new_key.key}", "success")
+        elif action == 'delete':
+            key_id = request.form.get('key_id')
+            k = ApiKey.query.filter_by(id=key_id, client_id=session['user_id']).first()
+            if k:
+                db.session.delete(k)
+                db.session.commit()
+                flash("Cle API supprimee.", "success")
+    keys = ApiKey.query.filter_by(client_id=session['user_id']).all()
+    return render_template('client_api_keys.html', keys=keys)
+
 # ── ERREURS ───────────────────────────────────────────────────────
 from flask import render_template as rt
 @main.app_errorhandler(404)
@@ -1405,6 +1609,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
