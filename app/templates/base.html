@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CentraleData229">
     <meta name="google-site-verification" content="LChgNZ3AcFRM4bHO6zDzeTKz18A1mCieynfvgoaBxK4" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -339,10 +344,20 @@ document.addEventListener('click', function(e) {
     <script>
     setInterval(function() {
         fetch('/ping').catch(function() {});
-    }, 600000); // 10 minutes
+    }, 600000);
+
+    // PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(function(reg) { console.log('PWA SW enregistre'); })
+                .catch(function(err) { console.log('PWA SW erreur:', err); });
+        });
+    }
     </script>
 </body>
 </html>
+
 
 
 
