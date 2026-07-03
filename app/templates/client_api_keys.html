@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Mes cles API — LaCentraleDesDonnees229{% endblock %}
+{% block content %}
+<div style="min-height:100vh;padding:24px 16px;">
+<div style="max-width:800px;margin:0 auto;">
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <a href="/client/dashboard" style="color:#888;text-decoration:none;font-size:20px;">←</a>
+        <h1 style="font-size:22px;font-weight:900;color:#fff;margin:0;">🔑 Mes cles API</h1>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div style="background:{% if cat == 'success' %}#0d1a0d{% else %}#1a0d0d{% endif %};border:1px solid {% if cat == 'success' %}#10b981{% else %}#ef4444{% endif %};border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:{% if cat == 'success' %}#10b981{% else %}#ef4444{% endif %};">
+        {{ msg }}
+    </div>
+    {% endfor %}{% endif %}{% endwith %}
+
+    <!-- Info -->
+    <div style="background:#0d1a0d;border:1px solid #10b981;border-radius:14px;padding:20px;margin-bottom:24px;">
+        <h2 style="color:#10b981;font-size:14px;font-weight:800;margin-bottom:8px;">📖 Comment utiliser votre cle API</h2>
+        <p style="color:#aaa;font-size:13px;margin-bottom:8px;">Ajoutez ce header dans vos requetes HTTP :</p>
+        <code style="background:#0a0a0a;color:#f59e0b;padding:8px 12px;border-radius:8px;font-size:12px;display:block;">
+            Authorization: Bearer VOTRE_CLE_API
+        </code>
+        <p style="color:#888;font-size:12px;margin-top:10px;">
+            Documentation complète :
+            <a href="/api/v1/docs" style="color:#f59e0b;" target="_blank">https://databroker229-1edb.onrender.com/api/v1/docs</a>
+        </p>
+    </div>
+
+    <!-- Creer une cle -->
+    <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;margin-bottom:24px;">
+        <h2 style="color:#fff;font-size:15px;font-weight:800;margin-bottom:14px;">➕ Creer une nouvelle cle</h2>
+        <form method="POST" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="hidden" name="action" value="create">
+            <input type="text" name="label" placeholder="Nom de la cle (ex: Systeme RH)" required
+                style="flex:1;min-width:200px;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;outline:none;">
+            <button type="submit"
+                style="background:#f59e0b;color:#000;font-weight:900;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-size:13px;">
+                Generer
+            </button>
+        </form>
+    </div>
+
+    <!-- Liste des cles -->
+    <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;">
+        <h2 style="color:#fff;font-size:15px;font-weight:800;margin-bottom:16px;">🗝️ Vos cles actives</h2>
+        {% if keys %}
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            {% for k in keys %}
+            <div style="background:#0d0d0d;border:1px solid {% if k.is_active %}#333{% else %}#1a0d0d{% endif %};border-radius:12px;padding:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:6px;">{{ k.label }}</div>
+                        <code style="background:#0a0a0a;color:#f59e0b;padding:6px 10px;border-radius:6px;font-size:11px;word-break:break-all;">{{ k.key }}</code>
+                        <div style="color:#888;font-size:11px;margin-top:8px;">
+                            {{ k.requests }} requetes •
+                            {% if k.last_used %}Derniere utilisation : {{ k.last_used.strftime('%d/%m/%Y') }}{% else %}Jamais utilisee{% endif %} •
+                            Creee le {{ k.created_at.strftime('%d/%m/%Y') if k.created_at else '—' }}
+                        </div>
+                    </div>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="key_id" value="{{ k.id }}">
+                        <button type="submit" onclick="return confirm('Supprimer cette cle ?')"
+                            style="background:#1a0d0d;color:#ef4444;border:1px solid #ef4444;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;">
+                            Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:32px;color:#888;">
+            <div style="font-size:40px;margin-bottom:12px;">🔑</div>
+            <p>Aucune cle API. Creez-en une ci-dessus.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Endpoints disponibles -->
+    <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;margin-top:20px;">
+        <h2 style="color:#fff;font-size:15px;font-weight:800;margin-bottom:16px;">📡 Endpoints disponibles</h2>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            {% for method, endpoint, desc in [
+                ('GET', '/api/v1/missions', 'Liste de toutes vos missions'),
+                ('GET', '/api/v1/missions/{id}', 'Detail d une mission'),
+                ('GET', '/api/v1/missions/{id}/collectes', 'Collectes validees'),
+                ('GET', '/api/v1/missions/{id}/stats', 'Statistiques et graphiques'),
+                ('GET', '/api/v1/profil', 'Votre profil client')
+            ] %}
+            <div style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border-radius:8px;padding:10px 14px;">
+                <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:2px 8px;border-radius:4px;">{{ method }}</span>
+                <code style="color:#f59e0b;font-size:12px;flex:1;">{{ endpoint }}</code>
+                <span style="color:#888;font-size:12px;">{{ desc }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
