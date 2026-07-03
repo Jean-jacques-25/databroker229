@@ -99,8 +99,9 @@ def login():
         if user.is_suspended:
             flash("Votre compte est suspendu. Contactez le support.", "error")
             return render_template('login.html')
-        session.pop(key_attempts, None)
-        session.pop(key_time, None)
+        ip_fix = request.remote_addr or 'unknown'
+        session.pop(f'login_attempts_{ip_fix}', None)
+        session.pop(f'login_time_{ip_fix}', None)
         session['user_id']   = user.id
         session['user_role'] = user.role
         session['user_name'] = user.fullname
