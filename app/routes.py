@@ -1159,6 +1159,11 @@ def require_api_key(f):
     return decorated
 
 
+@main.route('/offline')
+def offline():
+    return render_template('offline.html')
+
+
 @main.route('/api/v1/docs')
 def api_docs():
     """Documentation de l API publique."""
