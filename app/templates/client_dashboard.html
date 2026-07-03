@@ -242,22 +242,27 @@
         <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;">💳 Payer la mission</h2>
         <p style="font-size:13px;color:#888;margin-bottom:24px;">Montant : <strong style="color:#f59e0b;" id="modal-montant"></strong> FCFA</p>
         <form id="form-paiement" method="POST" style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Mode de paiement -->
+            <input type="hidden" name="mode_paiement" value="fedapay">
             <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Choisir votre opérateur</label>
-                <div style="display:flex;flex-direction:column;gap:10px;">
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;">
-                        <input type="radio" name="mode_paiement" value="MTN MoMo" required style="accent-color:#ffcc00;width:18px;height:18px;">
-                        <span style="font-size:14px;font-weight:700;color:#fff;">🟡 MTN MoMo</span>
-                    </label>
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;">
-                        <input type="radio" name="mode_paiement" value="Moov Money" style="accent-color:#0066cc;width:18px;height:18px;">
-                        <span style="font-size:14px;font-weight:700;color:#fff;">🔵 Moov Money</span>
-                    </label>
-                    <label style="display:flex;align-items:center;gap:12px;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;cursor:pointer;">
-                        <input type="radio" name="mode_paiement" value="Celtiis Cash" style="accent-color:#ff6600;width:18px;height:18px;">
-                        <span style="font-size:14px;font-weight:700;color:#fff;">🟠 Celtiis Cash</span>
-                    </label>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Mode de paiement</label>
+                <div style="background:#0d1a0d;border:1px solid #10b981;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;">
+                    <img src="https://fedapay.com/wp-content/uploads/2020/05/FedaPay-Logo.png"
+                         style="height:28px;object-fit:contain;" alt="FedaPay"
+                         onerror="this.style.display='none'">
+                    <div>
+                        <div style="color:#fff;font-weight:800;font-size:14px;">FedaPay</div>
+                        <div style="color:#888;font-size:12px;">MTN MoMo · Moov Money · Celtiis Cash · Carte bancaire</div>
+                    </div>
+                    <span style="margin-left:auto;background:#10b981;color:#000;font-size:10px;font-weight:900;padding:3px 8px;border-radius:100px;">SÉCURISÉ</span>
                 </div>
+            </div>
+            <!-- Numéro Mobile Money -->
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Votre numéro Mobile Money</label>
+                <input type="tel" name="numero_mobile" placeholder="+229 XX XX XX XX" required
+                    style="width:100%;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                <p style="color:#888;font-size:11px;margin-top:6px;">Vous recevrez une demande de paiement sur ce numéro via FedaPay.</p>
             </div>
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Votre numéro Mobile Money *</label>
