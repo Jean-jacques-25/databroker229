@@ -1,18 +1,20 @@
 {
-  "name": "LaCentraleDesDonnées229",
-  "short_name": "LaCentraleDesDonnées229",
+  "name": "LaCentraleDesDonnees229",
+  "short_name": "CentraleData",
+  "description": "Plateforme de collecte de donnees terrain au Benin",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "description": "Plateforme de collecte de données terrain au Bénin.",
+  "background_color": "#0a0a0a",
+  "theme_color": "#f59e0b",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "https://img.icons8.com/fluent/512/map-pin.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+    {"src": "/static/favicon.ico", "sizes": "32x32", "type": "image/x-icon"},
+    {"src": "/static/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Mon espace", "url": "/login", "description": "Se connecter"},
+    {"name": "Missions disponibles", "url": "/agent/dashboard", "description": "Voir les missions"}
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "fr"
 }
