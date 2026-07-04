@@ -132,8 +132,51 @@ def agent_dashboard():
     history  = Transaction.query.filter_by(user_id=agent.id, transaction_type='gain').order_by(Transaction.created_at.desc()).limit(10).all()
     notifs   = Notification.query.filter_by(user_id=agent.id, is_read=False).order_by(Notification.created_at.desc()).all()
     retraits = Retrait.query.filter_by(agent_id=agent.id).order_by(Retrait.created_at.desc()).limit(5).all()
+    # Stats pour graphiques
+    subs_all      = agent.submissions if hasattr(agent, 'submissions') else []
+    subs_approved = sum(1 for s in subs_all if s.status == 'Approved')
+    subs_pending  = sum(1 for s in subs_all if s.status == 'Pending')
+    subs_rejected = sum(1 for s in subs_all if s.status == 'Rejected')
+    missions_actives = len(missions)
+
+    # Activite 6 derniers mois
+    mois_labels    = []
+    mois_collectes = []
+    mois_gains     = []
+    now = datetime.utcnow()
+    for i in range(5, -1, -1):
+        # Calculer debut/fin du mois
+        mois_cible = now.month - i
+        annee_cible = now.year
+        while mois_cible <= 0:
+            mois_cible += 12
+            annee_cible -= 1
+        debut = datetime(annee_cible, mois_cible, 1)
+        if mois_cible == 12:
+            fin = datetime(annee_cible + 1, 1, 1)
+        else:
+            fin = datetime(annee_cible, mois_cible + 1, 1)
+        label = debut.strftime('%b')
+        count = sum(1 for s in subs_all
+                    if s.status == 'Approved' and s.submitted_at and debut <= s.submitted_at < fin)
+        # Estimer le gain moyen par collecte
+        gain_unitaire = 500
+        try:
+            tx = [t for t in history if t.created_at and debut <= t.created_at < fin]
+            if tx:
+                gain_unitaire = sum(t.amount for t in tx) // max(len(tx), 1)
+        except Exception:
+            pass
+        mois_labels.append(label)
+        mois_collectes.append(count)
+        mois_gains.append(count * gain_unitaire)
+
     return render_template('agent_dashboard.html', agent=agent, missions=missions,
-                           history=history, notifs=notifs, retraits=retraits)
+                           history=history, notifs=notifs, retraits=retraits,
+                           subs_approved=subs_approved, subs_pending=subs_pending,
+                           subs_rejected=subs_rejected, missions_actives=missions_actives,
+                           mois_labels=mois_labels, mois_collectes=mois_collectes,
+                           mois_gains=mois_gains)
 
 def send_email(to, subject, body_html):
     """Envoyer un email HTML via Gmail."""
