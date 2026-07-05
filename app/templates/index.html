@@ -386,5 +386,91 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- SECTION 3 ETAPES AGENT -->
+<section style="padding:80px 16px;background:#0d0d0d;">
+    <div style="max-width:900px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:48px;">
+            <span style="background:#10b981;color:#000;font-size:11px;font-weight:900;padding:6px 16px;border-radius:100px;text-transform:uppercase;letter-spacing:1px;">Pour les agents terrain</span>
+            <h2 style="font-size:clamp(26px,5vw,40px);font-weight:900;color:#fff;margin:16px 0 8px;">Gagne de l'argent avec ton téléphone</h2>
+            <p style="color:#888;font-size:15px;">3 étapes simples pour commencer</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:48px;">
+            <div style="background:#111;border:1px solid #222;border-radius:16px;padding:28px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:16px;right:20px;font-size:56px;font-weight:900;color:#1a1a1a;line-height:1;">1</div>
+                <div style="font-size:36px;margin-bottom:12px;">📝</div>
+                <h3 style="color:#fff;font-size:17px;font-weight:800;margin-bottom:8px;">Inscris-toi gratuitement</h3>
+                <p style="color:#888;font-size:13px;line-height:1.6;">Crée ton compte agent en 2 minutes avec ton téléphone. C'est 100% gratuit.</p>
+            </div>
+            <div style="background:#111;border:1px solid #222;border-radius:16px;padding:28px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:16px;right:20px;font-size:56px;font-weight:900;color:#1a1a1a;line-height:1;">2</div>
+                <div style="font-size:36px;margin-bottom:12px;">📍</div>
+                <h3 style="color:#fff;font-size:17px;font-weight:800;margin-bottom:8px;">Valide ta mission d'essai</h3>
+                <p style="color:#888;font-size:13px;line-height:1.6;">Une collecte terrain pour activer ton compte. Simple, rapide, et tu verras comment ça marche.</p>
+            </div>
+            <div style="background:#111;border:2px solid #10b981;border-radius:16px;padding:28px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:16px;right:20px;font-size:56px;font-weight:900;color:#0d1a0d;line-height:1;">3</div>
+                <div style="font-size:36px;margin-bottom:12px;">💰</div>
+                <h3 style="color:#10b981;font-size:17px;font-weight:800;margin-bottom:8px;">Collecte et sois payé</h3>
+                <p style="color:#888;font-size:13px;line-height:1.6;">Chaque collecte validée est créditée directement sur ton Mobile Money. Pas d'attente.</p>
+            </div>
+        </div>
+
+        <!-- CALCULATEUR DE REVENUS -->
+        <div style="background:linear-gradient(135deg,#1a1200,#0a1a0a);border:1px solid #f59e0b;border-radius:20px;padding:32px;">
+            <h3 style="color:#fff;font-size:20px;font-weight:900;margin-bottom:6px;text-align:center;">🧮 Calcule tes revenus potentiels</h3>
+            <p style="color:#888;font-size:13px;text-align:center;margin-bottom:28px;">Combien peux-tu gagner par mois ?</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                <div>
+                    <label style="display:block;color:#888;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Ton niveau</label>
+                    <select id="calc_niveau" onchange="calculerRevenu()"
+                        style="width:100%;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:12px;color:#fff;font-size:13px;outline:none;">
+                        <option value="300">Débutant — 300 FCFA/collecte</option>
+                        <option value="500" selected>Standard — 500 FCFA/collecte</option>
+                        <option value="800">Expert — 800 FCFA/collecte</option>
+                        <option value="1200">Pro — 1200 FCFA/collecte</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;color:#888;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Collectes par jour</label>
+                    <input type="number" id="calc_collectes" value="10" min="1" max="100" oninput="calculerRevenu()"
+                        style="width:100%;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:12px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;">
+                <div style="background:#0d0d0d;border-radius:12px;padding:16px;text-align:center;">
+                    <div id="gain_jour" style="font-size:20px;font-weight:900;color:#f59e0b;">5 000</div>
+                    <div style="color:#888;font-size:11px;margin-top:4px;">FCFA / jour</div>
+                </div>
+                <div style="background:#0d0d0d;border-radius:12px;padding:16px;text-align:center;">
+                    <div id="gain_semaine" style="font-size:20px;font-weight:900;color:#f59e0b;">30 000</div>
+                    <div style="color:#888;font-size:11px;margin-top:4px;">FCFA / semaine</div>
+                </div>
+                <div style="background:#10b981;border-radius:12px;padding:16px;text-align:center;">
+                    <div id="gain_mois" style="font-size:20px;font-weight:900;color:#000;">125 000</div>
+                    <div style="color:#065f46;font-size:11px;margin-top:4px;font-weight:700;">FCFA / mois</div>
+                </div>
+            </div>
+            <div style="text-align:center;">
+                <a href="/register" style="display:inline-block;background:#f59e0b;color:#000;font-weight:900;padding:14px 32px;border-radius:100px;text-decoration:none;font-size:15px;">
+                    Je veux gagner cet argent →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function calculerRevenu() {
+    var tarif     = parseInt(document.getElementById('calc_niveau').value);
+    var collectes = parseInt(document.getElementById('calc_collectes').value) || 0;
+    var jour      = tarif * collectes;
+    var semaine   = jour * 6;
+    var mois      = jour * 25;
+    document.getElementById('gain_jour').innerText    = jour.toLocaleString('fr-FR');
+    document.getElementById('gain_semaine').innerText = semaine.toLocaleString('fr-FR');
+    document.getElementById('gain_mois').innerText    = mois.toLocaleString('fr-FR');
+}
+</script>
+
 {% endblock %}
 
