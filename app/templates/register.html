@@ -57,7 +57,14 @@
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
 
-                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:15px;margin-top:4px;">
+                <!-- Code parrain optionnel -->
+            <div id="champ_parrain" style="display:none;">
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Code de parrainage (optionnel)</label>
+                <input type="text" name="code_parrain" placeholder="ex: LCD7F3A2B"
+                    style="width:100%;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;text-transform:uppercase;">
+                <p style="color:#888;font-size:11px;margin-top:4px;">Si quelqu'un vous a recommandé, entrez son code.</p>
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:15px;margin-top:4px;">
                     Créer mon compte →
                 </button>
             </form>
@@ -69,4 +76,6 @@
         </p>
     </div>
 </div>
+<script>document.querySelectorAll('input[name="role"]').forEach(r=>r.addEventListener('change',function(){document.getElementById('champ_parrain').style.display=this.value==='agent'?'block':'none';}));</script>
 {% endblock %}
+
