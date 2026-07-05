@@ -257,6 +257,43 @@ def email_reset_password(user, token_reset):
     send_email(user.email, "Réinitialisation de votre mot de passe", body)
 
 
+def crediter_commission_parrain(agent, gain_agent, mission_id):
+    """Credite la commission parrain : 10% niveau 1, 3% niveau 2, 1% niveau 3."""
+    if not agent.parrain_id:
+        return
+    niveaux = [
+        (agent.parrain_id, 0.10),   # Parrain direct : 10%
+    ]
+    # Niveau 2 : parrain du parrain
+    parrain1 = User.query.get(agent.parrain_id)
+    if parrain1 and parrain1.parrain_id:
+        niveaux.append((parrain1.parrain_id, 0.03))
+        # Niveau 3
+        parrain2 = User.query.get(parrain1.parrain_id)
+        if parrain2 and parrain2.parrain_id:
+            niveaux.append((parrain2.parrain_id, 0.01))
+
+    for parrain_id, taux in niveaux:
+        parrain = User.query.get(parrain_id)
+        if not parrain:
+            continue
+        commission = max(1, round(gain_agent * taux))
+        parrain.wallet_balance   += commission
+        parrain.bonus_parrainage += commission
+        tx = Transaction(
+            user_id          = parrain.id,
+            mission_id       = mission_id,
+            amount           = commission,
+            transaction_type = 'commission_parrain',
+            status           = 'Completed'
+        )
+        db.session.add(tx)
+        niveau_label = {0.10: "niveau 1", 0.03: "niveau 2", 0.01: "niveau 3"}.get(taux, "")
+        notif(parrain.id,
+              f"💸 Commission parrainage {niveau_label} : +{commission} FCFA (10% sur collecte de votre filleul)",
+              'success')
+
+
 def haversine(lat1, lon1, lat2, lon2):
     """Distance en mètres entre deux points GPS."""
     R = 6371000
@@ -511,6 +548,8 @@ def agent_submit(mission_id):
                     tx = Transaction(user_id=agent_obj.id, mission_id=mission.id,
                                      amount=gain_agent, transaction_type='gain', status='Completed')
                     db.session.add(tx)
+                    # Commission parrainage automatique
+                    crediter_commission_parrain(agent_obj, gain_agent, mission.id)
                 notif(session['user_id'],
                       f"✅ Collecte auto-validée par IA pour \"{mission.title}\" — +{gain_agent} FCFA crédités ! (Score IA: {ia_score}/100)", 'success')
                 # Notifier le client
@@ -1705,6 +1744,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
