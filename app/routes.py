@@ -416,6 +416,13 @@ def agent_submit(mission_id):
             flash("Une photo est obligatoire pour cette mission.", "error")
             return render_template('agent_submit.html', mission=mission)
 
+        # Verifier mission d essai
+        if not agent.essai_complete:
+            essai_existant = Submission.query.filter_by(user_id=session['user_id'], status='Pending').first()
+            if essai_existant:
+                flash("Votre mission d'essai est en cours de validation. Patientez !", "info")
+                return redirect(url_for('main.agent_dashboard'))
+
         # Anti-fraude 1 : Vitesse impossible entre collectes
         vitesse_ok, motif_vitesse = anti_fraude_vitesse(session['user_id'], lat, lng)
         if not vitesse_ok:
@@ -1391,6 +1398,15 @@ def page_not_found(e):
     return rt('404.html'), 404
 
 # ── KEEP-ALIVE (empêche Render de s'endormir) ─────────────────
+@main.route('/agent/parrainage')
+def agent_parrainage():
+    if session.get('user_role') != 'agent':
+        return redirect(url_for('main.login'))
+    agent = User.query.get_or_404(session['user_id'])
+    filleuls = User.query.filter_by(parrain_id=agent.id).all()
+    return render_template('agent_parrainage.html', agent=agent, filleuls=filleuls)
+
+
 @main.route('/ping')
 def ping():
     return jsonify({'status': 'ok', 'time': datetime.utcnow().isoformat()})
@@ -1657,6 +1673,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
