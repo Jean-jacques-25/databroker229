@@ -36,6 +36,21 @@
     {% endif %}
     {% endif %}
 
+    <!-- BANNIERE MISSION D ESSAI -->
+    {% if not agent.essai_complete %}
+    <div style="background:linear-gradient(135deg,#1a1200,#0d0d0d);border:2px solid #f59e0b;border-radius:16px;padding:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🎯</div>
+        <h2 style="color:#f59e0b;font-size:18px;font-weight:900;margin-bottom:8px;">Complétez votre mission d'essai !</h2>
+        <p style="color:#aaa;font-size:14px;line-height:1.6;margin-bottom:16px;">
+            Effectuez <strong style="color:#fff;">une collecte terrain</strong> pour activer votre compte.<br>
+            Dès validation → vous serez payé sur toutes vos prochaines collectes 💰
+        </p>
+        <a href="#missions" style="display:inline-block;background:#f59e0b;color:#000;font-weight:900;padding:12px 28px;border-radius:100px;text-decoration:none;font-size:14px;">
+            Voir les missions disponibles →
+        </a>
+    </div>
+    {% endif %}
+
     <!-- EN-TÊTE + STATS -->
     <div style="display:grid;grid-template-columns:1fr repeat(4,auto);gap:16px;align-items:center;flex-wrap:wrap;">
         <div>
@@ -205,6 +220,17 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <!-- PARRAINAGE RAPIDE -->
+    <div style="background:#111;border:1px solid #222;border-radius:16px;padding:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h3 style="color:#fff;font-size:15px;font-weight:800;margin-bottom:4px;">🤝 Parrainez vos amis</h3>
+            <p style="color:#888;font-size:12px;">Gagnez <strong style="color:#f59e0b;">+200 FCFA</strong> par filleul activé · {{ agent.filleuls_count|default(0) }} filleul(s) actif(s)</p>
+        </div>
+        <a href="/agent/parrainage" style="background:#f59e0b;color:#000;font-weight:900;padding:10px 20px;border-radius:100px;text-decoration:none;font-size:13px;white-space:nowrap;">
+            Voir mon code →
+        </a>
     </div>
 
     <!-- DEMANDE DE RETRAIT -->
