@@ -15,6 +15,27 @@
     </div>
     {% endif %}
 
+    <!-- BANNIERE MISSION D ESSAI -->
+    {% if agent.essai_complete == false or agent.essai_complete == none or not agent.essai_complete %}
+    {% if agent.role == 'agent' %}
+    <div style="background:linear-gradient(135deg,#1a1200,#0d0d0d);border:2px solid #f59e0b;border-radius:16px;padding:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🎯</div>
+        <h2 style="color:#f59e0b;font-size:18px;font-weight:900;margin-bottom:8px;">Complétez votre mission d'essai !</h2>
+        <p style="color:#aaa;font-size:14px;line-height:1.6;margin-bottom:16px;">
+            Effectuez <strong style="color:#fff;">une collecte terrain</strong> pour activer votre compte.<br>
+            Dès validation → vous êtes payé sur toutes vos prochaines collectes 💰
+        </p>
+        <div style="background:#0d0d0d;border-radius:10px;padding:10px 16px;margin-bottom:16px;display:inline-block;">
+            <span style="color:#f59e0b;font-size:12px;font-weight:700;">🔒 Compte en attente d'activation</span>
+        </div>
+        <br>
+        <a href="#missions" style="display:inline-block;background:#f59e0b;color:#000;font-weight:900;padding:12px 28px;border-radius:100px;text-decoration:none;font-size:14px;">
+            Voir les missions disponibles →
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
     <!-- EN-TÊTE + STATS -->
     <div style="display:grid;grid-template-columns:1fr repeat(4,auto);gap:16px;align-items:center;flex-wrap:wrap;">
         <div>
