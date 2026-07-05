@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Mon parrainage — LaCentraleDesDonnées229{% endblock %}
+{% block content %}
+<div style="min-height:100vh;padding:24px 16px;">
+<div style="max-width:600px;margin:0 auto;">
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <a href="/agent/dashboard" style="color:#888;text-decoration:none;font-size:20px;">←</a>
+        <h1 style="font-size:22px;font-weight:900;color:#fff;margin:0;">🤝 Mon programme de parrainage</h1>
+    </div>
+
+    <!-- Stats parrainage -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+        <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:900;color:#f59e0b;">{{ filleuls|length }}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Filleuls actifs</div>
+        </div>
+        <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;text-align:center;">
+            <div style="font-size:32px;font-weight:900;color:#10b981;">{{ agent.bonus_parrainage }} <span style="font-size:14px;">FCFA</span></div>
+            <div style="font-size:12px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Bonus gagnés</div>
+        </div>
+    </div>
+
+    <!-- Code parrain -->
+    <div style="background:linear-gradient(135deg,#1a1200,#0a0a0a);border:2px solid #f59e0b;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center;">
+        <p style="color:#888;font-size:13px;margin-bottom:8px;">Votre code de parrainage unique</p>
+        <div style="font-size:36px;font-weight:900;color:#f59e0b;letter-spacing:4px;margin-bottom:16px;">
+            {{ agent.code_parrain or 'LCD000' }}
+        </div>
+        <p style="color:#aaa;font-size:13px;margin-bottom:16px;">
+            Partagez ce code. Quand votre filleul valide sa mission d'essai,<br>
+            vous recevez automatiquement <strong style="color:#10b981;">+200 FCFA</strong> !
+        </p>
+        <button onclick="copierCode()" id="btnCopier"
+            style="background:#f59e0b;color:#000;font-weight:900;border:none;border-radius:100px;padding:12px 28px;cursor:pointer;font-size:14px;">
+            📋 Copier le code
+        </button>
+        <br><br>
+        <a href="https://wa.me/?text=Rejoins%20LaCentraleDesDonnees229%20et%20gagne%20de%20l'argent%20en%20collectant%20des%20donnees%20terrain%20!%20Utilise%20mon%20code%20parrain%20%3A%20{{ agent.code_parrain or 'LCD000' }}%20sur%20https%3A%2F%2Fdatabroker229-1edb.onrender.com%2Fregister"
+           target="_blank"
+           style="display:inline-block;background:#25D366;color:#fff;font-weight:900;padding:12px 24px;border-radius:100px;text-decoration:none;font-size:13px;">
+            📱 Partager sur WhatsApp
+        </a>
+    </div>
+
+    <!-- Comment ça marche -->
+    <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;margin-bottom:24px;">
+        <h2 style="color:#fff;font-size:15px;font-weight:800;margin-bottom:16px;">💡 Comment ça marche ?</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="background:#f59e0b;color:#000;font-weight:900;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">1</div>
+                <p style="color:#aaa;font-size:13px;margin:0;">Partagez votre code <strong style="color:#f59e0b;">{{ agent.code_parrain }}</strong> à vos amis</p>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="background:#f59e0b;color:#000;font-weight:900;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">2</div>
+                <p style="color:#aaa;font-size:13px;margin:0;">Votre ami s'inscrit sur LaCentraleDesDonnées229 avec votre code</p>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="background:#10b981;color:#000;font-weight:900;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">3</div>
+                <p style="color:#aaa;font-size:13px;margin:0;">Dès qu'il valide sa mission d'essai → <strong style="color:#10b981;">+200 FCFA</strong> crédités sur votre solde !</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste filleuls -->
+    <div style="background:#111;border:1px solid #222;border-radius:14px;padding:20px;">
+        <h2 style="color:#fff;font-size:15px;font-weight:800;margin-bottom:16px;">👥 Mes filleuls ({{ filleuls|length }})</h2>
+        {% if filleuls %}
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            {% for f in filleuls %}
+            <div style="display:flex;justify-content:space-between;align-items:center;background:#0d0d0d;border-radius:10px;padding:12px 16px;">
+                <div>
+                    <div style="color:#fff;font-weight:700;font-size:13px;">{{ f.fullname }}</div>
+                    <div style="color:#888;font-size:11px;">Inscrit le {{ f.created_at.strftime('%d/%m/%Y') if f.created_at else '—' }}</div>
+                </div>
+                <span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:100px;
+                    {% if f.essai_complete %}background:#0d1a0d;color:#10b981;{% else %}background:#1a1200;color:#f59e0b;{% endif %}">
+                    {% if f.essai_complete %}✅ Actif{% else %}⏳ En essai{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:24px;color:#888;">
+            <div style="font-size:40px;margin-bottom:8px;">👥</div>
+            <p style="font-size:13px;">Aucun filleul pour l'instant.<br>Partagez votre code pour commencer !</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+</div>
+<script>
+function copierCode() {
+    navigator.clipboard.writeText("{{ agent.code_parrain or 'LCD000' }}");
+    document.getElementById('btnCopier').innerText = '✅ Copié !';
+    setTimeout(() => document.getElementById('btnCopier').innerText = '📋 Copier le code', 2000);
+}
+</script>
+{% endblock %}
