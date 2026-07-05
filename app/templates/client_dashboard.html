@@ -44,6 +44,60 @@
         </div>
     </div>
 
+    <!-- GRAPHIQUES CLIENT -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+        <!-- Donut répartition missions -->
+        <div class="card-dark" style="padding:24px;">
+            <h2 style="font-size:14px;font-weight:800;color:#fff;margin-bottom:20px;">🎯 Répartition des missions</h2>
+            <div style="position:relative;width:150px;height:150px;margin:0 auto 20px;">
+                <canvas id="donutClient"></canvas>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                    <div style="font-size:26px;font-weight:900;color:#fff;">{{ missions|length }}</div>
+                    <div style="font-size:10px;color:#888;font-weight:700;">TOTAL</div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#10b981;flex-shrink:0;"></div>
+                    <span style="color:#888;font-size:11px;">Actives ({{ missions_actives }})</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></div>
+                    <span style="color:#888;font-size:11px;">En attente ({{ missions_attente }})</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></div>
+                    <span style="color:#888;font-size:11px;">Terminées ({{ missions_terminees }})</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+                    <span style="color:#888;font-size:11px;">Rejetées (0)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique activité mensuelle -->
+        <div class="card-dark" style="padding:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2 style="font-size:14px;font-weight:800;color:#fff;margin:0;">📈 Activité mensuelle</h2>
+                <span style="color:#888;font-size:11px;">6 derniers mois</span>
+            </div>
+            <canvas id="lineClient" height="160"></canvas>
+            <div style="display:flex;gap:16px;margin-top:12px;justify-content:center;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:20px;height:2px;background:#3b82f6;"></div>
+                    <span style="color:#888;font-size:11px;">Missions</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:20px;height:2px;background:#10b981;"></div>
+                    <span style="color:#888;font-size:11px;">Collectes validées</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <!-- FORMULAIRE MISSION -->
     <div class="card-dark" style="padding:28px;">
         <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:22px;">🎯 Commander une mission terrain</h2>
@@ -318,4 +372,70 @@ document.getElementById('modal-paiement').addEventListener('click', function(e) 
     if (e.target === this) fermerPaiement();
 });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ── DONUT MISSIONS CLIENT ──────────────────────────────────────
+const donutCtxC = document.getElementById('donutClient').getContext('2d');
+new Chart(donutCtxC, {
+    type: 'doughnut',
+    data: {
+        labels: ['Actives', 'En attente', 'Terminées'],
+        datasets: [{
+            data: [{{ missions_actives }}, {{ missions_attente }}, {{ missions_terminees }}],
+            backgroundColor: ['#10b981', '#f59e0b', '#3b82f6'],
+            borderWidth: 0,
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        cutout: '70%',
+        responsive: true,
+        plugins: { legend: { display: false } }
+    }
+});
+
+// ── LINE CHART ACTIVITÉ CLIENT ─────────────────────────────────
+const lineCtxC = document.getElementById('lineClient').getContext('2d');
+new Chart(lineCtxC, {
+    type: 'line',
+    data: {
+        labels: {{ client_mois_labels | tojson }},
+        datasets: [
+            {
+                label: 'Missions',
+                data: {{ client_mois_missions | tojson }},
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.08)',
+                borderWidth: 2,
+                pointBackgroundColor: '#3b82f6',
+                pointRadius: 4,
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Collectes',
+                data: {{ client_mois_collectes | tojson }},
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.05)',
+                borderWidth: 2,
+                pointBackgroundColor: '#10b981',
+                pointRadius: 4,
+                tension: 0.4,
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+            y: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+        }
+    }
+});
+</script>
 {% endblock %}
+
