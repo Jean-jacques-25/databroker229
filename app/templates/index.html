@@ -1,5 +1,17 @@
 {% extends "base.html" %}
-{% block title %}LaCentraleDesDonnées229 — Collecte de Données Terrain au Bénin{% endblock %}
+{% block title %}LaCentraleDesDonnées229 — Collecte de Données Terrain au Bénin<script>
+function calculerRevenu() {
+    const tarif    = parseInt(document.getElementById('calc_niveau').value);
+    const collectes = parseInt(document.getElementById('calc_collectes').value) || 0;
+    const jour     = tarif * collectes;
+    const semaine  = jour * 6;
+    const mois     = jour * 25;
+    document.getElementById('gain_jour').innerText    = jour.toLocaleString('fr-FR');
+    document.getElementById('gain_semaine').innerText = semaine.toLocaleString('fr-FR');
+    document.getElementById('gain_mois').innerText    = mois.toLocaleString('fr-FR');
+}
+</script>
+{% endblock %}
 {% block description %}Plateforme leader de collecte de données terrain au Bénin. Connectez-vous à des agents certifiés pour des données fiables, géolocalisées et vérifiées. ONG, banques, entreprises.{% endblock %}
 {% block canonical_path %}/{% endblock %}
 {% block og_title %}LaCentraleDesDonnées229 — Collecte de Données Terrain au Bénin{% endblock %}
@@ -375,3 +387,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 {% endblock %}
+
