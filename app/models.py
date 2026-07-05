@@ -21,10 +21,18 @@ class User(db.Model):
     logo_path      = db.Column(db.String(300), nullable=True)
 
     # Profil agent
-    niveau         = db.Column(db.String(20), default='Débutant')  # Débutant, Standard, Expert, Pro
-    total_missions = db.Column(db.Integer, default=0)
-    is_suspended   = db.Column(db.Boolean, default=False)
-    created_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    niveau           = db.Column(db.String(20), default='Débutant')
+    total_missions   = db.Column(db.Integer, default=0)
+    is_suspended     = db.Column(db.Boolean, default=False)
+    created_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    # Mission d essai
+    essai_complete   = db.Column(db.Boolean, default=False)  # True = compte activé
+    essai_sub_id     = db.Column(db.Integer, nullable=True)   # ID soumission d essai
+    # Parrainage
+    code_parrain     = db.Column(db.String(20), unique=True, nullable=True)
+    parrain_id       = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    filleuls_count   = db.Column(db.Integer, default=0)
+    bonus_parrainage = db.Column(db.Integer, default=0)  # total FCFA gagnés via parrainage
 
     submissions    = db.relationship('Submission', backref='agent', lazy=True)
     notifications  = db.relationship('Notification', backref='user', lazy=True)
@@ -182,3 +190,4 @@ class ApiKey(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     client = db.relationship('User', backref=db.backref('api_keys', lazy=True))
+
