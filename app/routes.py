@@ -1288,21 +1288,7 @@ def offline():
 @main.route('/api/v1/docs')
 def api_docs():
     """Documentation de l API publique."""
-    docs = {
-        "api": "LaCentraleDesDonnees229 API v1",
-        "base_url": "https://databroker229-1edb.onrender.com/api/v1",
-        "auth": "Header: Authorization: Bearer VOTRE_CLE_API",
-        "endpoints": {
-            "GET /api/v1/missions": "Liste de vos missions",
-            "GET /api/v1/missions/{id}": "Detail d une mission",
-            "GET /api/v1/missions/{id}/collectes": "Collectes validees d une mission",
-            "GET /api/v1/missions/{id}/stats": "Statistiques d une mission",
-            "GET /api/v1/profil": "Votre profil client"
-        },
-        "formats": "JSON",
-        "contact": "contact@lacentraledesdonnees229.com"
-    }
-    return jsonify(docs)
+    return render_template('api_docs.html')
 
 
 @main.route('/api/v1/missions')
