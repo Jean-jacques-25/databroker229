@@ -684,6 +684,34 @@ def client_dashboard():
             'is_suspended':   m.is_suspended,
         })
 
+    from datetime import timedelta
+    missions_terminees = sum(1 for m in missions if m.status == 'Termine')
+
+    # Activite 6 derniers mois
+    client_mois_labels    = []
+    client_mois_missions  = []
+    client_mois_collectes = []
+    now = datetime.utcnow()
+    for i in range(5, -1, -1):
+        mois_cible = now.month - i
+        annee_cible = now.year
+        while mois_cible <= 0:
+            mois_cible += 12
+            annee_cible -= 1
+        debut = datetime(annee_cible, mois_cible, 1)
+        if mois_cible == 12:
+            fin = datetime(annee_cible + 1, 1, 1)
+        else:
+            fin = datetime(annee_cible, mois_cible + 1, 1)
+        nb_missions = sum(1 for m in missions if m.created_at and debut <= m.created_at < fin)
+        nb_collectes = sum(
+            sum(1 for s in m.submissions if s.status == 'Approved' and s.submitted_at and debut <= s.submitted_at < fin)
+            for m in missions
+        )
+        client_mois_labels.append(debut.strftime('%b'))
+        client_mois_missions.append(nb_missions)
+        client_mois_collectes.append(nb_collectes)
+
     return render_template('client_dashboard.html',
         missions=missions_data,
         data_count=total_points,
@@ -691,7 +719,11 @@ def client_dashboard():
         notifs=notifs,
         budget_mois=budget_mois,
         missions_actives=missions_actives,
-        missions_attente=missions_attente)
+        missions_attente=missions_attente,
+        missions_terminees=missions_terminees,
+        client_mois_labels=client_mois_labels,
+        client_mois_missions=client_mois_missions,
+        client_mois_collectes=client_mois_collectes)
 
 
 
@@ -1673,6 +1705,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
