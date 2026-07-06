@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Documentation API — LaCentraleDesDonnées229{% endblock %}
+{% block title %}Documentation API — LaCentraleDesDonnees229{% endblock %}
 {% block content %}
 <div style="min-height:100vh;padding:40px 16px;">
 <div style="max-width:800px;margin:0 auto;">
@@ -7,67 +7,93 @@
     <div style="text-align:center;margin-bottom:48px;">
         <span style="background:#3b82f6;color:#fff;font-size:11px;font-weight:900;padding:6px 16px;border-radius:100px;letter-spacing:1px;">API PUBLIQUE v1</span>
         <h1 style="font-size:32px;font-weight:900;color:#fff;margin:16px 0 8px;">Documentation API</h1>
-        <p style="color:#888;font-size:15px;">Intégrez les données de LaCentraleDesDonnées229 directement dans vos systèmes</p>
+        <p style="color:#888;font-size:15px;">Integrez les donnees de LaCentraleDesDonnees229 dans vos systemes</p>
     </div>
 
     <!-- Authentification -->
     <div style="background:#111;border:1px solid #222;border-radius:16px;padding:24px;margin-bottom:20px;">
-        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:12px;">🔑 Authentification</h2>
-        <p style="color:#aaa;font-size:14px;margin-bottom:12px;">Ajoutez ce header à chaque requête :</p>
-        <div style="background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:14px;font-family:monospace;">
+        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:12px;">Authentification</h2>
+        <p style="color:#aaa;font-size:14px;margin-bottom:12px;">Ajoutez ce header a chaque requete :</p>
+        <div style="background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:14px;font-family:monospace;font-size:13px;">
             <span style="color:#10b981;">Authorization</span><span style="color:#888;">: </span><span style="color:#f59e0b;">Bearer VOTRE_CLE_API</span>
         </div>
-        <p style="color:#888;font-size:12px;margin-top:10px;">Générez votre clé depuis votre espace client → <a href="/client/api-keys" style="color:#f59e0b;">Mes clés API</a></p>
+        <p style="color:#888;font-size:12px;margin-top:10px;">Generez votre cle depuis votre espace client :
+            <a href="/client/api-keys" style="color:#f59e0b;">Mes cles API</a>
+        </p>
     </div>
 
     <!-- Base URL -->
     <div style="background:#111;border:1px solid #222;border-radius:16px;padding:24px;margin-bottom:20px;">
-        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:12px;">🌐 URL de base</h2>
-        <div style="background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:14px;font-family:monospace;color:#10b981;">
+        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:12px;">URL de base</h2>
+        <div style="background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:14px;font-family:monospace;color:#10b981;font-size:13px;">
             https://databroker229-1edb.onrender.com/api/v1
         </div>
     </div>
 
     <!-- Endpoints -->
     <div style="background:#111;border:1px solid #222;border-radius:16px;padding:24px;margin-bottom:20px;">
-        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:16px;">📡 Endpoints disponibles</h2>
-        <div style="display:flex;flex-direction:column;gap:12px;">
+        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:16px;">Endpoints disponibles</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
 
-            {% for method, endpoint, desc, example in [
-                ('GET', '/api/v1/missions', 'Liste de toutes vos missions', ''),
-                ('GET', '/api/v1/missions/{id}', 'Détail d'une mission spécifique', ''),
-                ('GET', '/api/v1/missions/{id}/collectes', 'Toutes les collectes validées d'une mission', '?page=1&per_page=50'),
-                ('GET', '/api/v1/missions/{id}/stats', 'Statistiques et activité mensuelle', ''),
-                ('GET', '/api/v1/profil', 'Votre profil client et infos clé API', '')
-            ] %}
             <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:12px;padding:16px;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                    <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:3px 10px;border-radius:4px;flex-shrink:0;">{{ method }}</span>
-                    <code style="color:#f59e0b;font-size:13px;">{{ endpoint }}{{ example }}</code>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:3px 10px;border-radius:4px;">GET</span>
+                    <code style="color:#f59e0b;font-size:13px;">/api/v1/missions</code>
                 </div>
-                <p style="color:#888;font-size:13px;margin:0;">{{ desc }}</p>
+                <p style="color:#888;font-size:13px;margin:0;">Liste de toutes vos missions</p>
             </div>
-            {% endfor %}
+
+            <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:12px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:3px 10px;border-radius:4px;">GET</span>
+                    <code style="color:#f59e0b;font-size:13px;">/api/v1/missions/{id}</code>
+                </div>
+                <p style="color:#888;font-size:13px;margin:0;">Detail complet d une mission specifique</p>
+            </div>
+
+            <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:12px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:3px 10px;border-radius:4px;">GET</span>
+                    <code style="color:#f59e0b;font-size:13px;">/api/v1/missions/{id}/collectes?page=1&per_page=50</code>
+                </div>
+                <p style="color:#888;font-size:13px;margin:0;">Toutes les collectes validees d une mission (paginee)</p>
+            </div>
+
+            <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:12px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:3px 10px;border-radius:4px;">GET</span>
+                    <code style="color:#f59e0b;font-size:13px;">/api/v1/missions/{id}/stats</code>
+                </div>
+                <p style="color:#888;font-size:13px;margin:0;">Statistiques et activite mensuelle d une mission</p>
+            </div>
+
+            <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:12px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span style="background:#10b981;color:#000;font-weight:900;font-size:10px;padding:3px 10px;border-radius:4px;">GET</span>
+                    <code style="color:#f59e0b;font-size:13px;">/api/v1/profil</code>
+                </div>
+                <p style="color:#888;font-size:13px;margin:0;">Votre profil client et informations cle API</p>
+            </div>
 
         </div>
     </div>
 
-    <!-- Exemple de réponse -->
+    <!-- Exemple -->
     <div style="background:#111;border:1px solid #222;border-radius:16px;padding:24px;margin-bottom:20px;">
-        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:12px;">💡 Exemple de requête</h2>
-        <div style="background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:16px;font-family:monospace;font-size:12px;line-height:1.8;overflow-x:auto;">
+        <h2 style="color:#f59e0b;font-size:16px;font-weight:800;margin-bottom:12px;">Exemple de requete</h2>
+        <div style="background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:16px;font-family:monospace;font-size:12px;line-height:2;overflow-x:auto;">
             <div><span style="color:#3b82f6;">curl</span> <span style="color:#fff;">-X GET</span> \</div>
-            <div style="padding-left:16px;"><span style="color:#10b981;">https://databroker229-1edb.onrender.com/api/v1/missions</span> \</div>
-            <div style="padding-left:16px;"><span style="color:#f59e0b;">-H "Authorization: Bearer votre_cle_api"</span></div>
+            <div style="padding-left:16px;color:#10b981;">https://databroker229-1edb.onrender.com/api/v1/missions \</div>
+            <div style="padding-left:16px;"><span style="color:#f59e0b;">-H "Authorization: Bearer sk_votre_cle_api"</span></div>
         </div>
     </div>
 
     <!-- Contact -->
     <div style="background:#0d1a0d;border:1px solid #10b981;border-radius:16px;padding:24px;text-align:center;">
-        <p style="color:#aaa;font-size:14px;margin-bottom:12px;">Besoin d'aide pour l'intégration ?</p>
+        <p style="color:#aaa;font-size:14px;margin-bottom:16px;">Besoin d aide pour l integration ?</p>
         <a href="mailto:contact@lacentraledesdonnees229.com"
-           style="display:inline-block;background:#10b981;color:#000;font-weight:900;padding:12px 24px;border-radius:100px;text-decoration:none;font-size:14px;">
-            📧 Contactez-nous
+           style="display:inline-block;background:#10b981;color:#000;font-weight:900;padding:12px 28px;border-radius:100px;text-decoration:none;font-size:14px;">
+            Nous contacter
         </a>
     </div>
 
