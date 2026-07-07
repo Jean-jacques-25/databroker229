@@ -279,6 +279,8 @@
                     <a href="/client/mission/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">🗺️ Voir les données</a>
                     <a href="/client/export/{{ m.id }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">⬇️ CSV</a>
                     <a href="/client/rapport/{{ m.id }}" style="font-size:12px;padding:8px 14px;background:#f59e0b;color:#000;font-weight:800;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">📄 PDF</a>
+                     <a href="/client/analytiques/{{ m.id }}" style="font-size:12px;padding:8px 14px;background:#10b981;color:#fff;font-weight:800;border-radius:8px;text-decoration:none;">📊 Stats</a>
+                     <a href="/client/api-keys" style="font-size:12px;padding:8px 14px;background:#3b82f6;color:#fff;font-weight:800;border-radius:8px;text-decoration:none;">🔑 API</a>
                 </div>
             </div>
             {% else %}
@@ -438,4 +440,5 @@ new Chart(lineCtxC, {
 });
 </script>
 {% endblock %}
+
 
