@@ -181,6 +181,30 @@
         </div>
     </div>
 
+    <!-- MESSAGE GROUPE ADMIN -->
+    <div style="background:#111;border:1px solid #222;border-radius:16px;padding:24px;">
+        <h2 style="font-size:15px;font-weight:800;color:#fff;margin-bottom:16px;">📢 Message groupe</h2>
+        <form method="POST" action="/admin/message-groupe" style="display:flex;flex-direction:column;gap:12px;">
+            <textarea name="message" rows="3" placeholder="Votre message pour agents et/ou clients..."
+                style="width:100%;background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:12px;color:#fff;font-size:13px;resize:none;box-sizing:border-box;" required></textarea>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;">
+                <select name="cible" style="background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:10px;color:#fff;font-size:13px;">
+                    <option value="tous">Tous les utilisateurs</option>
+                    <option value="agents">Agents seulement</option>
+                    <option value="clients">Clients seulement</option>
+                </select>
+                <select name="type_msg" style="background:#0d0d0d;border:1px solid #333;border-radius:10px;padding:10px;color:#fff;font-size:13px;">
+                    <option value="info">Info</option>
+                    <option value="success">Succes</option>
+                    <option value="warning">Avertissement</option>
+                </select>
+                <button type="submit" style="background:#f59e0b;color:#000;font-weight:900;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;white-space:nowrap;">
+                    Envoyer
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- TOP AGENTS -->
     <div class="card-dark" style="padding:0;overflow:hidden;">
         <div style="padding:18px 22px;border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;">
