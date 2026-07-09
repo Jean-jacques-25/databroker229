@@ -1576,6 +1576,8 @@ def backup_db():
 
 # ── PAGE LÉGALE ────────────────────────────────────────────────
 @main.route('/legal')
+@main.route('/cgu')
+@main.route('/mentions-legales')
 def legal():
     return render_template('legal.html')
 
