@@ -383,26 +383,43 @@ function calculerRevenu() {
 </section>
 
 
-<!-- MISSION URGENTE (motivation agents) -->
+<!-- MISSIONS DISPONIBLES (motivation agents) -->
 <section style="padding:0 16px 80px;">
     <div style="max-width:900px;margin:0 auto;">
-        <div style="background:linear-gradient(135deg,#1a1200,#0a0a0a);border:1px solid #f59e0b33;border-radius:20px;padding:28px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
-            <div style="display:flex;align-items:center;gap:16px;">
-                <div style="width:12px;height:12px;background:#10b981;border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;"></div>
-                <div>
-                    <div style="font-size:11px;color:#f59e0b;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🔥 Mission disponible maintenant</div>
-                    <div style="font-size:18px;font-weight:900;color:#fff;">Audit commerces — Cotonou & Calavi</div>
-                    <div style="font-size:13px;color:#888;margin-top:4px;">GPS + Photo obligatoire · Paiement immédiat après validation</div>
-                </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-                <div style="text-align:center;">
-                    <div style="font-size:28px;font-weight:900;color:#10b981;">500 FCFA</div>
-                    <div style="font-size:11px;color:#888;">par point collecté</div>
-                </div>
-                <a href="{{ url_for('main.register') }}" class="btn-primary" style="font-size:14px;padding:12px 22px;white-space:nowrap;">Postuler →</a>
-            </div>
+        <div style="text-align:center;margin-bottom:32px;">
+            <h2 style="font-size:clamp(24px,5vw,36px);font-weight:900;color:#fff;letter-spacing:-1px;">🔥 Missions disponibles maintenant</h2>
+            <p style="color:#888;margin-top:10px;font-size:14px;">Des missions actives, ouvertes aux agents collecteurs dès aujourd'hui.</p>
         </div>
+        {% if missions_accueil %}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+            {% for mission in missions_accueil %}
+            <div style="background:linear-gradient(135deg,#1a1200,#0a0a0a);border:1px solid #f59e0b33;border-radius:20px;padding:28px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="width:12px;height:12px;background:#10b981;border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;"></div>
+                    <div>
+                        <div style="font-size:11px;color:#f59e0b;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mission disponible</div>
+                        <div style="font-size:18px;font-weight:900;color:#fff;">{{ mission.title }}</div>
+                        <div style="font-size:13px;color:#888;margin-top:4px;">{{ mission.zone or 'Bénin' }} · {{ mission.type_donnees or mission.difficulty }}{% if mission.photos_requises == 'oui' %} · Photo obligatoire{% endif %}</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                    <div style="text-align:center;">
+                        <div style="font-size:28px;font-weight:900;color:#10b981;">{{ mission.prix_agent or mission.difficulte }} FCFA</div>
+                        <div style="font-size:11px;color:#888;">par collecte</div>
+                    </div>
+                    <a href="{{ url_for('main.register') }}" class="btn-primary" style="font-size:14px;padding:12px 22px;white-space:nowrap;">Postuler →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if nb_missions_actives > 3 %}
+        <div style="text-align:center;margin-top:28px;">
+            <a href="{{ url_for('main.missions_disponibles') }}" class="btn-outline" style="font-size:14px;padding:12px 28px;">Voir plus de missions →</a>
+        </div>
+        {% endif %}
+        {% else %}
+        <p style="text-align:center;color:#666;font-size:14px;">Aucune mission active pour le moment. Revenez bientôt !</p>
+        {% endif %}
     </div>
 </section>
 

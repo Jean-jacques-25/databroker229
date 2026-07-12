@@ -45,7 +45,23 @@ def robots():
 # ─── PAGE D'ACCUEIL ───────────────────────────────────────────
 @main.route('/')
 def index():
-    return render_template('index.html')
+    missions_accueil = Mission.query.filter(
+        Mission.status == 'Actif', Mission.is_suspended == False
+    ).order_by(Mission.created_at.desc()).limit(3).all()
+    nb_missions_actives = Mission.query.filter(
+        Mission.status == 'Actif', Mission.is_suspended == False
+    ).count()
+    return render_template('index.html', missions_accueil=missions_accueil,
+                           nb_missions_actives=nb_missions_actives)
+
+
+# ─── MISSIONS DISPONIBLES (page publique) ─────────────────────
+@main.route('/missions-disponibles')
+def missions_disponibles():
+    missions_toutes = Mission.query.filter(
+        Mission.status == 'Actif', Mission.is_suspended == False
+    ).order_by(Mission.created_at.desc()).all()
+    return render_template('missions_disponibles.html', missions=missions_toutes)
 
 
 # ─── VÉRIFICATION GOOGLE SEARCH CONSOLE ──────────────────────
