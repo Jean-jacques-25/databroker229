@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
 from sqlalchemy import text
+from sqlalchemy.pool import QueuePool
 import os
 
 db = SQLAlchemy()
@@ -21,6 +22,23 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'databroker229-secret-key-prod')
     app.config['WTF_CSRF_ENABLED'] = False
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+    # ── CONNEXION POSTGRESQL ROBUSTE ──────────────────────────────
+    # Reconnexion automatique si la connexion SSL expire ou est perdue
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,        # Teste la connexion avant chaque requete
+        'pool_recycle': 280,          # Renouvelle la connexion toutes les 280s
+        'pool_timeout': 20,           # Timeout de 20s pour obtenir une connexion
+        'pool_size': 5,               # 5 connexions en parallele max
+        'max_overflow': 10,           # 10 connexions supplementaires si besoin
+        'connect_args': {
+            'connect_timeout': 10,    # Timeout de connexion TCP
+            'keepalives': 1,          # Activer TCP keepalive
+            'keepalives_idle': 30,    # Envoyer keepalive apres 30s d inactivite
+            'keepalives_interval': 10, # Reessayer toutes les 10s
+            'keepalives_count': 5,    # 5 tentatives avant abandon
+        }
+    }
 
     app.config['MAIL_SERVER']        = 'smtp.gmail.com'
     app.config['MAIL_PORT']          = 587
@@ -42,16 +60,13 @@ def create_app():
         db.create_all()
         try:
             with db.engine.connect() as conn:
-                # Colonnes missions
                 conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS prix_agent INTEGER DEFAULT 500"))
-                # Colonnes parrainage et mission essai
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS essai_complete BOOLEAN DEFAULT false"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS essai_sub_id INTEGER"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS code_parrain VARCHAR(20)"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS parrain_id INTEGER"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS filleuls_count INTEGER DEFAULT 0"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_parrainage INTEGER DEFAULT 0"))
-                # Table api_keys
                 conn.execute(text("""CREATE TABLE IF NOT EXISTS api_keys (
                     id SERIAL PRIMARY KEY,
                     client_id INTEGER REFERENCES users(id),
@@ -62,7 +77,6 @@ def create_app():
                     last_used TIMESTAMP,
                     created_at TIMESTAMP DEFAULT NOW()
                 )"""))
-                # Activer clients et admins existants
                 conn.execute(text("UPDATE users SET essai_complete=true WHERE role IN ('client','admin')"))
                 conn.commit()
         except Exception as e:
