@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, mail, csrf
+from app import db, mail
 from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
 from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta
@@ -104,39 +104,20 @@ def register():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        ip_fix = request.remote_addr or 'unknown'
-        attempts_key = f'login_attempts_{ip_fix}'
-        time_key = f'login_time_{ip_fix}'
-        max_attempts = 5
-        lockout_seconds = 15 * 60
-
-        attempts = session.get(attempts_key, 0)
-        last_attempt_time = session.get(time_key)
-        if attempts >= max_attempts and last_attempt_time:
-            elapsed = time.time() - last_attempt_time
-            if elapsed < lockout_seconds:
-                minutes_left = max(1, int((lockout_seconds - elapsed) // 60) + 1)
-                flash(f"Trop de tentatives échouées. Réessayez dans {minutes_left} minute(s).", "error")
-                return render_template('login.html')
-            else:
-                session.pop(attempts_key, None)
-                session.pop(time_key, None)
-
         identifier = request.form.get('identifier', '').strip()
         password   = request.form.get('password', '')
         user = User.query.filter(
             (User.email == identifier.lower()) | (User.phone == identifier)
         ).first()
         if not user or not check_password_hash(user.password, password):
-            session[attempts_key] = session.get(attempts_key, 0) + 1
-            session[time_key] = time.time()
             flash("Identifiants incorrects.", "error")
             return render_template('login.html')
         if user.is_suspended:
             flash("Votre compte est suspendu. Contactez le support.", "error")
             return render_template('login.html')
-        session.pop(attempts_key, None)
-        session.pop(time_key, None)
+        ip_fix = request.remote_addr or 'unknown'
+        session.pop(f'login_attempts_{ip_fix}', None)
+        session.pop(f'login_time_{ip_fix}', None)
         session['user_id']   = user.id
         session['user_role'] = user.role
         session['user_name'] = user.fullname
@@ -476,15 +457,43 @@ def agent_submit(mission_id):
             flash("La géolocalisation GPS est obligatoire.", "error")
             return render_template('agent_submit.html', mission=mission)
 
-        # Sauvegarde photo
+        # Sauvegarde photo avec compression automatique
         photo_path = None
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename:
-            upload_dir = os.path.join('app', 'static', 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-            filename = f"sub_{session['user_id']}_{mission_id}_{int(__import__('time').time())}.jpg"
-            photo_file.save(os.path.join(upload_dir, filename))
-            photo_path = f"uploads/{filename}"
+            try:
+                # Chemin absolu — fonctionne sur Render et en local
+                import time as _time
+                base_dir   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                upload_dir = os.path.join(base_dir, 'app', 'static', 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                filename = f"sub_{session['user_id']}_{mission_id}_{int(_time.time())}.jpg"
+                filepath = os.path.join(upload_dir, filename)
+
+                # Compression photo avec Pillow pour reduire la taille
+                try:
+                    from PIL import Image as PILImage
+                    import io as _io
+                    img = PILImage.open(photo_file.stream)
+                    img = img.convert('RGB')
+                    # Redimensionner si trop grande (max 1200px)
+                    max_size = (1200, 1200)
+                    img.thumbnail(max_size, PILImage.LANCZOS)
+                    # Sauvegarder compresse (qualite 75%)
+                    img.save(filepath, 'JPEG', quality=75, optimize=True)
+                except Exception:
+                    # Fallback : sauvegarder directement si Pillow echoue
+                    photo_file.stream.seek(0)
+                    photo_file.save(filepath)
+
+                photo_path = f"uploads/{filename}"
+            except Exception as e:
+                print(f"Erreur upload photo: {e}")
+                # Ne pas bloquer la soumission si l upload echoue
+                photo_path = None
+                if mission.photos_requises == 'oui':
+                    flash("Erreur lors de l upload de la photo. Reessayez avec une photo plus petite.", "error")
+                    return render_template('agent_submit.html', mission=mission)
         elif mission.photos_requises == 'oui':
             flash("Une photo est obligatoire pour cette mission.", "error")
             return render_template('agent_submit.html', mission=mission)
@@ -1205,7 +1214,6 @@ def admin_message_groupe():
 
 # ── SAUVEGARDE FORMULAIRE AGENT (API) ─────────────────────────
 @main.route('/api/save-draft', methods=['POST'])
-@csrf.exempt
 def api_save_draft():
     """Sauvegarde temporaire des données formulaire agent côté serveur."""
     if not session.get('user_id'):
@@ -1768,6 +1776,7 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
+
 
 
 
