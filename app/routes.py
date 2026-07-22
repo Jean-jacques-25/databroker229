@@ -446,6 +446,7 @@ def agent_submit(mission_id):
     if session.get('user_role') != 'agent':
         return redirect(url_for('main.login'))
     mission = Mission.query.get_or_404(mission_id)
+    agent = User.query.get(session['user_id'])
 
     if request.method == 'POST':
         lat  = request.form.get('latitude',  type=float)
@@ -580,7 +581,6 @@ def agent_submit(mission_id):
                 statut_auto     = 'Rejected'
                 motif_auto      = sub.motif_rejet
 
-        agent = User.query.get(session['user_id'])
         agent.total_missions += 1
 
         if statut_auto == 'Rejected':
