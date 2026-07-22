@@ -64,6 +64,7 @@
 
                 <!-- BOUTONS ACTION -->
                 <form action="{{ url_for('main.admin_review', submission_id=sub.id) }}" method="POST" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" name="action" value="approve"
                         style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:800;padding:16px;border:none;border-radius:14px;cursor:pointer;font-size:14px;transition:all 0.2s;"
                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">

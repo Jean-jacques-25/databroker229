@@ -225,6 +225,7 @@
         <div class="card-dark" style="padding:28px;">
             <div style="font-size:13px;color:#888;margin-bottom:20px;">Solde disponible : <strong style="color:#10b981;font-size:18px;">{{ agent.wallet_balance }} FCFA</strong></div>
             <form method="POST" action="/agent/retrait" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Montant (FCFA) *</label>
                     <input type="number" name="montant" min="1000" max="{{ agent.wallet_balance }}" placeholder="ex: 5000" required

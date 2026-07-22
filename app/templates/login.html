@@ -11,6 +11,7 @@
 
         <div class="card-dark" style="padding:36px;">
             <form method="POST" action="/login" style="display:flex;flex-direction:column;gap:20px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div>
                     <label style="display:block;font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Email ou Téléphone</label>
                     <input type="text" name="identifier" placeholder="exemple@mail.com ou +229..." required

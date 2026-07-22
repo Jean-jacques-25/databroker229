@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import text
 from sqlalchemy.pool import QueuePool
 import os
@@ -9,6 +10,7 @@ import os
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
+csrf = CSRFProtect()
 
 def create_app():
     app = Flask(__name__)
@@ -20,7 +22,6 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'databroker229-secret-key-prod')
-    app.config['WTF_CSRF_ENABLED'] = False
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
     # ── CONNEXION POSTGRESQL ROBUSTE ──────────────────────────────
@@ -50,6 +51,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    csrf.init_app(app)
 
     from app.routes import main
     from app.admin_routes import admin

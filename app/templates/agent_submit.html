@@ -40,6 +40,7 @@
     <!-- FORMULAIRE DYNAMIQUE -->
     <div class="card-dark" style="padding:28px;">
         <form id="collecte-form" method="POST" action="/agent/submit/{{ mission.id }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:18px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             {% set champs = mission.champs_requis.split(',') if mission.champs_requis else ['nom_boutique','observations'] %}
 

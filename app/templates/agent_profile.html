@@ -43,6 +43,7 @@
     <div class="card-dark" style="padding:28px;">
         <h2 style="font-size:15px;font-weight:800;color:#fff;margin-bottom:20px;">✏️ Modifier mes informations</h2>
         <form method="POST" action="/agent/profile" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% for label, name, val, ph in [
                 ('Nom complet', 'fullname', agent.fullname, 'Ex: Kofi Mensah'),
                 ('Téléphone', 'phone', agent.phone, '+229 XX XX XX XX'),

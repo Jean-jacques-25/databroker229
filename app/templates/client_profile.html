@@ -8,6 +8,7 @@
     </div>
     <div class="card-dark" style="padding:28px;">
         <form method="POST" action="/client/profile" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% for label, name, val, ph in [
                 ('Nom du responsable', 'fullname', client.fullname, 'Ex: Kofi Mensah'),
                 ('Nom de l\'organisation', 'organisation', client.organisation or '', 'ex: UNICEF Bénin'),

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, mail
+from app import db, mail, csrf
 from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
 from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta
@@ -104,20 +104,39 @@ def register():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        ip_fix = request.remote_addr or 'unknown'
+        attempts_key = f'login_attempts_{ip_fix}'
+        time_key = f'login_time_{ip_fix}'
+        max_attempts = 5
+        lockout_seconds = 15 * 60
+
+        attempts = session.get(attempts_key, 0)
+        last_attempt_time = session.get(time_key)
+        if attempts >= max_attempts and last_attempt_time:
+            elapsed = time.time() - last_attempt_time
+            if elapsed < lockout_seconds:
+                minutes_left = max(1, int((lockout_seconds - elapsed) // 60) + 1)
+                flash(f"Trop de tentatives échouées. Réessayez dans {minutes_left} minute(s).", "error")
+                return render_template('login.html')
+            else:
+                session.pop(attempts_key, None)
+                session.pop(time_key, None)
+
         identifier = request.form.get('identifier', '').strip()
         password   = request.form.get('password', '')
         user = User.query.filter(
             (User.email == identifier.lower()) | (User.phone == identifier)
         ).first()
         if not user or not check_password_hash(user.password, password):
+            session[attempts_key] = session.get(attempts_key, 0) + 1
+            session[time_key] = time.time()
             flash("Identifiants incorrects.", "error")
             return render_template('login.html')
         if user.is_suspended:
             flash("Votre compte est suspendu. Contactez le support.", "error")
             return render_template('login.html')
-        ip_fix = request.remote_addr or 'unknown'
-        session.pop(f'login_attempts_{ip_fix}', None)
-        session.pop(f'login_time_{ip_fix}', None)
+        session.pop(attempts_key, None)
+        session.pop(time_key, None)
         session['user_id']   = user.id
         session['user_role'] = user.role
         session['user_name'] = user.fullname
@@ -1186,6 +1205,7 @@ def admin_message_groupe():
 
 # ── SAUVEGARDE FORMULAIRE AGENT (API) ─────────────────────────
 @main.route('/api/save-draft', methods=['POST'])
+@csrf.exempt
 def api_save_draft():
     """Sauvegarde temporaire des données formulaire agent côté serveur."""
     if not session.get('user_id'):

@@ -1,6 +1,7 @@
 <section class="py-10 max-w-lg mx-auto">
     <h2 class="text-2xl font-bold mb-6">Soumettre une demande</h2>
     <form action="/contact" method="POST" class="space-y-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="text" name="name" placeholder="Votre Nom / Entreprise" class="w-full border p-2 rounded" required>
         <input type="email" name="email" placeholder="Votre Email" class="w-full border p-2 rounded" required>
         <textarea name="message" placeholder="Détails de votre besoin" class="w-full border p-2 rounded" rows="4" required></textarea>

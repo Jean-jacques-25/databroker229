@@ -45,6 +45,7 @@
                         </td>
                         <td style="padding:14px 18px;">
                             <form action="/admin/mission/{{ mission.id }}/suspendre" method="POST" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" style="background:{% if mission.is_suspended %}#0a1a0f{% else %}#1a0808{% endif %};border:1px solid {% if mission.is_suspended %}#10b98133{% else %}#ef444433{% endif %};color:{% if mission.is_suspended %}#10b981{% else %}#ef4444{% endif %};font-size:10px;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;">
                                     {% if mission.is_suspended %}▶ Réactiver{% else %}⏸ Suspendre{% endif %}
                                 </button>

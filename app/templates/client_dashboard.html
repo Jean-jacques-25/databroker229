@@ -102,6 +102,7 @@
     <div class="card-dark" style="padding:28px;">
         <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:22px;">🎯 Commander une mission terrain</h2>
         <form method="POST" action="/client/dashboard" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
                 <div>
@@ -298,6 +299,7 @@
         <h2 style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;">💳 Payer la mission</h2>
         <p style="font-size:13px;color:#888;margin-bottom:24px;">Montant : <strong style="color:#f59e0b;" id="modal-montant"></strong> FCFA</p>
         <form id="form-paiement" method="POST" style="display:flex;flex-direction:column;gap:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- Mode de paiement -->
             <input type="hidden" name="mode_paiement" value="fedapay">
             <div>
