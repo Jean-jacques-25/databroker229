@@ -78,6 +78,8 @@ def create_app():
                 conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS zones_additionnelles VARCHAR(300)"))
                 conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS photos_nombre INTEGER DEFAULT 1"))
                 conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS photos_instructions VARCHAR(300)"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paused_auto BOOLEAN DEFAULT FALSE"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS low_score_notified BOOLEAN DEFAULT FALSE"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS essai_complete BOOLEAN DEFAULT false"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS essai_sub_id INTEGER"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS code_parrain VARCHAR(20)"))

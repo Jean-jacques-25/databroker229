@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, mail, csrf
-from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
+from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData, AuditLog
 from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta
 import csv, io, math, os, json as json_module, urllib.request as urllib_req, base64, time
@@ -12,6 +12,40 @@ ADMIN_SECRET_CODE = 'DB229ADMIN'
 def notif(user_id, message, type='info'):
     n = Notification(user_id=user_id, message=message, type=type)
     db.session.add(n)
+
+
+def log_action(action, target_type=None, target_id=None, details=None):
+    """Enregistre une action dans le journal d'audit. A appeler avant tout db.session.commit()."""
+    entry = AuditLog(
+        actor_id   = session.get('user_id'),
+        actor_name = session.get('user_name', 'Systeme'),
+        actor_role = session.get('user_role', 'systeme'),
+        action     = action,
+        target_type= target_type,
+        target_id  = target_id,
+        details    = details
+    )
+    db.session.add(entry)
+
+
+def check_agent_performance(agent):
+    """Applique les seuils automatiques de performance apres chaque soumission traitee."""
+    recent = Submission.query.filter_by(user_id=agent.id).order_by(Submission.submitted_at.desc()).limit(3).all()
+    if len(recent) == 3 and all(s.status == 'Rejected' for s in recent) and not agent.is_paused_auto and not agent.is_suspended:
+        agent.is_paused_auto = True
+        notif(agent.id, "Votre compte a été mis en pause automatiquement suite à 3 collectes rejetées consécutivement. Un administrateur va examiner votre dossier avant réactivation.", 'warning')
+        for adm in User.query.filter_by(role='admin').all():
+            notif(adm.id, f"⚠️ Agent {agent.fullname} mis en pause automatiquement (3 rejets consécutifs).", 'warning')
+        log_action('agent_auto_paused', target_type='User', target_id=agent.id,
+                    details=f"3 rejets consecutifs (soumissions {[s.id for s in recent]})")
+
+    if agent.total_missions >= 5:
+        score = agent.reliability_score
+        if score < 50 and not agent.low_score_notified:
+            agent.low_score_notified = True
+            notif(agent.id, f"Votre taux de fiabilité est descendu à {score}%. Soyez plus rigoureux sur les consignes de collecte pour éviter une suspension.", 'warning')
+        elif score >= 50 and agent.low_score_notified:
+            agent.low_score_notified = False
 
 
 # ─── SEO : SITEMAP + ROBOTS.TXT ──────────────────────────────
@@ -468,6 +502,9 @@ def agent_submit(mission_id):
     agent = User.query.get(session['user_id'])
 
     if request.method == 'POST':
+        if agent.is_paused_auto:
+            flash("Votre compte est en pause en attente de revue par un administrateur, suite à plusieurs collectes rejetées. Contactez le support.", "error")
+            return redirect(url_for('main.agent_dashboard'))
         lat  = request.form.get('latitude',  type=float)
         lng  = request.form.get('longitude', type=float)
 
@@ -567,6 +604,9 @@ def agent_submit(mission_id):
                 if not photo_ok or photo_score < 30:
                     sub.status      = 'Rejected'
                     sub.motif_rejet = f"Photo invalide detectee par IA (score: {photo_score}/100). Soumettez une vraie photo de commerce."
+                    log_action('submission_auto_rejected', target_type='Submission', target_id=sub.id,
+                               details=f"Photo invalide (score IA {photo_score}/100)")
+                    check_agent_performance(agent)
                     db.session.commit()
                     notif(session['user_id'], "Photo rejetee par IA. Assurez-vous de prendre une vraie photo du commerce.", 'error')
                     flash("Votre photo a ete rejetee. Soumettez une photo claire d'un commerce.", "error")
@@ -614,6 +654,8 @@ def agent_submit(mission_id):
         if statut_auto == 'Rejected':
             notif(session['user_id'],
                   f"⚠️ Collecte refusée automatiquement pour \"{mission.title}\" — {motif_auto}", 'warning')
+            log_action('submission_auto_rejected', target_type='Submission', target_id=sub.id, details=motif_auto)
+            check_agent_performance(agent)
             db.session.commit()
             flash("⚠️ Doublon GPS détecté — cette position a déjà été collectée pour cette mission.", "error")
             return redirect(url_for('main.agent_dashboard'))
@@ -623,6 +665,10 @@ def agent_submit(mission_id):
         for adm in admins:
             notif(adm.id, f"Nouvelle collecte soumise par {agent.fullname} pour \"{mission.title}\".", 'info')
 
+        if statut_auto == 'Approved':
+            log_action('submission_auto_approved', target_type='Submission', target_id=sub.id,
+                       details=f"Score IA {ia_score}/100")
+        check_agent_performance(agent)
         db.session.commit()
         flash("Collecte soumise avec succès ! En attente de validation.", "success")
         return redirect(url_for('main.agent_dashboard'))
@@ -1068,6 +1114,8 @@ def client_export_csv(mission_id):
         writer.writerow([s.id, s.shop_name, s.shop_address, s.shop_phone,
                          s.observations, s.latitude, s.longitude, s.submitted_at, s.status] + custom_values)
     output.seek(0)
+    log_action('mission_data_exported_csv', target_type='Mission', target_id=mission.id, details=f'{len(mission.submissions)} soumissions exportees')
+    db.session.commit()
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={"Content-Disposition": f"attachment;filename=mission_{mission_id}_data.csv"})
 
@@ -1154,12 +1202,17 @@ def admin_review(submission_id):
             if mission.client_id:
                 notif(mission.client_id, f"Nouvelle collecte validée pour votre mission \"{mission.title}\".", 'success')
             flash(f"Collecte approuvée ! {gain_agent} FCFA versés à {agent.fullname}.", "success")
+            log_action('submission_approved', target_type='Submission', target_id=sub.id,
+                       details=f"Par admin, agent {agent.fullname}, +{gain_agent} FCFA")
         elif action == 'reject':
             motif = request.form.get('motif_rejet', '').strip()
             sub.status      = 'Rejected'
             sub.motif_rejet = motif
             notif(agent.id, f"❌ Collecte rejetée pour \"{mission.title}\". Motif : {motif or 'Non précisé'}", 'warning')
             flash("Collecte rejetée.", "info")
+            log_action('submission_rejected', target_type='Submission', target_id=sub.id,
+                       details=f"Par admin, motif: {motif or 'non precise'}")
+        check_agent_performance(agent)
         db.session.commit()
         return redirect(url_for('main.admin_dashboard'))
     return render_template('admin_review.html', sub=sub, agent=agent, mission=mission)
@@ -1173,6 +1226,7 @@ def admin_confirm_payment(mission_id):
     mission.status         = 'Actif'
     if mission.client_id:
         notif(mission.client_id, f"💳 Paiement confirmé pour \"{mission.title}\". La mission est maintenant active !", 'success')
+    log_action('payment_confirmed', target_type='Mission', target_id=mission.id, details=f"{mission.price} FCFA")
     db.session.commit()
     flash(f"Paiement confirmé. Mission \"{mission.title}\" activée.", "success")
     return redirect(url_for('main.admin_dashboard'))
@@ -1190,6 +1244,7 @@ def admin_payer_retrait(retrait_id):
     r.status  = 'Payé'
     r.paid_at = datetime.utcnow()
     notif(r.agent_id, f"💰 Retrait de {r.montant} FCFA via {r.mode_paiement} effectué ! Votre argent a été envoyé.", 'success')
+    log_action('payout_completed', target_type='Retrait', target_id=r.id, details=f"{r.montant} FCFA a {agent.fullname}")
     db.session.commit()
     flash(f"Retrait de {r.montant} FCFA confirmé et déduit du portefeuille de {agent.fullname}.", "success")
     return redirect(url_for('main.admin_dashboard'))
@@ -1201,6 +1256,8 @@ def admin_suspendre_mission(mission_id):
     mission = Mission.query.get_or_404(mission_id)
     mission.is_suspended = not mission.is_suspended
     mission.status = 'Suspendue' if mission.is_suspended else 'Actif'
+    log_action('mission_suspended' if mission.is_suspended else 'mission_reactivated',
+               target_type='Mission', target_id=mission.id)
     db.session.commit()
     flash(f"Mission {'suspendue' if mission.is_suspended else 'réactivée'}.", "success")
     return redirect(url_for('main.admin_missions'))
@@ -1218,8 +1275,25 @@ def admin_suspendre_agent(agent_id):
         return redirect(url_for('main.login'))
     agent = User.query.get_or_404(agent_id)
     agent.is_suspended = not agent.is_suspended
+    if not agent.is_suspended:
+        agent.is_paused_auto = False  # une reactivation manuelle leve aussi le gel automatique
+    log_action('agent_suspended' if agent.is_suspended else 'agent_reactivated',
+               target_type='User', target_id=agent.id)
     db.session.commit()
     flash(f"Agent {'suspendu' if agent.is_suspended else 'réactivé'}.", "success")
+    return redirect(url_for('main.admin_dashboard'))
+
+@main.route('/admin/agent/<int:agent_id>/lever-pause', methods=['POST'])
+def admin_lever_pause_agent(agent_id):
+    if session.get('user_role') != 'admin':
+        return redirect(url_for('main.login'))
+    agent = User.query.get_or_404(agent_id)
+    agent.is_paused_auto = False
+    agent.low_score_notified = False
+    notif(agent.id, "Votre compte a été réexaminé et débloqué par un administrateur. Vous pouvez de nouveau soumettre des collectes.", 'success')
+    log_action('agent_auto_pause_lifted', target_type='User', target_id=agent.id)
+    db.session.commit()
+    flash(f"Pause automatique levée pour {agent.fullname}.", "success")
     return redirect(url_for('main.admin_dashboard'))
 
 @main.route('/admin/export/agents')
@@ -1233,6 +1307,8 @@ def admin_export_agents():
         writer.writerow([a.id, a.fullname, a.email, a.phone, a.location,
                          a.niveau, a.total_missions, a.wallet_balance, f"{a.reliability_score}%"])
     output.seek(0)
+    log_action('agents_data_exported_csv', target_type='User', details='Export liste complete des agents')
+    db.session.commit()
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=agents_databroker229.csv"})
 

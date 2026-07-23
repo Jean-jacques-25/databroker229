@@ -34,6 +34,10 @@ class User(db.Model):
     filleuls_count   = db.Column(db.Integer, default=0)
     bonus_parrainage = db.Column(db.Integer, default=0)  # total FCFA gagnés via parrainage
 
+    # Suivi de performance
+    is_paused_auto     = db.Column(db.Boolean, default=False)  # gel automatique apres rejets consecutifs
+    low_score_notified = db.Column(db.Boolean, default=False)  # evite de spammer l'alerte de score bas
+
     submissions    = db.relationship('Submission', backref='agent', lazy=True)
     notifications  = db.relationship('Notification', backref='user', lazy=True)
     retraits       = db.relationship('Retrait', backref='agent', lazy=True)
@@ -194,4 +198,21 @@ class ApiKey(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     client = db.relationship('User', backref=db.backref('api_keys', lazy=True))
+
+
+class AuditLog(db.Model):
+    """Journal d'audit : trace qui a fait quoi, quand, sur quel element.
+    Sert de preuve/historique en cas de litige ou de perte de donnees chez un client."""
+    __tablename__ = 'audit_logs'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    actor_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    actor_name  = db.Column(db.String(100), nullable=True)   # snapshot du nom, garde meme si le compte est supprime
+    actor_role  = db.Column(db.String(20), nullable=True)
+    action      = db.Column(db.String(100), nullable=False)  # ex: 'submission_approved', 'mission_suspended'
+    target_type = db.Column(db.String(50), nullable=True)     # ex: 'Submission', 'Mission', 'User'
+    target_id   = db.Column(db.Integer, nullable=True)
+    details     = db.Column(db.Text, nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
 
