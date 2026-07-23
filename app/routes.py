@@ -1296,6 +1296,31 @@ def admin_lever_pause_agent(agent_id):
     flash(f"Pause automatique levée pour {agent.fullname}.", "success")
     return redirect(url_for('main.admin_dashboard'))
 
+@main.route('/admin/journal')
+def admin_journal():
+    if session.get('user_role') != 'admin':
+        return redirect(url_for('main.login'))
+    page   = request.args.get('page', 1, type=int)
+    action_filter = request.args.get('action', '').strip()
+    actor_filter  = request.args.get('actor', '').strip()
+
+    query = AuditLog.query.order_by(AuditLog.created_at.desc())
+    if action_filter:
+        query = query.filter(AuditLog.action == action_filter)
+    if actor_filter:
+        query = query.filter(AuditLog.actor_name.ilike(f"%{actor_filter}%"))
+
+    per_page = 40
+    total    = query.count()
+    logs     = query.offset((page - 1) * per_page).limit(per_page).all()
+    total_pages = max(1, (total + per_page - 1) // per_page)
+
+    all_actions = [a[0] for a in db.session.query(AuditLog.action).distinct().all()]
+
+    return render_template('admin_journal.html', logs=logs, page=page, total_pages=total_pages,
+                            total=total, all_actions=all_actions,
+                            action_filter=action_filter, actor_filter=actor_filter)
+
 @main.route('/admin/export/agents')
 def admin_export_agents():
     if session.get('user_role') != 'admin':

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="min-height:100vh;padding:28px 16px;">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+
+    <!-- EN-TÊTE -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">📜 Journal d'audit</h1>
+            <p style="color:#888;font-size:13px;margin-top:2px;">{{ total }} action(s) enregistrée(s) au total</p>
+        </div>
+        <a href="/admin/dashboard" class="btn-outline" style="font-size:12px;padding:9px 16px;">← Retour console</a>
+    </div>
+
+    <!-- FILTRES -->
+    <form method="GET" class="card-dark" style="padding:16px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+        <div>
+            <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Type d'action</label>
+            <select name="action" style="background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;outline:none;min-width:220px;">
+                <option value="">Toutes les actions</option>
+                {% for a in all_actions %}
+                <option value="{{ a }}" {% if a == action_filter %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Auteur</label>
+            <input type="text" name="actor" value="{{ actor_filter }}" placeholder="Nom de la personne..."
+                style="background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;outline:none;">
+        </div>
+        <button type="submit" class="btn-outline" style="font-size:13px;padding:10px 18px;">🔍 Filtrer</button>
+        {% if action_filter or actor_filter %}
+        <a href="/admin/journal" style="font-size:12px;color:#888;text-decoration:none;padding:10px 4px;">✕ Réinitialiser</a>
+        {% endif %}
+    </form>
+
+    <!-- TABLEAU -->
+    <div class="card-dark" style="padding:0;overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:700px;">
+            <thead>
+                <tr style="border-bottom:1px solid #222;">
+                    <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Date</th>
+                    <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Auteur</th>
+                    <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Action</th>
+                    <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Cible</th>
+                    <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;">Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr style="border-bottom:1px solid #111;" onmouseover="this.style.background='#0d0d0d'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:14px 18px;font-size:12px;color:#888;white-space:nowrap;">{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td style="padding:14px 18px;font-size:13px;color:#fff;font-weight:700;white-space:nowrap;">{{ log.actor_name or 'Système' }}
+                        {% if log.actor_role %}<span style="display:block;font-size:10px;color:#666;font-weight:400;">{{ log.actor_role }}</span>{% endif %}
+                    </td>
+                    <td style="padding:14px 18px;">
+                        <span style="background:#0a0f1a;border:1px solid #3b82f633;color:#60a5fa;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap;">{{ log.action }}</span>
+                    </td>
+                    <td style="padding:14px 18px;font-size:12px;color:#888;white-space:nowrap;">
+                        {% if log.target_type %}{{ log.target_type }} #{{ log.target_id }}{% else %}—{% endif %}
+                    </td>
+                    <td style="padding:14px 18px;font-size:12px;color:#666;max-width:320px;">{{ log.details or '—' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="padding:40px;text-align:center;color:#333;">Aucune action enregistrée pour ces filtres.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    {% if total_pages > 1 %}
+    <div style="display:flex;justify-content:center;gap:8px;align-items:center;">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&action={{ action_filter }}&actor={{ actor_filter }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">← Précédent</a>
+        {% endif %}
+        <span style="font-size:12px;color:#888;">Page {{ page }} / {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&action={{ action_filter }}&actor={{ actor_filter }}" class="btn-outline" style="font-size:12px;padding:8px 14px;">Suivant →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+</div>
+{% endblock %}
