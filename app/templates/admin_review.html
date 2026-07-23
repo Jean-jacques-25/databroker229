@@ -54,6 +54,23 @@
                     <p style="font-size:13px;color:#888;line-height:1.7;font-style:italic;">"{{ sub.observations or 'Aucune note laissée par l\'agent.' }}"</p>
                 </div>
 
+                {% set custom_defs = mission.custom_fields | from_json %}
+                {% if custom_defs %}
+                {% set parsed_data = (sub.data_submitted | from_json) %}
+                {% set custom_data = parsed_data.custom if parsed_data is mapping and parsed_data.custom else {} %}
+                <div class="card-dark" style="padding:20px;">
+                    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">🗂️ Champs personnalisés</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        {% for cdef in custom_defs %}
+                        <div style="display:flex;justify-content:space-between;font-size:13px;">
+                            <span style="color:#888;">{{ cdef.label }}</span>
+                            <span style="color:#fff;font-weight:600;">{{ custom_data.get(cdef.key, '—') if custom_data else '—' }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="card-dark" style="padding:20px;display:flex;justify-content:space-between;align-items:center;">
                     <div>
                         <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rémunération prévue</div>

@@ -31,23 +31,55 @@
         <div style="font-size:12px;color:#888;margin-top:10px;line-height:1.6;">{{ mission.description[:150] }}{% if mission.description|length > 150 %}...{% endif %}</div>
     </div>
 
+    {% set champs = mission.champs_requis.split(',') if mission.champs_requis else ['nom_boutique','observations'] %}
+    {% set custom_defs = mission.custom_fields | from_json %}
+
     {% if mission.photos_requises == 'oui' %}
     <div style="background:#1a1200;border:1px solid #f59e0b33;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#f59e0b;font-weight:600;">
-        📸 Ce client exige une photo obligatoire pour cette mission.
+        📸 Ce client exige {{ mission.photos_nombre or 1 }} photo(s) obligatoire(s) pour cette mission.{% if mission.photos_instructions %} À photographier : {{ mission.photos_instructions }}.{% endif %}
     </div>
     {% endif %}
+    {% if mission.deadline %}
+    <div style="background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#888;">
+        ⏳ Date limite de cette mission : {{ mission.deadline.strftime('%d/%m/%Y') }}
+    </div>
+    {% endif %}
+
+    <!-- ETAPES -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:4px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div id="step-infos" style="width:28px;height:28px;border-radius:50%;background:#f59e0b;color:#0a0a0a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">1</div>
+            <div style="font-size:10px;color:#888;text-align:center;">Infos</div>
+        </div>
+        <div style="flex:1;height:2px;background:#222;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div id="step-gps" style="width:28px;height:28px;border-radius:50%;background:#222;color:#888;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">2</div>
+            <div style="font-size:10px;color:#888;text-align:center;">GPS</div>
+        </div>
+        {% if mission.photos_requises == 'oui' or 'photo' in champs %}
+        <div style="flex:1;height:2px;background:#222;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div id="step-photo" style="width:28px;height:28px;border-radius:50%;background:#222;color:#888;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">3</div>
+            <div style="font-size:10px;color:#888;text-align:center;">Photo</div>
+        </div>
+        {% endif %}
+        <div style="flex:1;height:2px;background:#222;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;">
+            <div id="step-envoi" style="width:28px;height:28px;border-radius:50%;background:#222;color:#888;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">{{ '4' if mission.photos_requises == 'oui' or 'photo' in champs else '3' }}</div>
+            <div style="font-size:10px;color:#888;text-align:center;">Envoi</div>
+        </div>
+    </div>
 
     <!-- FORMULAIRE DYNAMIQUE -->
     <div class="card-dark" style="padding:28px;">
         <form id="collecte-form" method="POST" action="/agent/submit/{{ mission.id }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:18px;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            {% set champs = mission.champs_requis.split(',') if mission.champs_requis else ['nom_boutique','observations'] %}
 
             {% if 'nom_boutique' in champs %}
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Nom du commerce *</label>
-                <input type="text" name="shop_name" placeholder="Ex : Boutique Chez Kodjo" required
+                <input type="text" name="shop_name" placeholder="Ex : Boutique Chez Kodjo" value="{{ draft.get('shop_name','') if draft else '' }}" required
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
             </div>
@@ -56,7 +88,7 @@
             {% if 'prix_produit' in champs %}
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Prix du produit (FCFA) *</label>
-                <input type="number" name="prix_produit" placeholder="Ex : 500" required
+                <input type="number" name="prix_produit" placeholder="Ex : 500" value="{{ draft.get('prix_produit','') if draft else '' }}" required
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
             </div>
@@ -106,9 +138,40 @@
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Observations terrain</label>
                 <textarea name="observations" rows="4" placeholder="Décrivez ce que vous avez observé sur le terrain..."
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;resize:vertical;"
-                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'"></textarea>
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">{{ draft.get('observations','') if draft else '' }}</textarea>
             </div>
             {% endif %}
+
+            <!-- CHAMPS PERSONNALISES DEFINIS PAR LE CLIENT -->
+            {% for cdef in custom_defs %}
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{{ cdef.label }} *</label>
+                {% if cdef.type == 'nombre' %}
+                <input type="number" name="{{ cdef.key }}" value="{{ draft.get(cdef.key,'') if draft else '' }}" required
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                {% elif cdef.type == 'oui_non' %}
+                <select name="{{ cdef.key }}" required
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;">
+                    <option value="">-- Choisir --</option>
+                    <option value="Oui">✅ Oui</option>
+                    <option value="Non">❌ Non</option>
+                </select>
+                {% elif cdef.type == 'choix' %}
+                <select name="{{ cdef.key }}" required
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;">
+                    <option value="">-- Choisir --</option>
+                    {% for opt in cdef.options %}
+                    <option value="{{ opt }}">{{ opt }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <input type="text" name="{{ cdef.key }}" value="{{ draft.get(cdef.key,'') if draft else '' }}" required
+                    style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                {% endif %}
+            </div>
+            {% endfor %}
 
             <!-- GPS OBLIGATOIRE TOUJOURS -->
             <div class="card-dark" style="padding:20px;background:#0d0d0d;">
@@ -187,6 +250,10 @@ function captureGPS() {
             btn.disabled = false; btn.style.opacity = '1';
             gpsOk = true;
             activerBouton();
+            const stepGps = document.getElementById('step-gps');
+            if (stepGps) { stepGps.style.background = '#10b981'; stepGps.style.color = '#0a0a0a'; stepGps.textContent = '✓'; }
+            const stepInfos = document.getElementById('step-infos');
+            if (stepInfos) { stepInfos.style.background = '#10b981'; stepInfos.style.color = '#0a0a0a'; stepInfos.textContent = '✓'; }
         },
         function(err) {
             status.style.color = '#ef4444';
@@ -242,6 +309,8 @@ function previewPhoto(input) {
                     status.textContent = '✅ Photo compressée (' + ko + ' Ko) — prête à envoyer';
                     status.style.color = '#10b981';
                 }
+                const stepPhoto = document.getElementById('step-photo');
+                if (stepPhoto) { stepPhoto.style.background = '#10b981'; stepPhoto.style.color = '#0a0a0a'; stepPhoto.textContent = '✓'; }
             }, 'image/jpeg', 0.7);
         };
         img.src = e.target.result;
@@ -260,6 +329,24 @@ document.getElementById('collecte-form').addEventListener('submit', function(e) 
     btn.style.cursor = 'wait';
     btn.style.opacity = '0.8';
     btn.textContent = '⏳ Envoi en cours... Ne fermez pas cette page';
+    const stepEnvoi = document.getElementById('step-envoi');
+    if (stepEnvoi) { stepEnvoi.style.background = '#f59e0b'; stepEnvoi.style.color = '#0a0a0a'; }
+    clearInterval(draftInterval);
 });
+
+// Sauvegarde automatique du brouillon (texte uniquement, pas la photo)
+var draftInterval = setInterval(sauvegarderBrouillon, 8000);
+function sauvegarderBrouillon() {
+    const form = document.getElementById('collecte-form');
+    const data = { mission_id: {{ mission.id }} };
+    form.querySelectorAll('input[type=text], input[type=number], textarea, select').forEach(function(el) {
+        if (el.name && el.name !== 'csrf_token') data[el.name] = el.value;
+    });
+    fetch('/api/save-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).catch(function() { /* silencieux : pas grave si ca echoue sur reseau faible */ });
+}
 </script>
 {% endblock %}

@@ -83,6 +83,10 @@ class Mission(db.Model):
     format_livraison = db.Column(db.String(20))
     photos_requises  = db.Column(db.String(5), default='non')
     champs_requis    = db.Column(db.String(300), default='nom_boutique,observations')
+    custom_fields        = db.Column(db.Text, nullable=True)          # JSON: [{key,label,type,options}]
+    zones_additionnelles = db.Column(db.String(300), nullable=True)   # noms de zones supplementaires, separes par virgule
+    photos_nombre        = db.Column(db.Integer, default=1)
+    photos_instructions  = db.Column(db.String(300), nullable=True)
 
     status           = db.Column(db.String(20), default='En attente')
     payment_status   = db.Column(db.String(30), default='Pending_Payment')

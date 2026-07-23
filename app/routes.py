@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, mail
+from app import db, mail, csrf
 from app.models import Mission, User, Submission, Transaction, Notification, Retrait, CollecteData
 from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta
@@ -104,20 +104,39 @@ def register():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        ip_fix = request.remote_addr or 'unknown'
+        attempts_key = f'login_attempts_{ip_fix}'
+        time_key = f'login_time_{ip_fix}'
+        max_attempts = 5
+        lockout_seconds = 15 * 60
+
+        attempts = session.get(attempts_key, 0)
+        last_attempt_time = session.get(time_key)
+        if attempts >= max_attempts and last_attempt_time:
+            elapsed = time.time() - last_attempt_time
+            if elapsed < lockout_seconds:
+                minutes_left = max(1, int((lockout_seconds - elapsed) // 60) + 1)
+                flash(f"Trop de tentatives échouées. Réessayez dans {minutes_left} minute(s).", "error")
+                return render_template('login.html')
+            else:
+                session.pop(attempts_key, None)
+                session.pop(time_key, None)
+
         identifier = request.form.get('identifier', '').strip()
         password   = request.form.get('password', '')
         user = User.query.filter(
             (User.email == identifier.lower()) | (User.phone == identifier)
         ).first()
         if not user or not check_password_hash(user.password, password):
+            session[attempts_key] = session.get(attempts_key, 0) + 1
+            session[time_key] = time.time()
             flash("Identifiants incorrects.", "error")
             return render_template('login.html')
         if user.is_suspended:
             flash("Votre compte est suspendu. Contactez le support.", "error")
             return render_template('login.html')
-        ip_fix = request.remote_addr or 'unknown'
-        session.pop(f'login_attempts_{ip_fix}', None)
-        session.pop(f'login_time_{ip_fix}', None)
+        session.pop(attempts_key, None)
+        session.pop(time_key, None)
         session['user_id']   = user.id
         session['user_role'] = user.role
         session['user_name'] = user.fullname
@@ -455,48 +474,20 @@ def agent_submit(mission_id):
         # GPS obligatoire
         if not lat or not lng:
             flash("La géolocalisation GPS est obligatoire.", "error")
-            return render_template('agent_submit.html', mission=mission)
+            return render_template('agent_submit.html', mission=mission, draft={})
 
-        # Sauvegarde photo avec compression automatique
+        # Sauvegarde photo
         photo_path = None
         photo_file = request.files.get('photo')
         if photo_file and photo_file.filename:
-            try:
-                # Chemin absolu — fonctionne sur Render et en local
-                import time as _time
-                base_dir   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                upload_dir = os.path.join(base_dir, 'app', 'static', 'uploads')
-                os.makedirs(upload_dir, exist_ok=True)
-                filename = f"sub_{session['user_id']}_{mission_id}_{int(_time.time())}.jpg"
-                filepath = os.path.join(upload_dir, filename)
-
-                # Compression photo avec Pillow pour reduire la taille
-                try:
-                    from PIL import Image as PILImage
-                    import io as _io
-                    img = PILImage.open(photo_file.stream)
-                    img = img.convert('RGB')
-                    # Redimensionner si trop grande (max 1200px)
-                    max_size = (1200, 1200)
-                    img.thumbnail(max_size, PILImage.LANCZOS)
-                    # Sauvegarder compresse (qualite 75%)
-                    img.save(filepath, 'JPEG', quality=75, optimize=True)
-                except Exception:
-                    # Fallback : sauvegarder directement si Pillow echoue
-                    photo_file.stream.seek(0)
-                    photo_file.save(filepath)
-
-                photo_path = f"uploads/{filename}"
-            except Exception as e:
-                print(f"Erreur upload photo: {e}")
-                # Ne pas bloquer la soumission si l upload echoue
-                photo_path = None
-                if mission.photos_requises == 'oui':
-                    flash("Erreur lors de l upload de la photo. Reessayez avec une photo plus petite.", "error")
-                    return render_template('agent_submit.html', mission=mission)
+            upload_dir = os.path.join('app', 'static', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            filename = f"sub_{session['user_id']}_{mission_id}_{int(__import__('time').time())}.jpg"
+            photo_file.save(os.path.join(upload_dir, filename))
+            photo_path = f"uploads/{filename}"
         elif mission.photos_requises == 'oui':
             flash("Une photo est obligatoire pour cette mission.", "error")
-            return render_template('agent_submit.html', mission=mission)
+            return render_template('agent_submit.html', mission=mission, draft={})
 
         # Verifier mission d essai
         if not agent.essai_complete:
@@ -543,6 +534,14 @@ def agent_submit(mission_id):
                     motif_auto  = f"Ce point a déjà été collecté par un autre agent à {int(dist)}m. Cherchez un autre commerce."
                     break
 
+        # Champs personnalises definis par le client pour cette mission
+        custom_defs = json_module.loads(mission.custom_fields) if mission.custom_fields else []
+        custom_data = {}
+        for cdef in custom_defs:
+            k = cdef.get('key', '')
+            if k:
+                custom_data[k] = request.form.get(k, '').strip()
+
         sub = Submission(
             user_id        = session['user_id'],
             mission_id     = mission_id,
@@ -550,7 +549,7 @@ def agent_submit(mission_id):
             shop_phone     = request.form.get('shop_phone', '').strip(),
             shop_address   = request.form.get('shop_address', '').strip(),
             observations   = request.form.get('observations', '').strip(),
-            data_submitted = request.form.get('observations', ''),
+            data_submitted = json_module.dumps({'observations': request.form.get('observations', ''), 'custom': custom_data}),
             latitude       = lat,
             longitude      = lng,
             photo_path     = photo_path,
@@ -579,6 +578,7 @@ def agent_submit(mission_id):
             # Stocker le résultat IA dans data_submitted
             sub.data_submitted = json_module.dumps({
                 'observations': request.form.get('observations', ''),
+                'custom': custom_data,
                 'ia_score': ia_score,
                 'ia_decision': ia_decision,
                 'ia_raison': ia_raison
@@ -627,7 +627,7 @@ def agent_submit(mission_id):
         flash("Collecte soumise avec succès ! En attente de validation.", "success")
         return redirect(url_for('main.agent_dashboard'))
 
-    return render_template('agent_submit.html', mission=mission)
+    return render_template('agent_submit.html', mission=mission, draft=session.get(f'draft_{mission_id}', {}))
 
 @main.route('/agent/retrait', methods=['POST'])
 def agent_retrait():
@@ -692,12 +692,48 @@ def client_dashboard():
             zone_noms = {'1.2':'Cotonou','1.1':'Porto-Novo','1.5':'Parakou','1.0':'Abomey-Calavi','1.3':'Bohicon','1.6':'Natitingou'}
             zone_nom  = zone_noms.get(zone_val, zone_val)
         prix       = round(quantite * difficulte * float(zone_val) * 1.4)
+        # Type de données : si "autre", on prend la précision du client
+        type_donnees_raw = request.form.get('type_donnees', '')
+        if type_donnees_raw == 'autre':
+            type_donnees_libre = request.form.get('type_donnees_libre', '').strip()
+            type_donnees = type_donnees_libre if type_donnees_libre else 'Autre'
+        else:
+            type_donnees = type_donnees_raw
+
+        # Date limite (optionnelle)
+        deadline_raw = request.form.get('deadline', '').strip()
+        deadline_val = None
+        if deadline_raw:
+            try:
+                deadline_val = datetime.strptime(deadline_raw, '%Y-%m-%d')
+            except ValueError:
+                deadline_val = None
+
+        # Zones supplementaires (optionnelles)
+        zones_additionnelles = ','.join(request.form.getlist('zones_additionnelles'))
+
+        # Photos : nombre et instructions
+        photos_nombre = request.form.get('photos_nombre', 1, type=int) or 1
+        photos_instructions = request.form.get('photos_instructions', '').strip()
+
+        # Champs personnalises illimites definis par le client
+        custom_fields_json = request.form.get('custom_fields_json', '[]')
+        try:
+            custom_fields_list = json_module.loads(custom_fields_json)
+            if not isinstance(custom_fields_list, list):
+                custom_fields_list = []
+        except (ValueError, TypeError):
+            custom_fields_list = []
+
         # Construire les champs requis selon les choix du client
         champs = request.form.getlist('champs_requis')
         if not champs:
             champs = ['nom_boutique', 'observations']
         if request.form.get('photos', 'non') == 'oui' and 'photo' not in champs:
             champs.append('photo')
+        for cf in custom_fields_list:
+            if cf.get('key'):
+                champs.append(cf['key'])
 
         prix_agent = difficulte  # gain net par collecte pour l'agent
         mission = Mission(
@@ -709,13 +745,18 @@ def client_dashboard():
             difficulty       = 'Standard',
             organisation     = request.form.get('organisation', '').strip(),
             contact          = request.form.get('contact', '').strip(),
-            type_donnees     = request.form.get('type_donnees', ''),
+            type_donnees     = type_donnees,
             zone             = zone_val,
             quantite         = quantite,
             difficulte       = difficulte,
+            deadline         = deadline_val,
+            zones_additionnelles = zones_additionnelles,
             format_livraison = request.form.get('format_livraison', 'pdf'),
             photos_requises  = request.form.get('photos', 'non'),
+            photos_nombre    = photos_nombre,
+            photos_instructions = photos_instructions,
             champs_requis    = ','.join(champs),
+            custom_fields    = json_module.dumps(custom_fields_list) if custom_fields_list else None,
             status           = 'En attente',
             payment_status   = 'Pending_Payment',
             client_id        = session['user_id']
@@ -1011,10 +1052,21 @@ def client_export_csv(mission_id):
         return redirect(url_for('main.client_dashboard'))
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['ID', 'Commerce', 'Adresse', 'Téléphone', 'Observations', 'Latitude', 'Longitude', 'Date', 'Statut'])
+    custom_defs = json_module.loads(mission.custom_fields) if mission.custom_fields else []
+    custom_labels = [cdef.get('label', cdef.get('key', '')) for cdef in custom_defs]
+    custom_keys = [cdef.get('key', '') for cdef in custom_defs]
+    writer.writerow(['ID', 'Commerce', 'Adresse', 'Téléphone', 'Observations', 'Latitude', 'Longitude', 'Date', 'Statut'] + custom_labels)
     for s in mission.submissions:
+        custom_values = []
+        try:
+            parsed = json_module.loads(s.data_submitted) if s.data_submitted else {}
+            custom_data = parsed.get('custom', {}) if isinstance(parsed, dict) else {}
+        except (ValueError, TypeError):
+            custom_data = {}
+        for k in custom_keys:
+            custom_values.append(custom_data.get(k, ''))
         writer.writerow([s.id, s.shop_name, s.shop_address, s.shop_phone,
-                         s.observations, s.latitude, s.longitude, s.submitted_at, s.status])
+                         s.observations, s.latitude, s.longitude, s.submitted_at, s.status] + custom_values)
     output.seek(0)
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={"Content-Disposition": f"attachment;filename=mission_{mission_id}_data.csv"})
@@ -1214,6 +1266,7 @@ def admin_message_groupe():
 
 # ── SAUVEGARDE FORMULAIRE AGENT (API) ─────────────────────────
 @main.route('/api/save-draft', methods=['POST'])
+@csrf.exempt
 def api_save_draft():
     """Sauvegarde temporaire des données formulaire agent côté serveur."""
     if not session.get('user_id'):
@@ -1776,7 +1829,6 @@ def setup_admin():
     except Exception as e:
         db.session.rollback()
         return f"<div style='font-family:monospace;padding:40px;background:#0a0a0a;color:red;'>❌ Erreur : {str(e)}</div>"
-
 
 
 

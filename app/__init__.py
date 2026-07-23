@@ -58,11 +58,26 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(admin)
 
+    import json as _json
+    def _from_json(value):
+        if not value:
+            return []
+        try:
+            return _json.loads(value)
+        except (ValueError, TypeError):
+            return []
+    app.jinja_env.filters['from_json'] = _from_json
+
     with app.app_context():
         db.create_all()
         try:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS prix_agent INTEGER DEFAULT 500"))
+                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS deadline TIMESTAMP"))
+                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS custom_fields TEXT"))
+                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS zones_additionnelles VARCHAR(300)"))
+                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS photos_nombre INTEGER DEFAULT 1"))
+                conn.execute(text("ALTER TABLE missions ADD COLUMN IF NOT EXISTS photos_instructions VARCHAR(300)"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS essai_complete BOOLEAN DEFAULT false"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS essai_sub_id INTEGER"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS code_parrain VARCHAR(20)"))

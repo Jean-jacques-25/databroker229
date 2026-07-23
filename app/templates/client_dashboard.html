@@ -101,7 +101,7 @@
     <!-- FORMULAIRE MISSION -->
     <div class="card-dark" style="padding:28px;">
         <h2 style="font-size:17px;font-weight:900;color:#fff;margin-bottom:22px;">🎯 Commander une mission terrain</h2>
-        <form method="POST" action="/client/dashboard" style="display:flex;flex-direction:column;gap:16px;">
+        <form id="mission-form" method="POST" action="/client/dashboard" style="display:flex;flex-direction:column;gap:16px;" onsubmit="majCustomFieldsJson()">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
@@ -136,13 +136,15 @@
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Type de données</label>
-                    <select name="type_donnees" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                    <select name="type_donnees" id="type_donnees" onchange="toggleTypeDonneesLibre(this)" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="prix">Prix de marché</option>
                         <option value="disponibilite">Disponibilité produit</option>
                         <option value="enquete">Enquête ménage</option>
                         <option value="audit">Audit terrain</option>
                         <option value="autre">Autre</option>
                     </select>
+                    <input type="text" id="type_donnees_libre" name="type_donnees_libre" placeholder="Précisez le type de données..."
+                        style="display:none;margin-top:8px;width:100%;background:#0d0d0d;border:1px solid #f59e0b;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Zone</label>
@@ -158,6 +160,12 @@
                     <input type="text" id="zone_libre" name="zone_libre" placeholder="Écrivez votre ville ou zone..." 
                         style="display:none;margin-top:8px;width:100%;background:#0d0d0d;border:1px solid #f59e0b;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#f59e0b'">
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Date limite (optionnel)</label>
+                    <input type="date" name="deadline"
+                        style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Points *</label>
@@ -184,10 +192,38 @@
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Photos requises ?</label>
-                    <select name="photos" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                    <select name="photos" id="photos_requises" onchange="togglePhotosDetails(this)" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
                         <option value="non">Non</option>
                         <option value="oui">Oui</option>
                     </select>
+                </div>
+            </div>
+
+            <div id="photos_details" style="display:none;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:16px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Nombre de photos</label>
+                        <input type="number" name="photos_nombre" min="1" max="5" value="1"
+                            style="width:100%;background:#111;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Quoi photographier ?</label>
+                        <input type="text" name="photos_instructions" placeholder="Ex : devanture puis intérieur"
+                            style="width:100%;background:#111;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZONES SUPPLEMENTAIRES -->
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Zones supplémentaires couvertes par cette mission (optionnel)</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+                    {% for zn in ['Cotonou','Porto-Novo','Parakou','Abomey-Calavi','Bohicon','Natitingou'] %}
+                    <label style="display:flex;align-items:center;gap:8px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:10px 12px;cursor:pointer;">
+                        <input type="checkbox" name="zones_additionnelles" value="{{ zn }}" style="accent-color:#f59e0b;width:15px;height:15px;">
+                        <span style="font-size:12px;color:#ccc;font-weight:600;">{{ zn }}</span>
+                    </label>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -220,6 +256,14 @@
                         <span style="font-size:13px;color:#ccc;font-weight:600;">📝 Observations</span>
                     </label>
                 </div>
+            </div>
+
+            <!-- CHAMPS PERSONNALISES ILLIMITES -->
+            <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Champs personnalisés (pour tout autre type de marché ou d'enquête)</label>
+                <div id="custom-fields-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
+                <button type="button" onclick="ajouterChampPerso()" class="btn-outline" style="font-size:13px;padding:10px 16px;">+ Ajouter un champ</button>
+                <input type="hidden" name="custom_fields_json" id="custom_fields_json" value="[]">
             </div>
 
             <!-- ESTIMATEUR -->
@@ -350,6 +394,70 @@ function toggleZoneLibre(sel) {
         champ.required = false;
         champ.value = '';
     }
+}
+
+function toggleTypeDonneesLibre(sel) {
+    var champ = document.getElementById('type_donnees_libre');
+    if (sel.value === 'autre') {
+        champ.style.display = 'block';
+        champ.required = true;
+    } else {
+        champ.style.display = 'none';
+        champ.required = false;
+        champ.value = '';
+    }
+}
+
+function togglePhotosDetails(sel) {
+    document.getElementById('photos_details').style.display = (sel.value === 'oui') ? 'block' : 'none';
+}
+
+let customFieldCount = 0;
+function ajouterChampPerso() {
+    customFieldCount++;
+    const id = 'cf_' + customFieldCount;
+    const div = document.createElement('div');
+    div.id = id;
+    div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:center;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:10px;';
+    div.innerHTML = `
+        <input type="text" placeholder="Nom du champ (ex: État du point d'eau)" class="cf-label" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+        <select class="cf-type" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+            <option value="texte">Texte libre</option>
+            <option value="nombre">Nombre</option>
+            <option value="oui_non">Oui / Non</option>
+            <option value="choix">Liste de choix</option>
+        </select>
+        <button type="button" onclick="document.getElementById('${id}').remove(); majCustomFieldsJson();" style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;">✕</button>
+        <input type="text" placeholder="Options séparées par virgule (si Liste de choix)" class="cf-options" style="display:none;grid-column:1/3;background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+    `;
+    document.getElementById('custom-fields-list').appendChild(div);
+    const typeSel = div.querySelector('.cf-type');
+    const optionsInput = div.querySelector('.cf-options');
+    typeSel.addEventListener('change', function() {
+        optionsInput.style.display = (typeSel.value === 'choix') ? 'block' : 'none';
+        majCustomFieldsJson();
+    });
+    div.querySelector('.cf-label').addEventListener('input', majCustomFieldsJson);
+    optionsInput.addEventListener('input', majCustomFieldsJson);
+}
+
+function majCustomFieldsJson() {
+    const rows = document.querySelectorAll('#custom-fields-list > div');
+    const fields = [];
+    rows.forEach((row, i) => {
+        const label = row.querySelector('.cf-label').value.trim();
+        const type = row.querySelector('.cf-type').value;
+        const options = row.querySelector('.cf-options').value.trim();
+        if (label) {
+            fields.push({
+                key: 'custom_' + (i + 1),
+                label: label,
+                type: type,
+                options: type === 'choix' ? options.split(',').map(o => o.trim()).filter(Boolean) : []
+            });
+        }
+    });
+    document.getElementById('custom_fields_json').value = JSON.stringify(fields);
 }
 
 function calculerPrix() {
