@@ -283,12 +283,26 @@
 </div>
 <script>
 const kb = [
+    {keys:["devenir agent","etre agent","inscri","comment agent","rejoindre"],response:"Pour devenir agent : inscrivez-vous, choisissez le rôle « Agent », complétez votre profil, puis postulez aux missions disponibles près de chez vous."},
     {keys:["agent","gagner","mission","collecte","terrain"],response:"En tant qu'Agent, vous collectez des données terrain (GPS, photos, infos commerces). Une fois validée par l'admin, votre portefeuille est crédité en FCFA !"},
-    {keys:["client","entreprise","publier","commande"],response:"Les Clients publient leurs missions et reçoivent des données CSV certifiées collectées par nos agents terrain au Bénin."},
-    {keys:["paiement","argent","retrait","fcfa","moov","mtn","portefeuille"],response:"Les paiements sont en FCFA. Les gains s'accumulent après validation. Retrait via Mobile Money (MTN / Moov / Celtiis)."},
-    {keys:["gps","coordonnee","localisation","carte"],response:"La géolocalisation est certifiée. L'app capture automatiquement les coordonnées GPS lors de chaque soumission terrain."},
-    {keys:["contact","whatsapp","support","aide"],response:"Contactez-nous : WhatsApp <strong style='color:#f59e0b'>+229 01 XX XX XX XX</strong> ou email : contact@lacentraledesdonnees229.com"}
+    {keys:["client","entreprise","publier","commande"],response:"Les Clients publient leurs missions et reçoivent des données CSV/PDF certifiées collectées par nos agents terrain au Bénin."},
+    {keys:["paiement","argent","retrait","fcfa","moov","mtn","celtiis","portefeuille","payer"],response:"Les paiements sont en FCFA. Vos gains s'accumulent après validation de la mission, puis sont retirables via Mobile Money (MTN / Moov / Celtiis)."},
+    {keys:["zone","ville","couvr","cotonou","porto-novo","abomey","parakou","bohicon","natitingou"],response:"Nous couvrons actuellement Cotonou, Abomey-Calavi, Porto-Novo, Parakou, Bohicon et Natitingou. D'autres villes s'ajoutent progressivement."},
+    {keys:["qualite","fraude","fiable","verifi","confiance"],response:"Chaque collecte est contrôlée par notre IA (score de confiance), notre anti-fraude GPS (doublons, vitesse anormale), puis vérifiée manuellement si besoin avant validation."},
+    {keys:["gps","coordonnee","localisation","carte","geolocalisation"],response:"La géolocalisation est certifiée. L'application capture automatiquement les coordonnées GPS lors de chaque soumission terrain — impossible de soumettre sans position activée."},
+    {keys:["photo"],response:"Une photo terrain est requise pour la plupart des missions. Elle est compressée automatiquement avant l'envoi pour fonctionner même avec une connexion lente."},
+    {keys:["tarif","prix","cout","combien ca coute","devis"],response:"Nos tarifs dépendent du volume et de la complexité de la mission. Contactez-nous sur WhatsApp pour un devis adapté à votre besoin."},
+    {keys:["api","integration","developpeur","cle api"],response:"Nous proposons une API REST sécurisée pour récupérer directement vos données collectées dans vos systèmes existants. Voir la documentation API dans le menu."},
+    {keys:["mot de passe","password","oublie","connecter","connexion","compte bloque"],response:"Mot de passe oublié ? Utilisez le lien « Mot de passe oublié » sur la page de connexion pour le réinitialiser par email."},
+    {keys:["securite","confidentialite","donnees personnelles","apdp","rgpd"],response:"Vos données sont chiffrées (HTTPS) et notre déclaration de traitement est en cours auprès de l'APDP. Consultez notre page Mentions légales pour plus de détails."},
+    {keys:["legal","entreprise enregistree","rccm","ifu"],response:"L'immatriculation RCCM/IFU est en cours de finalisation. La plateforme est pleinement fonctionnelle et opérationnelle."},
+    {keys:["bonjour","bonsoir","salut","hello"],response:"Bonjour ! Ravi de vous aider 😊 Posez-moi votre question sur les missions, les paiements, les zones couvertes, ou tout autre sujet."},
+    {keys:["merci"],response:"Avec plaisir ! N'hésitez pas si vous avez d'autres questions."}
 ];
+function normaliser(txt) {
+    return txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function toggleChat() {
     const box = document.getElementById('ai-chat-box');
     box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
@@ -302,9 +316,9 @@ function sendMessage() {
     input.value = '';
     c.scrollTop = c.scrollHeight;
     setTimeout(() => {
-        let reply = "Contactez notre support WhatsApp : +229 01 XX XX XX XX pour plus d'aide !";
-        const low = text.toLowerCase();
-        for (const item of kb) { if (item.keys.some(k => low.includes(k))) { reply = item.response; break; } }
+        let reply = "Je n'ai pas toute l'information pour répondre précisément à ça. Notre équipe peut vous aider directement : <a href='https://wa.me/2290155256871?text=" + encodeURIComponent(text) + "' target='_blank' style='color:#25d366;font-weight:700;'>💬 Discuter sur WhatsApp</a>";
+        const low = normaliser(text);
+        for (const item of kb) { if (item.keys.some(k => low.includes(normaliser(k)))) { reply = item.response; break; } }
         c.innerHTML += `<div style="display:flex;gap:8px;"><div style="width:22px;height:22px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;">🤖</div><div style="background:#1a1a1a;border:1px solid #222;padding:10px 12px;border-radius:0 12px 12px 12px;font-size:12px;color:#ccc;line-height:1.6;">${reply}</div></div>`;
         c.scrollTop = c.scrollHeight;
     }, 400);
