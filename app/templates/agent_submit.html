@@ -148,8 +148,13 @@
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{{ cdef.label }} *</label>
                 {% if cdef.type == 'nombre' %}
                 <input type="number" name="{{ cdef.key }}" value="{{ draft.get(cdef.key,'') if draft else '' }}" required
+                    {% if cdef.min is defined and cdef.min is not none %}min="{{ cdef.min }}"{% endif %}
+                    {% if cdef.max is defined and cdef.max is not none %}max="{{ cdef.max }}"{% endif %}
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;"
                     onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#222'">
+                {% if cdef.min is defined and cdef.max is defined and cdef.min is not none and cdef.max is not none %}
+                <div style="font-size:10.5px;color:#666;margin-top:4px;">Valeur attendue entre {{ cdef.min }} et {{ cdef.max }}</div>
+                {% endif %}
                 {% elif cdef.type == 'oui_non' %}
                 <select name="{{ cdef.key }}" required
                     style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px 16px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;">
@@ -179,6 +184,7 @@
                     📍 Géolocalisation GPS <span style="color:#ef4444;">*obligatoire</span>
                 </div>
                 <input type="hidden" name="latitude" id="lat">
+                <input type="hidden" name="page_loaded_at" id="page_loaded_at">
                 <input type="hidden" name="longitude" id="lng">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
                     <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:12px 14px;color:#10b981;font-size:12px;font-family:monospace;" id="lat-display">Lat : —</div>
@@ -219,6 +225,7 @@
 </div>
 
 <script>
+document.getElementById('page_loaded_at').value = Date.now();
 var gpsOk = false;
 
 function captureGPS() {

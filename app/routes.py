@@ -410,6 +410,49 @@ ok = false si : selfie, photo floue, image aleatoire, screenshot, nature sans co
         return True, 70  # En cas d erreur, ne pas bloquer
 
 
+def valider_champs_personnalises(custom_defs, custom_data):
+    """Validation deterministe des champs personnalises numeriques : plages plausibles
+    et coherence entre champs. Ne depend d'aucun modele IA -> rapide, fiable, auditable."""
+    anomalies = []
+    valeurs_numeriques = {}
+
+    for cdef in custom_defs:
+        if cdef.get('type') != 'nombre':
+            continue
+        k = cdef.get('key', '')
+        raw = custom_data.get(k, '')
+        if raw == '':
+            continue
+        try:
+            val = float(raw)
+        except (ValueError, TypeError):
+            anomalies.append(f"« {cdef.get('label', k)} » : valeur non numerique ({raw})")
+            continue
+        valeurs_numeriques[k] = val
+
+        if 'min' in cdef and cdef['min'] is not None and val < cdef['min']:
+            anomalies.append(f"« {cdef.get('label', k)} » = {val} : en dessous du minimum plausible ({cdef['min']})")
+        if 'max' in cdef and cdef['max'] is not None and val > cdef['max']:
+            anomalies.append(f"« {cdef.get('label', k)} » = {val} : au dessus du maximum plausible ({cdef['max']})")
+
+    for cdef in custom_defs:
+        if cdef.get('type') != 'nombre' or not cdef.get('coherence_with'):
+            continue
+        k = cdef.get('key', '')
+        autre_k = cdef['coherence_with']
+        if k not in valeurs_numeriques or autre_k not in valeurs_numeriques:
+            continue
+        v1, v2 = valeurs_numeriques[k], valeurs_numeriques[autre_k]
+        op = cdef.get('coherence_op', 'lte')
+        autre_label = next((c.get('label', autre_k) for c in custom_defs if c.get('key') == autre_k), autre_k)
+        if op == 'lte' and v1 > v2:
+            anomalies.append(f"« {cdef.get('label', k)} » ({v1}) devrait être ≤ « {autre_label} » ({v2})")
+        elif op == 'gte' and v1 < v2:
+            anomalies.append(f"« {cdef.get('label', k)} » ({v1}) devrait être ≥ « {autre_label} » ({v2})")
+
+    return anomalies
+
+
 def analyser_collecte_ia(submission, mission):
     """Analyse une collecte avec Claude AI et retourne un score de confiance 0-100."""
     try:
@@ -579,6 +622,16 @@ def agent_submit(mission_id):
             if k:
                 custom_data[k] = request.form.get(k, '').strip()
 
+        anomalies_regles = valider_champs_personnalises(custom_defs, custom_data)
+
+        # Signal anti-fraude : temps reellement passe entre l'ouverture du formulaire et l'envoi
+        page_loaded_at = request.form.get('page_loaded_at', type=float)
+        if page_loaded_at:
+            temps_ecoule = (time.time() * 1000 - page_loaded_at) / 1000  # secondes
+            seuil_min = 20 if mission.photos_requises == 'oui' else 10
+            if temps_ecoule < seuil_min:
+                anomalies_regles.append(f"Formulaire soumis en seulement {round(temps_ecoule)}s (minimum attendu : {seuil_min}s) — collecte possiblement precipitee")
+
         sub = Submission(
             user_id        = session['user_id'],
             mission_id     = mission_id,
@@ -586,7 +639,7 @@ def agent_submit(mission_id):
             shop_phone     = request.form.get('shop_phone', '').strip(),
             shop_address   = request.form.get('shop_address', '').strip(),
             observations   = request.form.get('observations', '').strip(),
-            data_submitted = json_module.dumps({'observations': request.form.get('observations', ''), 'custom': custom_data}),
+            data_submitted = json_module.dumps({'observations': request.form.get('observations', ''), 'custom': custom_data, 'anomalies_regles': anomalies_regles}),
             latitude       = lat,
             longitude      = lng,
             photo_path     = photo_path,
@@ -615,16 +668,22 @@ def agent_submit(mission_id):
             ia_score    = ia_result['score']
             ia_decision = ia_result['decision']
             ia_raison   = ia_result['raison']
+            # Une anomalie de regle (plage ou coherence) plafonne le score et bloque toute auto-approbation,
+            # peu importe ce que dit le modele IA generique — controle deterministe prioritaire.
+            if anomalies_regles:
+                ia_score = min(ia_score, 60)
+                ia_raison = "Anomalie(s) detectee(s) sur les champs personnalises : " + " ; ".join(anomalies_regles)
             # Stocker le résultat IA dans data_submitted
             sub.data_submitted = json_module.dumps({
                 'observations': request.form.get('observations', ''),
                 'custom': custom_data,
+                'anomalies_regles': anomalies_regles,
                 'ia_score': ia_score,
                 'ia_decision': ia_decision,
                 'ia_raison': ia_raison
             })
-            # Auto-validation IA : score >= 80 → approuver automatiquement
-            if ia_score >= 80:
+            # Auto-validation IA : score >= 80 → approuver automatiquement (sauf anomalie de regle detectee)
+            if ia_score >= 80 and not anomalies_regles:
                 sub.status = 'Approved'
                 gain_agent = mission.prix_agent if mission.prix_agent else mission.difficulte
                 agent_obj  = User.query.get(session['user_id'])

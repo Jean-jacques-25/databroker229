@@ -55,9 +55,10 @@
                 </div>
 
                 {% set custom_defs = mission.custom_fields | from_json %}
-                {% if custom_defs %}
                 {% set parsed_data = (sub.data_submitted | from_json) %}
                 {% set custom_data = parsed_data.custom if parsed_data is mapping and parsed_data.custom else {} %}
+                {% set anomalies = parsed_data.anomalies_regles if parsed_data is mapping and parsed_data.anomalies_regles else [] %}
+                {% if custom_defs %}
                 <div class="card-dark" style="padding:20px;">
                     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">🗂️ Champs personnalisés</div>
                     <div style="display:flex;flex-direction:column;gap:8px;">
@@ -68,6 +69,17 @@
                         </div>
                         {% endfor %}
                     </div>
+                </div>
+                {% endif %}
+
+                {% if anomalies %}
+                <div style="background:#1a0f00;border:1px solid #f59e0b55;border-radius:12px;padding:16px;">
+                    <div style="font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚠️ Anomalies détectées automatiquement</div>
+                    <ul style="margin:0;padding-left:18px;">
+                        {% for a in anomalies %}
+                        <li style="font-size:12.5px;color:#fcd34d;margin-bottom:4px;">{{ a }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
                 {% endif %}
 

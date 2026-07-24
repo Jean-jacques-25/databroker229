@@ -262,7 +262,14 @@
             <div>
                 <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Champs personnalisés (pour tout autre type de marché ou d'enquête)</label>
                 <div id="custom-fields-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
-                <button type="button" onclick="ajouterChampPerso()" class="btn-outline" style="font-size:13px;padding:10px 16px;">+ Ajouter un champ</button>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="button" onclick="ajouterChampPerso()" class="btn-outline" style="font-size:13px;padding:10px 16px;">+ Ajouter un champ</button>
+                    <button type="button" onclick="toggleModeles()" class="btn-outline" style="font-size:13px;padding:10px 16px;">📋 Modèles suggérés par domaine</button>
+                </div>
+                <div id="modeles-suggestions" style="display:none;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:14px;margin-top:10px;">
+                    <div style="font-size:11px;color:#888;margin-bottom:10px;">Clique sur un modèle pour l'ajouter avec une plage déjà pré-remplie (modifiable) :</div>
+                    <div id="modeles-liste" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
                 <input type="hidden" name="custom_fields_json" id="custom_fields_json" value="[]">
             </div>
 
@@ -413,48 +420,163 @@ function togglePhotosDetails(sel) {
 }
 
 let customFieldCount = 0;
-function ajouterChampPerso() {
+function ajouterChampPerso(preset) {
     customFieldCount++;
     const id = 'cf_' + customFieldCount;
     const div = document.createElement('div');
     div.id = id;
-    div.style.cssText = 'display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:center;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:10px;';
+    div.style.cssText = 'display:flex;flex-direction:column;gap:8px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:10px;';
     div.innerHTML = `
-        <input type="text" placeholder="Nom du champ (ex: État du point d'eau)" class="cf-label" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
-        <select class="cf-type" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
-            <option value="texte">Texte libre</option>
-            <option value="nombre">Nombre</option>
-            <option value="oui_non">Oui / Non</option>
-            <option value="choix">Liste de choix</option>
-        </select>
-        <button type="button" onclick="document.getElementById('${id}').remove(); majCustomFieldsJson();" style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;">✕</button>
-        <input type="text" placeholder="Options séparées par virgule (si Liste de choix)" class="cf-options" style="display:none;grid-column:1/3;background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:center;">
+            <input type="text" placeholder="Nom du champ (ex : Poids de l'enfant en kg)" class="cf-label" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+            <select class="cf-type" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+                <option value="texte">Texte libre</option>
+                <option value="nombre">Nombre</option>
+                <option value="oui_non">Oui / Non</option>
+                <option value="choix">Liste de choix</option>
+            </select>
+            <button type="button" onclick="document.getElementById('${id}').remove(); majCustomFieldsJson();" style="background:#1a0808;border:1px solid #ef444433;color:#ef4444;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;">✕</button>
+        </div>
+        <input type="text" placeholder="Options séparées par virgule (si Liste de choix)" class="cf-options" style="display:none;background:#111;border:1px solid #222;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;outline:none;">
+        <div class="cf-range-row" style="display:none;gap:8px;align-items:center;">
+            <span style="font-size:11px;color:#888;white-space:nowrap;">Plage plausible :</span>
+            <input type="number" placeholder="Min" class="cf-min" style="width:90px;background:#111;border:1px solid #222;border-radius:8px;padding:8px 10px;color:#fff;font-size:12px;outline:none;">
+            <span style="color:#666;">à</span>
+            <input type="number" placeholder="Max" class="cf-max" style="width:90px;background:#111;border:1px solid #222;border-radius:8px;padding:8px 10px;color:#fff;font-size:12px;outline:none;">
+            <span style="font-size:10px;color:#666;">— toute valeur hors de cette plage sera automatiquement signalée</span>
+        </div>
+        <div class="cf-coherence-row" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:11px;color:#888;white-space:nowrap;">Cohérence avec un autre champ (optionnel) :</span>
+            <select class="cf-coherence-field" style="background:#111;border:1px solid #222;border-radius:8px;padding:8px 10px;color:#fff;font-size:12px;outline:none;">
+                <option value="">Aucune</option>
+            </select>
+            <select class="cf-coherence-op" style="background:#111;border:1px solid #222;border-radius:8px;padding:8px 10px;color:#fff;font-size:12px;outline:none;">
+                <option value="lte">doit être ≤</option>
+                <option value="gte">doit être ≥</option>
+            </select>
+        </div>
     `;
     document.getElementById('custom-fields-list').appendChild(div);
     const typeSel = div.querySelector('.cf-type');
     const optionsInput = div.querySelector('.cf-options');
-    typeSel.addEventListener('change', function() {
+    const rangeRow = div.querySelector('.cf-range-row');
+    const coherenceRow = div.querySelector('.cf-coherence-row');
+    function refreshVisibility() {
         optionsInput.style.display = (typeSel.value === 'choix') ? 'block' : 'none';
-        majCustomFieldsJson();
+        rangeRow.style.display = (typeSel.value === 'nombre') ? 'flex' : 'none';
+        coherenceRow.style.display = (typeSel.value === 'nombre') ? 'flex' : 'none';
+        if (typeSel.value === 'nombre') rafraichirOptionsCoherence();
+    }
+    typeSel.addEventListener('change', function() { refreshVisibility(); majCustomFieldsJson(); });
+    div.querySelectorAll('input, select').forEach(el => el.addEventListener('input', majCustomFieldsJson));
+    div.querySelectorAll('input, select').forEach(el => el.addEventListener('change', majCustomFieldsJson));
+
+    if (preset) {
+        div.querySelector('.cf-label').value = preset.label;
+        typeSel.value = 'nombre';
+        div.querySelector('.cf-min').value = preset.min;
+        div.querySelector('.cf-max').value = preset.max;
+    }
+    refreshVisibility();
+    majCustomFieldsJson();
+}
+
+function rafraichirOptionsCoherence() {
+    // Remplit chaque menu "cohérence avec" avec la liste des AUTRES champs numériques deja ajoutes
+    const rows = document.querySelectorAll('#custom-fields-list > div');
+    const champsNombres = [];
+    rows.forEach((row, i) => {
+        if (row.querySelector('.cf-type').value === 'nombre') {
+            const label = row.querySelector('.cf-label').value.trim() || ('Champ ' + (i + 1));
+            champsNombres.push({ id: row.id, label: label });
+        }
     });
-    div.querySelector('.cf-label').addEventListener('input', majCustomFieldsJson);
-    optionsInput.addEventListener('input', majCustomFieldsJson);
+    rows.forEach(row => {
+        const sel = row.querySelector('.cf-coherence-field');
+        if (!sel) return;
+        const current = sel.value;
+        sel.innerHTML = '<option value="">Aucune</option>';
+        champsNombres.forEach(c => {
+            if (c.id !== row.id) {
+                const opt = document.createElement('option');
+                opt.value = c.id; opt.textContent = c.label;
+                if (c.id === current) opt.selected = true;
+                sel.appendChild(opt);
+            }
+        });
+    });
+}
+
+const MODELES_PAR_DOMAINE = {
+    enquete: [
+        { label: "Âge du répondant (années)", min: 0, max: 120 },
+        { label: "Nombre de personnes dans le ménage", min: 1, max: 30 },
+        { label: "Revenu mensuel estimé (FCFA)", min: 0, max: 5000000 }
+    ],
+    audit: [
+        { label: "Surface exploitée (hectares)", min: 0.01, max: 500 },
+        { label: "Quantité récoltée (kg)", min: 0, max: 50000 },
+        { label: "Nombre de têtes de bétail", min: 0, max: 1000 }
+    ],
+    autre: [
+        { label: "Poids (kg)", min: 0.5, max: 300 },
+        { label: "Taille (cm)", min: 30, max: 250 },
+        { label: "Température (°C)", min: 30, max: 43 }
+    ]
+};
+
+function toggleModeles() {
+    const box = document.getElementById('modeles-suggestions');
+    const visible = box.style.display === 'block';
+    box.style.display = visible ? 'none' : 'block';
+    if (!visible) rafraichirModeles();
+}
+
+function rafraichirModeles() {
+    const domaine = document.getElementById('type_donnees').value;
+    const liste = MODELES_PAR_DOMAINE[domaine] || MODELES_PAR_DOMAINE['autre'];
+    const container = document.getElementById('modeles-liste');
+    container.innerHTML = '';
+    liste.forEach(m => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = `+ ${m.label} (${m.min}-${m.max})`;
+        btn.style.cssText = 'background:#111;border:1px solid #f59e0b44;color:#f59e0b;font-size:11px;font-weight:600;padding:8px 12px;border-radius:8px;cursor:pointer;';
+        btn.onclick = () => ajouterChampPerso(m);
+        container.appendChild(btn);
+    });
 }
 
 function majCustomFieldsJson() {
+    rafraichirOptionsCoherence();
     const rows = document.querySelectorAll('#custom-fields-list > div');
     const fields = [];
+    const idToKey = {};
+    rows.forEach((row, i) => { idToKey[row.id] = 'custom_' + (i + 1); });
     rows.forEach((row, i) => {
         const label = row.querySelector('.cf-label').value.trim();
         const type = row.querySelector('.cf-type').value;
         const options = row.querySelector('.cf-options').value.trim();
         if (label) {
-            fields.push({
+            const field = {
                 key: 'custom_' + (i + 1),
                 label: label,
                 type: type,
                 options: type === 'choix' ? options.split(',').map(o => o.trim()).filter(Boolean) : []
-            });
+            };
+            if (type === 'nombre') {
+                const min = row.querySelector('.cf-min').value;
+                const max = row.querySelector('.cf-max').value;
+                if (min !== '') field.min = parseFloat(min);
+                if (max !== '') field.max = parseFloat(max);
+                const cohField = row.querySelector('.cf-coherence-field').value;
+                const cohOp = row.querySelector('.cf-coherence-op').value;
+                if (cohField && idToKey[cohField]) {
+                    field.coherence_with = idToKey[cohField];
+                    field.coherence_op = cohOp;
+                }
+            }
+            fields.push(field);
         }
     });
     document.getElementById('custom_fields_json').value = JSON.stringify(fields);
