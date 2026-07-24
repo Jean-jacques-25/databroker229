@@ -37,6 +37,7 @@ class User(db.Model):
     # Suivi de performance
     is_paused_auto     = db.Column(db.Boolean, default=False)  # gel automatique apres rejets consecutifs
     low_score_notified = db.Column(db.Boolean, default=False)  # evite de spammer l'alerte de score bas
+    certifications     = db.Column(db.Text, nullable=True)  # JSON: {"commerce": {"date":"...","score":90}, ...}
 
     submissions    = db.relationship('Submission', backref='agent', lazy=True)
     notifications  = db.relationship('Notification', backref='user', lazy=True)
@@ -91,6 +92,7 @@ class Mission(db.Model):
     zones_additionnelles = db.Column(db.String(300), nullable=True)   # noms de zones supplementaires, separes par virgule
     photos_nombre        = db.Column(db.Integer, default=1)
     photos_instructions  = db.Column(db.String(300), nullable=True)
+    domaine_agent        = db.Column(db.String(30), default='general')  # commerce, menage, agriculture, sante, general
 
     status           = db.Column(db.String(20), default='En attente')
     payment_status   = db.Column(db.String(30), default='Pending_Payment')

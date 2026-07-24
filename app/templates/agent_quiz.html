@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="min-height:100vh;padding:28px 16px;">
+<div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+
+    <div>
+        <h1 style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">{{ domaine_info.icon }} Certification — {{ domaine_info.label }}</h1>
+        <p style="color:#888;font-size:13px;margin-top:2px;">Répondez aux {{ questions|length }} questions. Score minimum requis : 70%.</p>
+    </div>
+
+    <form method="POST" style="display:flex;flex-direction:column;gap:16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% for q in questions %}
+        {% set q_idx = loop.index0 %}
+        <div class="card-dark" style="padding:20px;">
+            <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">{{ loop.index }}. {{ q.q }}</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                {% for opt in q.options %}
+                <label style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;cursor:pointer;">
+                    <input type="radio" name="q{{ q_idx }}" value="{{ loop.index0 }}" required style="accent-color:#f59e0b;width:16px;height:16px;">
+                    <span style="font-size:13px;color:#ccc;">{{ opt }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-primary" style="padding:14px;font-size:14px;font-weight:700;">Valider mes réponses</button>
+        <a href="/agent/certifications" style="text-align:center;font-size:12px;color:#888;text-decoration:none;">← Annuler et revenir</a>
+    </form>
+
+</div>
+</div>
+{% endblock %}

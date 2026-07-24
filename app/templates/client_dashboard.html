@@ -162,6 +162,16 @@
                         onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#f59e0b'">
                 </div>
                 <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Domaine de compétence requis pour l'agent</label>
+                    <select name="domaine_agent" style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;">
+                        <option value="general">Général (aucune certification requise)</option>
+                        <option value="commerce">🏪 Commerce</option>
+                        <option value="menage">🏠 Enquête ménage</option>
+                        <option value="agriculture">🌾 Agriculture</option>
+                        <option value="sante">⚕️ Santé</option>
+                    </select>
+                </div>
+                <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Date limite (optionnel)</label>
                     <input type="date" name="deadline"
                         style="width:100%;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none;box-sizing:border-box;"

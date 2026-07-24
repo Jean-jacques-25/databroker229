@@ -245,7 +245,49 @@ def agent_dashboard():
                            subs_approved=subs_approved, subs_pending=subs_pending,
                            subs_rejected=subs_rejected, missions_actives=missions_actives,
                            mois_labels=mois_labels, mois_collectes=mois_collectes,
-                           mois_gains=mois_gains)
+                           mois_gains=mois_gains, certifications=get_certifications(agent),
+                           domaines_info=DOMAINES_INFO)
+
+@main.route('/agent/certifications')
+def agent_certifications():
+    if session.get('user_role') != 'agent':
+        return redirect(url_for('main.login'))
+    agent = User.query.get_or_404(session['user_id'])
+    return render_template('agent_certifications.html', agent=agent,
+                           certifications=get_certifications(agent), domaines_info=DOMAINES_INFO)
+
+@main.route('/agent/quiz/<domaine>', methods=['GET', 'POST'])
+def agent_quiz(domaine):
+    if session.get('user_role') != 'agent':
+        return redirect(url_for('main.login'))
+    if domaine not in QUIZ_DOMAINES:
+        flash("Domaine de certification inconnu.", "error")
+        return redirect(url_for('main.agent_certifications'))
+    agent = User.query.get_or_404(session['user_id'])
+    questions = QUIZ_DOMAINES[domaine]
+
+    if request.method == 'POST':
+        bonnes_reponses = 0
+        for i, q in enumerate(questions):
+            reponse = request.form.get(f'q{i}', type=int)
+            if reponse == q['correct']:
+                bonnes_reponses += 1
+        score = round(bonnes_reponses / len(questions) * 100)
+        certs = get_certifications(agent)
+        reussi = score >= 70
+        if reussi:
+            certs[domaine] = {'date': datetime.utcnow().strftime('%Y-%m-%d'), 'score': score}
+            agent.certifications = json_module.dumps(certs)
+            log_action('agent_certified', target_type='User', target_id=agent.id,
+                       details=f"Domaine {domaine}, score {score}%")
+            db.session.commit()
+            flash(f"🎉 Certification « {DOMAINES_INFO[domaine]['label']} » obtenue avec {score}% !", "success")
+        else:
+            flash(f"Score insuffisant ({score}%, minimum 70% requis). Vous pouvez retenter.", "error")
+        return redirect(url_for('main.agent_certifications'))
+
+    return render_template('agent_quiz.html', domaine=domaine, questions=questions,
+                           domaine_info=DOMAINES_INFO[domaine])
 
 def send_email(to, subject, body_html):
     """Envoyer un email HTML via Gmail."""
@@ -410,6 +452,108 @@ ok = false si : selfie, photo floue, image aleatoire, screenshot, nature sans co
         return True, 70  # En cas d erreur, ne pas bloquer
 
 
+DOMAINES_INFO = {
+    'commerce':   {'label': 'Enquête commerciale',  'icon': '🏪'},
+    'menage':     {'label': 'Enquête ménage',       'icon': '🏠'},
+    'agriculture':{'label': 'Audit agricole',       'icon': '🌾'},
+    'sante':      {'label': 'Enquête santé',        'icon': '⚕️'},
+}
+
+QUIZ_DOMAINES = {
+    'commerce': [
+        {"q": "Un commerçant refuse de répondre à une question précise. Que faites-vous ?",
+         "options": ["J'invente une réponse plausible pour ne pas perdre de temps", "Je note qu'il n'a pas souhaité répondre et je continue", "J'insiste fermement jusqu'à obtenir une réponse"],
+         "correct": 1},
+        {"q": "Vous devez relever un prix affiché en boutique. Quelle est la bonne pratique ?",
+         "options": ["Prendre une photo du prix affiché et le recopier exactement", "Demander au vendeur un prix arrondi de mémoire", "Estimer le prix par comparaison avec une autre boutique"],
+         "correct": 0},
+        {"q": "La boutique ciblée est fermée. Que faites-vous ?",
+         "options": ["Je remplis quand même le formulaire avec des estimations", "Je note l'absence et je le signale, sans inventer de données", "Je remplace par une boutique voisine sans le signaler"],
+         "correct": 1},
+        {"q": "Vous devez noter le nom exact d'un commerce mais l'enseigne est difficile à lire. Que faites-vous ?",
+         "options": ["Je note un nom approximatif de mémoire", "Je photographie l'enseigne et je demande confirmation au commerçant", "Je laisse le champ vide sans le signaler"],
+         "correct": 1},
+        {"q": "Deux boutiques voisines se ressemblent beaucoup. Comment évitez-vous une confusion de localisation ?",
+         "options": ["Je me fie uniquement à ma mémoire", "Je capture le GPS précisément sur place, boutique par boutique", "Je note la même position pour les deux, ce n'est pas grave"],
+         "correct": 1},
+    ],
+    'menage': [
+        {"q": "Vous enquêtez sur le revenu d'un ménage. Le répondant hésite à répondre précisément. Que faites-vous ?",
+         "options": ["Je propose une fourchette et je note la tranche choisie", "J'insiste pour un chiffre exact", "Je note un chiffre au hasard pour ne pas bloquer l'enquête"],
+         "correct": 0},
+        {"q": "Combien de personnes doit compter un « ménage » dans une enquête démographique standard ?",
+         "options": ["Uniquement les personnes de la famille nucléaire", "Toutes les personnes vivant sous le même toit et partageant les repas", "Uniquement les adultes actifs"],
+         "correct": 1},
+        {"q": "Un enfant de la maison répond à votre place à certaines questions sensibles. Que faites-vous ?",
+         "options": ["J'accepte ses réponses telles quelles", "Je demande à parler à un adulte responsable du ménage", "J'annule l'enquête entièrement"],
+         "correct": 1},
+        {"q": "Le chef de ménage est absent mais son conjoint est présent. Que faites-vous ?",
+         "options": ["J'annule systématiquement l'enquête", "Je peux interroger le conjoint s'il est en mesure de répondre pour le ménage", "Je reviens uniquement si le chef de ménage est présent, sans exception"],
+         "correct": 1},
+        {"q": "Pourquoi est-il important de préciser le lien de chaque membre avec le chef de ménage ?",
+         "options": ["Ce n'est pas utile pour l'analyse", "Cela permet de reconstituer la structure familiale et d'analyser les données par catégorie", "Uniquement pour remplir une case obligatoire"],
+         "correct": 1},
+    ],
+    'agriculture': [
+        {"q": "Comment mesurer une surface cultivée sans instrument GPS de précision ?",
+         "options": ["Estimation visuelle uniquement, sans le mentionner", "Pas de comptage, on met que la surface totale du terrain", "Utiliser les repères connus du champ (bornes, comptage de pas) et signaler que c'est une estimation"],
+         "correct": 2},
+        {"q": "Un agriculteur donne une quantité récoltée qui semble très élevée pour la surface indiquée. Que faites-vous ?",
+         "options": ["Je note l'information et signale l'incohérence en observation", "Je corrige moi-même le chiffre", "Je supprime la donnée"],
+         "correct": 0},
+        {"q": "Quel élément est essentiel à photographier lors d'un audit agricole ?",
+         "options": ["Le visage de l'agriculteur uniquement", "La parcelle ou le stock, avec un repère d'échelle si possible", "Rien, la parole de l'agriculteur suffit"],
+         "correct": 1},
+        {"q": "L'agriculteur ne connaît pas la superficie exacte de son champ en hectares. Que faites-vous ?",
+         "options": ["Je laisse le champ vide", "Je l'aide à estimer via des repères connus (mètres, rangs de plants) et je le signale comme estimation", "J'invente un chiffre standard"],
+         "correct": 1},
+        {"q": "Pourquoi noter la période/saison de la récolte est important dans un audit agricole ?",
+         "options": ["Ce n'est pas important", "Les rendements varient fortement selon la saison, ça évite de fausser les comparaisons", "Uniquement pour la forme administrative"],
+         "correct": 1},
+    ],
+    'sante': [
+        {"q": "Vous devez peser un enfant en bas âge sur le terrain. Quelle est la bonne pratique ?",
+         "options": ["Peser l'enfant seul si possible, sinon peser l'adulte+enfant puis soustraire le poids de l'adulte", "Demander le poids de mémoire aux parents uniquement", "Estimer visuellement le poids"],
+         "correct": 0},
+        {"q": "Une question de santé est jugée sensible ou intime par le répondant. Que faites-vous ?",
+         "options": ["J'insiste car la donnée est obligatoire", "Je rappelle le caractère confidentiel et je respecte un refus", "Je passe à un autre membre du ménage pour la même question"],
+         "correct": 1},
+        {"q": "Pourquoi la date de naissance précise est-elle importante en enquête santé infantile ?",
+         "options": ["Ce n'est pas important, une estimation suffit", "Elle permet de rapporter le poids/la taille à des normes de croissance par âge", "Uniquement pour des raisons administratives"],
+         "correct": 1},
+        {"q": "Comment mesurer la taille d'un enfant de moins de 2 ans correctement ?",
+         "options": ["Debout comme un adulte, dans tous les cas", "Allongé sur une toise, car il ne tient pas encore bien debout", "Estimation visuelle uniquement"],
+         "correct": 1},
+        {"q": "Un membre du ménage présente un signe de maladie grave pendant l'enquête. Que faites-vous ?",
+         "options": ["Je continue l'enquête normalement sans rien signaler", "Je termine poliment et j'oriente la famille vers un centre de santé si possible", "Je pose un diagnostic moi-même"],
+         "correct": 1},
+    ],
+}
+
+
+def get_certifications(agent):
+    try:
+        return json_module.loads(agent.certifications) if agent.certifications else {}
+    except (ValueError, TypeError):
+        return {}
+
+
+def agent_certifie_pour(agent, domaine):
+    if not domaine or domaine == 'general':
+        return True
+    return domaine in get_certifications(agent)
+
+
+def est_premiere_mission_domaine(agent, domaine):
+    if not domaine or domaine == 'general':
+        return False
+    dernier = (Submission.query.join(Mission, Submission.mission_id == Mission.id)
+               .filter(Submission.user_id == agent.id, Mission.domaine_agent == domaine,
+                       Submission.status.in_(['Approved', 'Rejected']))
+               .first())
+    return dernier is None
+
+
 def valider_champs_personnalises(custom_defs, custom_data):
     """Validation deterministe des champs personnalises numeriques : plages plausibles
     et coherence entre champs. Ne depend d'aucun modele IA -> rapide, fiable, auditable."""
@@ -548,6 +692,10 @@ def agent_submit(mission_id):
         if agent.is_paused_auto:
             flash("Votre compte est en pause en attente de revue par un administrateur, suite à plusieurs collectes rejetées. Contactez le support.", "error")
             return redirect(url_for('main.agent_dashboard'))
+        if not agent_certifie_pour(agent, mission.domaine_agent):
+            domaine_label = DOMAINES_INFO.get(mission.domaine_agent, {}).get('label', mission.domaine_agent)
+            flash(f"Cette mission nécessite la certification « {domaine_label} ». Passez le quiz de certification avant de soumettre.", "error")
+            return redirect(url_for('main.agent_certifications'))
         lat  = request.form.get('latitude',  type=float)
         lng  = request.form.get('longitude', type=float)
 
@@ -623,6 +771,10 @@ def agent_submit(mission_id):
                 custom_data[k] = request.form.get(k, '').strip()
 
         anomalies_regles = valider_champs_personnalises(custom_defs, custom_data)
+
+        if est_premiere_mission_domaine(agent, mission.domaine_agent):
+            domaine_label = DOMAINES_INFO.get(mission.domaine_agent, {}).get('label', mission.domaine_agent)
+            anomalies_regles.append(f"Première mission de cet agent dans le domaine « {domaine_label} » — revue manuelle obligatoire (période probatoire)")
 
         # Signal anti-fraude : temps reellement passe entre l'ouverture du formulaire et l'envoi
         page_loaded_at = request.form.get('page_loaded_at', type=float)
@@ -855,6 +1007,7 @@ def client_dashboard():
             quantite         = quantite,
             difficulte       = difficulte,
             deadline         = deadline_val,
+            domaine_agent    = request.form.get('domaine_agent', 'general'),
             zones_additionnelles = zones_additionnelles,
             format_livraison = request.form.get('format_livraison', 'pdf'),
             photos_requises  = request.form.get('photos', 'non'),
